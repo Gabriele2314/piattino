@@ -1218,7 +1218,7 @@ const CATS = {
 const FOOD_RULES = [
   [/lasagn/, 'db:lasagne'], [/carbonara/, 'db:carbonara'], [/minestrone/, 'db:minestrone'], [/cheeseburger|hamburger/, 'db:burger'], [/hot dog/, 'db:hotdog'],
   [/mashed potato/, 'db:pure'], [/^hummus$/, 'db:hummus'], [/guacamole/, 'db:guacamole'], [/muesli/, 'db:muesli'], [/pizza/, 'db:pizza'],
-  [/ice cream|gelato|frozen yogurt|sorbet|sundae/, 'db:gelato'], [/french fries|^fries$|chips$/, 'db:patatine'], [/pancake|waffle|crêpe|crepe|french toast/, 'pancake'],
+  [/ice cream|gelato|frozen yogurt|sorbet|sundae|banana split|affogato/, 'db:gelato'], [/french fries|^fries$|chips$/, 'db:patatine'], [/pancake|waffle|crêpe|crepe|french toast/, 'pancake'],
   [/omelet|frittata|scrambled|egg(s)?\b|shakshuka/, 'egg'], [/curry|stew|chili|tagine|goulash|ragout|casserole/, 'curry'],
   [/risotto|arancini|paella|rice|biryani|pilaf|pilau|jollof|sushi|onigiri|congee/, 'rice'],
   [/spaghetti|pasta|macaroni|penne|fettuccine|linguine|tagliatelle|rigatoni|ravioli|tortellini|gnocchi|cannelloni|orecchiette/, 'pasta'],
@@ -1232,7 +1232,7 @@ const FOOD_RULES = [
   [/dumpling|gyoza|pierogi|momo|wonton|samosa|empanada|bao\b/, 'dumpling'], [/bean|lentil|chickpea|\bdal\b|dhal|falafel/, 'legumes'],
   [/bread|\bbun\b|\broll\b|bagel|focaccia|pretzel|baguette|naan|pita|flatbread|croissant|brioche/, 'bread'],
   [/fried|tempura|fritter|croquette|nugget|pakora/, 'fried'], [/cheese|fondue|raclette/, 'cheese'],
-  [/eggplant|aubergine|vegetable|zucchini|spinach|cabbage|mushroom|pepper|tomato|potato|parmigiana|ratatouille/, 'veg'],
+  [/eggplant|aubergine|vegetable|zucchini|spinach|cabbage|mushroom|pepper|tomato|potato|parmigiana|ratatouille|cucumber|pickle|gobi|aloo|cauliflower|broccoli|carrot|okra|kimchi|sauerkraut|caponata|asparagus|artichoke|beet/, 'veg'],
 ];
 function foodTarget(label){
   const l = label.toLowerCase();
@@ -1352,7 +1352,7 @@ const TIPS = {
 function setPct(target, sub){
   SC.pctTarget = Math.max(SC.pctTarget || 0, Math.min(100, target));
   if (sub) { SC.sub = sub; const el = $('#scanSub'); if (el) el.textContent = sub; }
-  if (!SC.pctRaf) SC.pctRaf = requestAnimationFrame(tickPct);
+  if (!SC.pctRaf) SC.pctRaf = setTimeout(tickPct, 30);
 }
 function tickPct(){
   SC.pctRaf = 0;
@@ -1363,7 +1363,7 @@ function tickPct(){
   const el = $('#scanPct'); if (el) el.textContent = n + '%';
   const bar = $('#scanBar'); if (bar) bar.style.width = SC.pctShown + '%';
   $('#scanProg')?.setAttribute('aria-valuenow', n);
-  if (SC.state === 'scanning' && (SC.pctShown < tgt || SC.creep)) SC.pctRaf = requestAnimationFrame(tickPct);
+  if (SC.state === 'scanning' && (SC.pctShown < tgt || SC.creep)) SC.pctRaf = setTimeout(tickPct, 30);
 }
 const waitPct = v => new Promise(res => { const t0 = Date.now(); (function chk(){ if ((SC.pctShown || 0) >= v - .5 || Date.now() - t0 > 1500 || SC.state !== 'scanning') res(); else setTimeout(chk, 40); })(); });
 
