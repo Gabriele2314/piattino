@@ -1060,7 +1060,7 @@ function weightChart(target){
 function goalSummary(){
   const p = S.profile, diff = Math.round((G.kg - G.cur) * 10) / 10;
   const [lo, hi] = healthyRange(+p.height);
-  const tmp = { ...p, weight:G.cur, target:{ kg:G.kg, rate:G.rate }, goal: diff < -.2 ? 'lose' : diff > .2 ? (p.goal === 'muscle' ? 'muscle' : 'gain') : 'maintain' };
+  const tmp = { ...p, kcalAdj:0, weight:G.cur, target:{ kg:G.kg, rate:G.rate }, goal: diff < -.2 ? 'lose' : diff > .2 ? (p.goal === 'muscle' ? 'muscle' : 'gain') : 'maintain' };
   const tg = targets(tmp);
   const weeks = Math.abs(diff) > .2 ? Math.ceil(Math.abs(diff) / G.rate) : 0;
   const when = weeks ? addDays(todayKey(), weeks * 7) : null;
@@ -1100,9 +1100,9 @@ function renderGoal(){
       ${tooLow ? `<p class="err" style="margin-top:8px">Questo peso è troppo basso per la tua altezza: il minimo consigliato è ${sm.lo} kg.</p>` : ''}
     </div>
     ${Math.abs(sm.diff) > .2 ? `<div class="form-label">Quanto veloce</div>
-    <div class="seg">${rates.map(([r, l]) => `<button class="${G.rate === r ? 'on' : ''}" data-a="g-rate" data-r="${r}">${l}<br><span class="small muted">${fmt1(r)} kg/sett.</span></button>`).join('')}</div>` : ''}
+    <div class="seg">${rates.map(([r, l]) => `<button class="${G.rate === r ? 'on' : ''}" data-a="g-rate" data-r="${r}">${l}<br><span class="small muted">${r.toLocaleString('it-IT')} kg/sett.</span></button>`).join('')}</div>` : ''}
     <div class="card pad" style="margin-top:14px">
-      ${sm.weeks ? `<div class="meal-name">Arrivi a ${fmt1(G.kg)} kg verso ${esc(parseKey(sm.when).toLocaleDateString('it-IT', { day:'numeric', month:'long' }))}</div><div class="small muted">circa ${sm.weeks} ${sm.weeks === 1 ? 'settimana' : 'settimane'}, se segui il piano</div>` : `<div class="meal-name">Mantieni il tuo peso</div>`}
+      ${sm.weeks ? `<div class="meal-name">Arrivi a ${fmt1(G.kg)} kg verso ${[8, 11].includes(parseKey(sm.when).getDate()) ? 'l\'' : 'il '}${esc(parseKey(sm.when).toLocaleDateString('it-IT', { day:'numeric', month:'long' }))}</div><div class="small muted">circa ${sm.weeks} ${sm.weeks === 1 ? 'settimana' : 'settimane'}, se segui il piano</div>` : `<div class="meal-name">Mantieni il tuo peso</div>`}
       <div class="target-grid num" style="margin-top:12px"><div><b>${fmt(sm.tg.kcal)}</b><span>kcal</span></div><div><b>${sm.tg.protein}</b><span>Prot. g</span></div><div><b>${fmt(sm.tg.kcal - sm.tg.tdee)}</b><span>vs fabbisogno</span></div><div><b>${sm.goal === 'lose' ? '−' : sm.goal === 'maintain' ? '=' : '+'}</b><span>${sm.goal === 'lose' ? 'Dimagrire' : sm.goal === 'maintain' ? 'Mantenere' : sm.goal === 'muscle' ? 'Muscoli' : 'Aumentare'}</span></div></div>
       ${sm.tg.kcal <= (p.sex === 'M' ? 1500 : 1200) + 5 && sm.goal === 'lose' ? `<p class="small muted" style="margin:10px 0 0">Non scendiamo sotto ${p.sex === 'M' ? '1.500' : '1.200'} kcal: per te il ritmo reale sarà un po' più lento.</p>` : ''}
     </div>
