@@ -1,5 +1,5 @@
 // Piattino service worker: app shell subito in cache, modello e librerie alla prima scansione.
-const VERSION = 'piattino-v2';
+const VERSION = 'piattino-v3';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', event => {
@@ -21,7 +21,7 @@ self.addEventListener('fetch', event => {
   // Pagine: prima la rete (così arrivano gli aggiornamenti), poi la cache se sei offline.
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-cache' })
         .then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return res; })
         .catch(() => caches.match('./index.html'))
     );
