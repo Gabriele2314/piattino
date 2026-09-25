@@ -1,0 +1,17 @@
+{
+  "name": "Piattino",
+  "short_name": "Piattino",
+  "description": "Organizza la dieta, fotografa quello che mangi e trova ogni giorno una spinta in più. Dai 9 anni in su.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
