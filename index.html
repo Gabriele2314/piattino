@@ -379,7 +379,10 @@ body{overscroll-behavior-y:none}
 .prog-pct{font-family:var(--round);font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;color:#B4FFCB;text-shadow:0 0 14px rgba(108,255,154,.8),0 0 34px rgba(48,209,88,.5);line-height:1}
 .prog-bar{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
 .prog-bar i{display:block;height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,#30D158,#6CFF9A);box-shadow:0 0 12px rgba(108,255,154,.8);transition:width .25s linear}
-.portion{display:flex;gap:4px;margin-top:6px}
+.portion-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px}
+.portion{display:flex;gap:4px}
+.res-item{align-items:flex-start}
+.res-item .check,.res-item>.thumb{margin-top:2px}
 .portion button{font-size:12px;font-weight:600;padding:4px 9px;border-radius:12px;background:var(--fill);color:var(--label2)}
 .portion button.on{background:var(--blue);color:#fff}
 .dl-bar{height:6px;border-radius:3px;background:var(--fill);overflow:hidden;margin-top:10px}
@@ -1439,8 +1442,8 @@ function renderResult(){
       <button class="check" data-a="res-toggle" data-id="${x.id}" aria-label="${x.on ? 'Escludi' : 'Includi'} ${esc(x.name)}">${I.check}</button>
       <span class="thumb">${esc(x.emoji)}</span>
       <div class="grow"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</div><div class="small muted num">${x.conf != null ? `<b class="conf">${Math.round(x.conf * 100)}%</b> · ` : ''}<b style="color:var(--label)">${fmt(e.kcal)} kcal</b> · P ${fmt(e.p)} · C ${fmt(e.c)} · G ${fmt(e.f)}</div>
-        <div class="portion" role="group" aria-label="Porzione">${PORTIONS.map(([l, fct]) => `<button class="${Math.abs(x.grams - Math.round(x.base * fct / 5) * 5) < 3 ? 'on' : ''}" data-a="res-portion" data-id="${x.id}" data-f="${fct}">${l}</button>`).join('')}</div></div>
-      <div class="mini-step"><button data-a="res-step" data-id="${x.id}" data-d="-1" aria-label="Porzione più piccola">−</button><span>${fmt(x.grams)} g</span><button data-a="res-step" data-id="${x.id}" data-d="1" aria-label="Porzione più grande">+</button></div>
+        <div class="portion-row"><div class="portion" role="group" aria-label="Porzione">${PORTIONS.map(([l, fct]) => `<button class="${Math.abs(x.grams - Math.round(x.base * fct / 5) * 5) < 3 ? 'on' : ''}" data-a="res-portion" data-id="${x.id}" data-f="${fct}">${l}</button>`).join('')}</div>
+        <div class="mini-step"><button data-a="res-step" data-id="${x.id}" data-d="-1" aria-label="Meno grammi">−</button><span>${fmt(x.grams)} g</span><button data-a="res-step" data-id="${x.id}" data-d="1" aria-label="Più grammi">+</button></div></div></div>
     </div>`; }).join('')}</div>
     <div class="nutri num">${nutriHtml(tot)}</div>
     <div class="tip"><span class="spark">${I.spark}</span><div><div style="font-weight:600">${esc(SC.quote || (SC.quote = pickQuote()))}</div>${SC.tip ? `<div class="small muted" style="margin-top:3px">${esc(SC.tip)}</div>` : ''}</div></div>
