@@ -10,7 +10,7 @@ Funziona senza account e senza server: i dati restano sul telefono.
 - **Fotocamera** come quella dell'iPhone: mirino a tutto schermo, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
 - **Riconoscimento sul telefono** con due modelli di Google che lavorano insieme: MobileNet per frutta, verdura e cibi semplici, AIY Food V1 per 2.024 piatti (pizza, lasagne, carbonara, risotto, sushi…). Per ogni cibo mostra quanto è sicuro, le calorie e la porzione (piccola, media, grande). Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
 - **Grammi automatici**: dalla foto l'app misura quanta parte del piatto è coperta dal cibo e calcola i grammi (il piatto chiaro fa da riferimento, quindi non conta quanto sei vicino). Se il piatto non si vede bene usa una porzione standard.
-- **Acqua** con una bottiglia che si riempie, i litri bevuti e i pulsanti «+ Bicchiere 250 ml», «+ Bottiglietta 500 ml» e «−».
+- **Acqua** con una bottiglia che si riempie, i litri bevuti e i pulsanti «+ Bicchiere 250 ml», «+ Bottiglia 500 ml» e «−».
 - **Percentuale di avanzamento** mentre scarica i modelli e analizza la foto.
 - **Obiettivi**: dimagrire, mantenere, fare muscoli, aumentare di peso, mangiare sano. «Forza e muscoli» c'è anche per 9-13 anni: gioco, sport e proteine, senza calorie in più.
 - **Obiettivo di peso** (adulti): scegli dove vuoi arrivare e quanto veloce; l'app calcola la data, le calorie al giorno e segue le pesate con un grafico. Non accetta obiettivi sotto il peso sano per la tua altezza. Sotto i 18 anni c'è «Come cresci», senza pesi da raggiungere.

@@ -146,7 +146,7 @@ body{overscroll-behavior-y:none}
 .water-l span{color:var(--label2);font-size:16px}
 .water-btns{display:flex;gap:8px;margin-top:8px}
 .water-btns button{flex:1;min-width:0;border-radius:14px;padding:9px 6px;background:color-mix(in srgb,var(--blue) 12%,var(--card));color:var(--blue);display:flex;flex-direction:column;align-items:center;line-height:1.15}
-.water-btns button b{font-size:14px;white-space:nowrap}
+.water-btns button b{font-size:14px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .water-btns button span{font-size:11px;opacity:.75}
 .water-btns button:active{transform:scale(.95)}
 .water-btns .undo{flex:none;width:40px;font-size:22px;font-weight:600;justify-content:center;background:var(--fill);color:var(--label2)}
@@ -847,7 +847,7 @@ function waterCard(day, g){
       <div class="small muted num">${done ? 'Obiettivo raggiunto, ottimo lavoro!' : `${n} ${n === 1 ? 'bicchiere' : 'bicchieri'} · ne mancano ${g.water - n}`}</div>
       <div class="water-btns">
         <button data-a="water-add" data-n="1"><b>+ Bicchiere</b><span>250 ml</span></button>
-        <button data-a="water-add" data-n="2"><b>+ Bottiglietta</b><span>500 ml</span></button>
+        <button data-a="water-add" data-n="2"><b>+ Bottiglia</b><span>500 ml</span></button>
         <button class="undo" data-a="water-add" data-n="-1" aria-label="Togli un bicchiere" ${n ? '' : 'disabled'}>−</button>
       </div>
     </div>
@@ -1877,17 +1877,20 @@ function estimatePortion(canvas){
     // serve un piatto chiaro abbastanza grande e abbastanza rotondo
     if (pc < N * N * .08 || w < N * .4 || h < N * .4 || w / h > 1.8 || h / w > 1.8) return { method:'standard', scale:1 };
     const cx = minX + w / 2, cy = minY + h / 2, rx = w / 2, ry = h / 2;
-    let inside = 0, food = 0;
+    let inside = 0, food = 0, rim = 0, rimPlate = 0;
     for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) {
-      const dx = (x + .5 - cx) / rx, dy = (y + .5 - cy) / ry;
-      if (dx * dx + dy * dy > .92) continue;                        // solo dentro il piatto, senza il bordo
-      inside++; if (!plate[y * N + x]) food++;
+      const dx = (x + .5 - cx) / rx, dy = (y + .5 - cy) / ry, e = dx * dx + dy * dy;
+      if (e > 1) continue;
+      const isPlate = plate[y * N + x];
+      if (e > .62) { rim++; if (isPlate) rimPlate++; continue; }   // bordo del piatto (oltre il 79% del raggio)
+      inside++; if (!isPlate) food++;
     }
-    if (inside < 50) return { method:'standard', scale:1 };
+    // il bordo deve essere davvero piatto: nei primi piani il "bianco" è besciamella o sfondo
+    if (inside < 50 || rim < 30 || rimPlate / rim < .45) return { method:'standard', scale:1 };
     const cover = food / inside;
     if (cover < .04) return { method:'standard', scale:1 };
-    // una porzione "media" copre circa il 45% del piatto
-    return { method:'plate', cover, scale: clamp(cover / .45, .5, 1.8) };
+    // una porzione "media" copre circa metà della parte interna del piatto
+    return { method:'plate', cover, scale: clamp(cover / .55, .5, 1.6) };
   } catch (e) { return { method:'standard', scale:1 }; }
 }
 function applyEstimate(items, est){
@@ -2032,7 +2035,8 @@ function renderResult(){
   const tot = on.reduce((a, e) => ({ kcal:a.kcal + e.kcal, p:a.p + e.p, c:a.c + e.c, f:a.f + e.f }), { kcal:0, p:0, c:0, f:0 });
   const unsure = SC.items.some(x => x.conf != null) && !SC.items.some(x => x.on) && !SC.touched;
   box.innerHTML = `<div class="grabber"></div><div class="result-in">
-    ${SC.est ? `<p class="est">${I.scale}<span>${SC.est.method === 'plate' ? `Grammi calcolati in automatico: il cibo copre circa il <b>${Math.round(SC.est.cover * 100)}%</b> del piatto.` : 'Non vedo bene il piatto, quindi uso una porzione standard. Per il calcolo automatico fotografa tutto il piatto dall\'alto.'}</span></p>` : ''}
+    ${SC.est && SC.items.some(x => x.auto) ? `<p class="est">${I.scale}<span>Grammi calcolati in automatico: il cibo copre circa il <b>${Math.round(SC.est.cover * 100)}%</b> del piatto.</span></p>`
+      : SC.est && SC.est.method === 'standard' && SC.items.some(x => !(x.key && (PIECE[x.key] || NO_SCALE.has(x.key)))) ? `<p class="est">${I.scale}<span>Non vedo bene il bordo del piatto, quindi uso una porzione standard. Per il calcolo automatico fotografa tutto il piatto dall'alto.</span></p>` : ''}
     ${unsure ? `<p class="note" style="margin:10px 0 0">Non sono sicuro di cosa ci sia nella foto. Tocca il cerchio accanto al cibo giusto, oppure cercalo nell'elenco.</p>` : ''}
     <div class="group" style="margin-top:10px">${SC.items.map(x => { const e = itemEntry(x); return `<div class="res-item ${x.on ? '' : 'off'}">
       <button class="check" data-a="res-toggle" data-id="${x.id}" aria-label="${x.on ? 'Escludi' : 'Includi'} ${esc(x.name)}">${I.check}</button>
