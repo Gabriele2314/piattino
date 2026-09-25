@@ -1042,9 +1042,10 @@ function renderScanner(){
 const STATUS_STEPS = ['Analizzo forme e colori', 'Riconosco gli ingredienti', 'Stimo le porzioni', 'Calcolo i nutrienti'];
 async function prepImage(file){
   const url = URL.createObjectURL(file);
-  const img = new Image(); img.src = url;
-  await img.decode();
-  const W = img.naturalWidth, H = img.naturalHeight, side = Math.min(W, H);
+  let img;
+  try { img = await createImageBitmap(file); }
+  catch (e) { img = new Image(); img.src = url; await img.decode(); }
+  const W = img.width || img.naturalWidth, H = img.height || img.naturalHeight, side = Math.min(W, H);
   const t = document.createElement('canvas'); t.width = t.height = 112;
   t.getContext('2d').drawImage(img, (W - side)/2, (H - side)/2, side, side, 0, 0, 112, 112);
   const sq = document.createElement('canvas'); sq.width = sq.height = 320;   // ritaglio centrale per il riconoscimento
