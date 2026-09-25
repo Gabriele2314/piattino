@@ -7,7 +7,10 @@ Funziona senza account e senza server: i dati restano sul telefono.
 ## Cosa fa
 
 - **Oggi**: anelli per calorie, proteine e frutta e verdura, barre di carboidrati e grassi, bicchieri d'acqua e i quattro pasti.
-- **Scansione**: fotocamera dal vivo dentro una scena 3D. Il riconoscimento del cibo avviene sul telefono con MobileNet (TensorFlow.js). Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
+- **Fotocamera** come quella dell'iPhone: mirino a tutto schermo, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
+- **Riconoscimento sul telefono** con due modelli di Google che lavorano insieme: MobileNet per frutta, verdura e cibi semplici, AIY Food V1 per 2.024 piatti (pizza, lasagne, carbonara, risotto, sushi…). Per ogni cibo mostra quanto è sicuro, le calorie e la porzione (piccola, media, grande). Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
+- **Percentuale di avanzamento** mentre scarica i modelli e analizza la foto.
+- **Obiettivi**: dimagrire, mantenere, fare muscoli (proteine 1,8 g/kg e spuntini proteici), aumentare di peso, mangiare sano.
 - **Piano**: menu mediterraneo di 5 pasti con porzioni calcolate sul profilo.
 - **Diario**: serie di giorni, grafico della settimana, cibi memorizzati con la foto, storico.
 - **Frasi motivazionali** diverse per bambini, ragazzi, adulti e over 65.
@@ -23,7 +26,7 @@ Il profilo si compila con la data di nascita. Sotto i 18 anni Piattino non propo
 2. Tocca **Condividi** (il quadrato con la freccia in su).
 3. Scegli **Aggiungi alla schermata Home**.
 
-Alla prima scansione l'app scarica il modello di riconoscimento (circa 14 MB). Dopo funziona anche offline.
+Alla prima scansione l'app scarica i modelli di riconoscimento (circa 24 MB, con la percentuale). Puoi scaricarli prima da Profilo → Riconoscimento delle foto. Dopo funziona anche offline.
 
 ## Struttura
 
@@ -32,8 +35,9 @@ Alla prima scansione l'app scarica il modello di riconoscimento (circa 14 MB). D
 | `index.html` | Tutta l'app: stile, interfaccia e logica |
 | `sw.js` | Service worker per l'uso offline |
 | `manifest.webmanifest` | Nome, icone e colori dell'app installata |
-| `model/` | MobileNet v2 1.0 224 (grafo TensorFlow.js, Google, Apache 2.0) |
-| `vendor/` | TensorFlow.js 4.22.0 e @tensorflow-models/mobilenet 2.1.1 (Apache 2.0) |
+| `model/` | MobileNet v2 1.0 224 (grafo TensorFlow.js, Google, Apache 2.0) e i nomi delle 1.000 classi ImageNet |
+| `model-food/` | AIY Vision Food V1 (Google, Apache 2.0), convertito da TF Hub a TensorFlow.js con pesi float16, e le 2.024 etichette |
+| `vendor/` | TensorFlow.js 4.22.0 (Apache 2.0) |
 | `icons/` | Icone dell'app |
 
 Per provarla sul computer serve un piccolo server locale, per esempio `python3 -m http.server`, poi apri `http://localhost:8000`.

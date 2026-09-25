@@ -191,6 +191,14 @@ body{overscroll-behavior-y:none}
 .seg label,.seg button{flex:1;text-align:center;font-size:13px;font-weight:500;padding:7px 4px;border-radius:7px;cursor:pointer;line-height:1.2;transition:background .2s}
 .seg input:checked+label,.seg button.on{background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.14);font-weight:600}
 .seg input:focus-visible+label{outline:2px solid var(--blue)}
+.goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative}
+.goal-grid input{position:absolute;opacity:0;pointer-events:none}
+.goal-grid label{background:var(--card);border-radius:14px;padding:12px 14px;border:2px solid transparent;cursor:pointer;display:flex;flex-direction:column;gap:2px;transition:border-color .2s,background .2s}
+.goal-grid label.wide{grid-column:1/-1}
+.goal-grid label b{font-size:16px;font-weight:600}
+.goal-grid label span{font-size:13px;color:var(--label2)}
+.goal-grid input:checked+label{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,var(--card))}
+.goal-grid input:focus-visible+label{outline:3px solid var(--blue);outline-offset:2px}
 .form-label{font-size:13px;color:var(--label2);text-transform:uppercase;letter-spacing:.4px;margin:18px 16px 8px}
 .err{color:var(--red);font-size:15px;min-height:20px;margin:10px 4px 0}
 .note{background:var(--fill);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--label2);line-height:1.4}
@@ -332,6 +340,50 @@ body{overscroll-behavior-y:none}
 .dots::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:dots 1.2s steps(4) infinite}
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
 
+/* Camera (iPhone style) */
+.cam{position:absolute;inset:0;background:#000;display:grid;grid-template-rows:auto 1fr auto;color:#fff;z-index:3}
+.cam-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 10px}
+.cam-top .pill{font-size:13px;font-weight:600;background:rgba(255,255,255,.14);padding:6px 12px;border-radius:14px;letter-spacing:.2px}
+.cam-view{position:relative;overflow:hidden;background:#0A0A0A;border-radius:0}
+.cam-view video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(var(--z,1));transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.cam-view video.mirror{transform:scale(var(--z,1)) scaleX(-1)}
+.cam-guide{position:absolute;left:50%;top:50%;width:min(72%,340px);aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none}
+.cam-guide i{position:absolute;width:34px;height:34px;border:3px solid #FFD60A}
+.cam-guide i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-top-left-radius:12px}
+.cam-guide i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-top-right-radius:12px}
+.cam-guide i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-bottom-left-radius:12px}
+.cam-guide i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-bottom-right-radius:12px}
+.cam-hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.5);font-size:13px;padding:6px 12px;border-radius:14px;white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.cam-wait{position:absolute;inset:0;display:grid;place-items:center;color:rgba(235,235,245,.6);font-size:15px}
+.cam-zoom{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:rgba(0,0,0,.35);padding:4px;border-radius:22px}
+.cam-zoom button{width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.45);font-size:12px;font-weight:700;color:#fff}
+.cam-zoom button.on{color:#FFD60A;font-size:13px}
+.cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.cam-flash.go{animation:camflash .35s ease-out}
+@keyframes camflash{0%{opacity:.9}100%{opacity:0}}
+.cam-bottom{padding:10px 20px calc(env(safe-area-inset-bottom,0px) + 16px);display:flex;flex-direction:column;gap:14px;background:#000}
+.cam-modes{display:flex;justify-content:center;gap:22px;font-size:13px;font-weight:600;letter-spacing:1px}
+.cam-modes button{color:rgba(255,255,255,.85);padding:4px 2px}
+.cam-modes button.on{color:#FFD60A}
+.cam-controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+.cam-lib{width:50px;height:50px;border-radius:10px;overflow:hidden;background:#2C2C2E;display:grid;place-items:center;justify-self:start;border:1.5px solid rgba(255,255,255,.35)}
+.cam-lib img{width:100%;height:100%;object-fit:cover}
+.cam-lib svg{width:24px;height:24px}
+.shutter{width:76px;height:76px;border-radius:50%;border:4px solid #fff;display:grid;place-items:center;padding:0}
+.shutter span{width:62px;height:62px;border-radius:50%;background:#fff;transition:transform .12s}
+.shutter:active span{transform:scale(.86)}
+.cam-flip{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;justify-self:end}
+.cam-flip svg{width:24px;height:24px}
+/* Progress */
+.prog{width:100%;max-width:300px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.prog-pct{font-family:var(--round);font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;color:#B4FFCB;text-shadow:0 0 14px rgba(108,255,154,.8),0 0 34px rgba(48,209,88,.5);line-height:1}
+.prog-bar{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
+.prog-bar i{display:block;height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,#30D158,#6CFF9A);box-shadow:0 0 12px rgba(108,255,154,.8);transition:width .25s linear}
+.portion{display:flex;gap:4px;margin-top:6px}
+.portion button{font-size:12px;font-weight:600;padding:4px 9px;border-radius:12px;background:var(--fill);color:var(--label2)}
+.portion button.on{background:var(--blue);color:#fff}
+.dl-bar{height:6px;border-radius:3px;background:var(--fill);overflow:hidden;margin-top:10px}
+.dl-bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .2s linear}
 /* Scan result panel */
 .result{position:absolute;left:0;right:0;bottom:0;max-height:78%;background:var(--bg);color:var(--label);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .5s cubic-bezier(.2,.9,.25,1);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
 .result.show{transform:none}
@@ -401,6 +453,8 @@ const I = {
   sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6L6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>',
   moon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z"/></svg>',
   leaf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19.5C5 11 10 5 20 4.5c0 10-6 15-14 15"/><path d="M5 19.5l7.5-7.5"/></svg>',
+  flip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.5-2h4.4l1.5 2h1.8A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><path d="M9 12.5a3 3 0 0 1 5.2-2M15 13.5a3 3 0 0 1-5.2 2"/><path d="M14.5 8.8v1.9h-1.9M9.5 17.2v-1.9h1.9"/></svg>',
+  photos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-8.5 8.5"/></svg>',
   camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.5-2h4.4l1.5 2h1.8A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg>',
 };
 
@@ -482,6 +536,11 @@ const PLAN = {
   cena: [[['salmone',130],['patate',200],['spinaci',150],['olio',10]], [['uova',120],['paneint',50],['insalata',150],['olio',10]], [['minestrone',300],['mozzarella',60],['pane',40]], [['lenticchie',150],['riso',50],['broccoli',150],['olio',10]]],
 };
 
+const PLAN_MUSCLE = {
+  colazione: [[['latte',250],['avena',50],['banana',100],['arachidi',15]], [['greco',200],['muesli',40],['bosco',80],['miele',10]], [['uova',120],['paneint',60],['kiwi',100],['latte',200]]],
+  spuntino: [[['greco',170],['bosco',80],['noci',15]], [['bresaola',50],['paneint',40]], [['ricotta',120],['miele',10],['fette',20]]],
+  merenda: [[['latte',250],['banana',120]], [['tonno',80],['crackers',30]], [['greco',170],['mela',150],['mandorle',15]]],
+};
 const QUOTES = {
   kid: ['Ogni frutto è un superpotere colorato!','Il tuo corpo cresce forte con i cibi giusti.','Assaggiare una verdura nuova è da veri esploratori.','L\'acqua è il carburante dei campioni.','Una buona colazione accende tutta la giornata.','Mangia l\'arcobaleno: più colori nel piatto, più energia!','Ascoltare la tua pancia è una cosa da grandi.','Anche i supereroi fanno merenda con la frutta.'],
   teen: ['Il cibo è energia per sport, studio e amici.','Nessun cibo è perfetto: conta l\'equilibrio.','La costanza batte la perfezione, ogni giorno.','Il tuo corpo sta costruendo il tuo futuro: dagli buoni mattoni.','Un pasto non decide la giornata. La scelta dopo sì.','Idratato e nutrito: così rendi al massimo.','Sei tu che scegli, e oggi stai scegliendo bene.'],
@@ -495,6 +554,12 @@ const RULES = {
   adult: ['Riempi metà del piatto con verdure.','Scegli cereali integrali quando puoi.','Legumi almeno tre volte a settimana.','Olio extravergine a crudo, con misura.','Pesce due o tre volte a settimana.'],
   senior: ['Proteine a ogni pasto per mantenere i muscoli.','Bevi anche senza sete: 6-8 bicchieri al giorno.','Latticini e verdure verdi per ossa forti.','Pasti regolari e porzioni moderate.','Una passeggiata dopo pranzo aiuta la digestione.'],
 };
+
+const RULES_MUSCLE = {
+  teen: ['Proteine a ogni pasto: carne, pesce, uova, legumi o latticini.','Dopo l\'allenamento: uno spuntino con latte, yogurt o un panino al prosciutto.','Allenati con un istruttore e aumenta i carichi un po\' alla volta.','Dormi almeno 8 ore: i muscoli crescono mentre riposi.','Niente integratori senza il parere del medico: basta il cibo vero.'],
+  adult: ['20-40 g di proteine a ogni pasto, distribuite nella giornata.','Uno spuntino proteico entro 2 ore dall\'allenamento aiuta il recupero.','Carboidrati integrali prima dell\'allenamento per avere energia.','Allenamento di forza 3-4 volte a settimana, con carichi progressivi.','Dormi 7-9 ore: il recupero fa parte dell\'allenamento.'],
+};
+const QUOTES_MUSCLE = ['I muscoli si costruiscono in palestra e si finiscono in cucina.','Ogni ripetizione conta, e anche ogni pasto.','Forza è costanza: oggi un mattone in più.','Il recupero fa parte dell\'allenamento.','Più forte di ieri, un giorno alla volta.'];
 
 /* ---------- targets ---------- */
 function ageOf(p){
@@ -525,11 +590,16 @@ function targets(p){
       else kcal = Math.max(kcal * .85, male ? 1500 : 1200);
     }
     if (p.goal === 'gain') kcal *= 1.1;
+    if (p.goal === 'muscle') kcal *= age >= 65 ? 1.05 : 1.08;
   }
+  if (p.goal === 'muscle') note = age < 18
+    ? 'Per i muscoli contano allenamento, sonno e proteine a ogni pasto. Allenati con un istruttore e non usare integratori senza il parere del medico.'
+    : 'Leggero surplus di calorie e più proteine: abbinalo ad allenamenti di forza 3-4 volte a settimana.';
   kcal = Math.round(clamp(kcal, 1200, 4200) / 10) * 10;
-  const perKg = tier === 'kid' ? .95 : tier === 'teen' ? .9 : tier === 'senior' ? 1.1 : (p.goal === 'lose' || p.goal === 'gain') ? 1.3 : 1.0;
+  const perKg = p.goal === 'muscle' ? (tier === 'teen' ? 1.3 : tier === 'senior' ? 1.4 : 1.8)
+    : tier === 'kid' ? .95 : tier === 'teen' ? .9 : tier === 'senior' ? 1.1 : (p.goal === 'lose' || p.goal === 'gain') ? 1.3 : 1.0;
   const protein = Math.round(w * perKg);
-  const fat = Math.round(kcal * .3 / 9);
+  const fat = Math.round(kcal * (p.goal === 'muscle' ? .27 : .3) / 9);
   const carbs = Math.max(0, Math.round((kcal - protein*4 - fat*9) / 4));
   const water = age < 14 ? 7 : male ? 10 : 8;
   return { kcal, protein, fat, carbs, water, fv:5, bmr:Math.round(bmr), bmi, tier, note };
@@ -552,7 +622,10 @@ const Store = {
   del(){ this.put(); },
 };
 window.addEventListener('pagehide', () => Store.saveNow());
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { Store.saveNow(); stopCamera(); } });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { Store.saveNow(); stopCamera(); }
+  else if ($('#scanner').classList.contains('show') && SC.state === 'camera') startCamera();
+});
 const isStandalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
 
 /* ---------- state ---------- */
@@ -569,7 +642,8 @@ function totals(day){
   return t;
 }
 function pickQuote(){
-  const list = QUOTES[S.profile ? tierOf(ageOf(S.profile)) : 'adult'];
+  const base = QUOTES[S.profile ? tierOf(ageOf(S.profile)) : 'adult'];
+  const list = S.profile && S.profile.goal === 'muscle' ? [...base, ...QUOTES_MUSCLE] : base;
   let i; do { i = Math.floor(Math.random() * list.length); } while (list.length > 1 && i === S.quoteIdx);
   S.quoteIdx = i; return list[i];
 }
@@ -670,7 +744,7 @@ function mealCard(m, day){
 function buildPlan(k){
   const g = T(); const base = Math.floor(parseKey(k).getTime() / 864e5) + S.planShift;
   return SLOTS.map((sl, si) => {
-    const opts = PLAN[sl.s]; const opt = opts[((base + si) % opts.length + opts.length) % opts.length];
+    const opts = (S.profile.goal === 'muscle' && PLAN_MUSCLE[sl.s]) || PLAN[sl.s]; const opt = opts[((base + si) % opts.length + opts.length) % opts.length];
     const rawK = opt.reduce((a, [key, gr]) => a + FOOD[key].kcal * gr / 100, 0);
     const factor = clamp(g.kcal * sl.share / rawK, .6, 2.2);
     const items = opt.map(([key, gr]) => entryFrom(srcFromDb(FOOD[key]), Math.max(5, Math.round(gr * factor / 5) * 5)));
@@ -681,7 +755,7 @@ function renderPlan(){
   const g = T(), day = getDay(S.date), minor = ageOf(S.profile) < 18;
   const custom = day.plan && Array.isArray(day.plan.meals) ? day.plan : null;
   const meals = custom ? custom.meals : buildPlan(S.date);
-  const goalTxt = { lose:'Dimagrire con gradualità', maintain:'Mantenere il peso', gain:'Aumentare la massa', healthy:'Mangiare sano', sport:'Energia per lo sport' }[S.profile.goal] || 'Mangiare sano';
+  const goalTxt = { lose:'Dimagrire con gradualità', maintain:'Mantenere il peso', gain:'Aumentare di peso', muscle:'Fare muscoli', healthy:'Mangiare sano', sport:'Energia per lo sport' }[S.profile.goal] || 'Mangiare sano';
   app.innerHTML = `
   ${header(S.date === todayKey() ? 'Menu di oggi' : longDate(S.date), 'Piano')}
   <section class="card pad" style="margin-top:14px">
@@ -701,7 +775,7 @@ function renderPlan(){
     ${custom ? `<button class="btn tinted" data-a="plan-reset">Torna al menu mediterraneo</button>` : `<button class="btn tinted" data-a="plan-shuffle">Cambia menu</button>`}
   </div>
   <h2 class="section-title">Regole d'oro</h2>
-  <ul class="card rules">${RULES[g.tier].map(r => `<li><span class="dot">${I.check}</span><span>${esc(r)}</span></li>`).join('')}</ul>
+  <ul class="card rules">${(S.profile.goal === 'muscle' ? RULES_MUSCLE[g.tier === 'teen' ? 'teen' : 'adult'] : RULES[g.tier]).map(r => `<li><span class="dot">${I.check}</span><span>${esc(r)}</span></li>`).join('')}</ul>
   <p class="foot">Valori nutrizionali indicativi. Piattino non sostituisce il parere di un medico o di un dietista.</p>`;
 }
 
@@ -751,6 +825,27 @@ function renderDiary(){
 }
 
 /* ---- profile ---- */
+async function modelCached(){
+  try { return !!(await caches.match(MODELS.food.url)) && !!(await caches.match(MODELS.mobile.url)); } catch (e) { return false; }
+}
+async function refreshDlCard(){
+  const t = $('#dlTitle'); if (!t) return;
+  const ok = modelP ? await modelP.then(() => true, () => false) : await modelCached();
+  if (!$('#dlTitle')) return;
+  $('#dlTitle').textContent = ok ? 'Pronto, funziona anche offline' : 'Da scaricare';
+  $('#dlBtn').hidden = ok;
+}
+function preloadModel(){
+  const btn = $('#dlBtn'); if (btn) btn.hidden = true;
+  $('#dlBarBox').hidden = false;
+  ensureModel(f => {
+    const pct = Math.round(f * 100);
+    const bar = $('#dlBar'); if (bar) bar.style.width = pct + '%';
+    const t = $('#dlTitle'); if (t) t.textContent = pct < 100 ? `Scarico… ${pct}%` : 'Pronto, funziona anche offline';
+    const sub = $('#dlSub'); if (sub && pct < 100) sub.textContent = `${fmt1(f * MODEL.mb)} di ${MODEL.mb} MB`;
+  }).then(() => { const b = $('#dlBarBox'); if (b) setTimeout(() => b.hidden = true, 600); toast('Riconoscimento pronto'); },
+          () => { const t = $('#dlTitle'); if (t) t.textContent = 'Download non riuscito'; const b = $('#dlBtn'); if (b) { b.hidden = false; b.textContent = 'Riprova'; } });
+}
 function renderProfile(){
   const p = S.profile, g = T();
   const act = ['Poco attivo','Leggermente attivo','Attivo','Molto attivo'][+p.activity || 0];
@@ -766,6 +861,8 @@ function renderProfile(){
   <div style="margin-top:12px"><button class="btn tinted" data-a="edit-profile">Modifica profilo</button></div>
   <h2 class="section-title">Dati</h2>
   <div class="card pad"><div class="meal-name">Salvati su questo dispositivo</div><div class="small muted" style="margin-top:4px">Profilo, diario e foto restano solo qui: nessun account, nessun server. Esporta un backup ogni tanto, oppure per passare a un altro telefono.</div></div>
+  <h2 class="section-title">Riconoscimento delle foto</h2>
+  <div class="card pad" id="dlCard"><div class="row"><div class="grow"><div class="meal-name" id="dlTitle">Controllo…</div><div class="small muted" id="dlSub">Due modelli di Google che girano sul telefono: ${MODEL.mb} MB, da scaricare una volta sola.</div></div><button class="chip-btn accent" data-a="preload" id="dlBtn" hidden>Scarica</button></div><div class="dl-bar" id="dlBarBox" hidden><i id="dlBar"></i></div></div>
   <div class="stack" style="margin-top:12px" id="backupBox"><button class="btn tinted" data-a="export">Esporta backup</button><button class="btn tinted" data-a="import">Importa backup</button></div>
   ${isStandalone() ? '' : `<h2 class="section-title">Aggiungi alla schermata Home</h2>
   <ul class="card rules">
@@ -776,6 +873,7 @@ function renderProfile(){
   <h2 class="section-title">Informazioni</h2>
   <p class="note">Piattino è pensato per chi ha almeno 9 anni. Per bambini e ragazzi non propone diete dimagranti, ma pasti equilibrati per crescere. Il riconoscimento delle foto avviene sul telefono e conosce i cibi più comuni: controlla sempre il risultato. I valori sono stime: per esigenze di salute rivolgiti al medico, al pediatra o a un dietista.</p>
   <div style="margin-top:18px" id="resetBox"><button class="btn danger" data-a="reset-ask">Cancella tutti i dati</button></div>`;
+  refreshDlCard();
 }
 
 /* ---- welcome / onboarding ---- */
@@ -794,7 +892,7 @@ function profileForm(p){
   <div class="form-label">Quanto ti muovi</div>
   <div class="seg">${['Poco','Un po\'','Abbastanza','Tanto'].map((l, i) => `<input type="radio" name="activity" id="ac-${i}" value="${i}" ${+p.activity === i ? 'checked' : ''}><label for="ac-${i}">${l}</label>`).join('')}</div>
   <div class="form-label">Obiettivo</div>
-  <div class="seg" id="goalSeg">${goalOptions(p.birth ? ageOf(p) : 0, p.goal)}</div>
+  <div class="goal-grid" id="goalSeg">${goalOptions(p.birth ? ageOf(p) : 0, p.goal)}</div>
   <p class="note" id="minorNote" style="margin-top:12px" ${!p.birth || ageOf(p) >= 18 ? 'hidden' : ''}>Hai meno di 18 anni: compila il profilo insieme a un genitore. Piattino ti aiuta a mangiare in modo vario ed equilibrato, senza diete.</p>
   <div class="err" id="ferr" role="alert"></div>
   <button class="btn primary" type="submit">${S.profile ? 'Salva' : 'Inizia'}</button>
@@ -802,9 +900,11 @@ function profileForm(p){
 }
 function maxBirth(years){ const d = new Date(); d.setFullYear(d.getFullYear() - years); return dkey(d); }
 function goalOptions(age, cur){
-  const opts = age && age < 18 ? [['healthy','Mangiare sano'],['sport','Energia per lo sport']] : [['lose','Dimagrire'],['maintain','Mantenere'],['gain','Aumentare'],['healthy','Mangiare sano']];
-  if (!opts.some(o => o[0] === cur)) cur = opts[opts.length - 1][0] === 'healthy' ? 'healthy' : opts[0][0];
-  return opts.map(([v, l]) => `<input type="radio" name="goal" id="gl-${v}" value="${v}" ${v === cur ? 'checked' : ''}><label for="gl-${v}">${l}</label>`).join('');
+  const opts = age && age < 14 ? [['healthy','Mangiare sano','Pasti vari per crescere'],['sport','Energia per lo sport','Per chi si muove tanto']]
+    : age && age < 18 ? [['healthy','Mangiare sano','Pasti vari per crescere'],['sport','Energia per lo sport','Per chi si muove tanto'],['muscle','Muscoli e forza','Più proteine, niente diete']]
+    : [['lose','Dimagrire','Calorie −15%'],['maintain','Mantenere','Peso stabile'],['muscle','Fare muscoli','Proteine 1,8 g/kg'],['gain','Aumentare di peso','Calorie +10%'],['healthy','Mangiare sano','Senza obiettivi di peso']];
+  if (!opts.some(o => o[0] === cur)) cur = 'healthy';
+  return opts.map(([v, l, d], i) => `<input type="radio" name="goal" id="gl-${v}" value="${v}" ${v === cur ? 'checked' : ''}><label for="gl-${v}" class="${opts.length % 2 && i === opts.length - 1 ? 'wide' : ''}"><b>${l}</b><span>${d}</span></label>`).join('');
 }
 function renderWelcome(){
   app.innerHTML = `<div class="welcome">
@@ -838,7 +938,8 @@ function bindProfileForm(root){
     p.age = age;
     if (!(p.height >= 100 && p.height <= 230)) return err.textContent = 'Inserisci un\'altezza tra 100 e 230 cm.';
     if (!(p.weight >= 20 && p.weight <= 300)) return err.textContent = 'Inserisci un peso tra 20 e 300 kg.';
-    if (age < 18 && !['healthy','sport'].includes(p.goal)) p.goal = 'healthy';
+    if (age < 18 && !['healthy','sport','muscle'].includes(p.goal)) p.goal = 'healthy';
+    if (age < 14 && p.goal === 'muscle') p.goal = 'sport';
     const first = !S.profile;
     S.profile = p; saveProfile(); S.currentQuote = null;
     closeSheet(); S.view = 'today'; render(); window.scrollTo(0, 0);
@@ -974,10 +1075,13 @@ function openSavedFood(id){
 /* ---------- scanner ---------- */
 const SC = { state:'idle', img:null, blob:null, thumb:null, desc:'', code:'', items:[], tip:'', memo:true, meal:'pranzo', ctl:null, err:'' };
 const scanner = $('#scanner');
+const canCamera = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && !SC.camOff;
 function openScanner(){
-  SC.state = 'idle'; SC.img = null; SC.blob = null; SC.thumb = null; SC.desc = ''; SC.code = ''; SC.items = []; SC.tip = ''; SC.err = ''; SC.meal = S.date === todayKey() ? autoMeal() : 'pranzo';
+  Object.assign(SC, { img:null, square:null, thumb:null, desc:'', items:[], tip:'', err:'', zoom:1 });
+  SC.meal = S.date === todayKey() ? autoMeal() : 'pranzo';
+  SC.state = canCamera() ? 'camera' : 'idle';
   scanner.classList.add('show'); scanner.setAttribute('aria-hidden', 'false'); document.body.classList.add('locked');
-  renderScanner(); startCamera();
+  renderScanner(); if (SC.state === 'camera') startCamera();
 }
 function closeScanner(){
   SC.run = (SC.run || 0) + 1; SC.state = 'idle'; stopCamera();
@@ -986,39 +1090,70 @@ function closeScanner(){
   if (SC.img) { try { URL.revokeObjectURL(SC.img); } catch (e) {} }
 }
 async function startCamera(){
-  if (SC.stream || SC.camOff || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return;
+  if (SC.stream || !canCamera()) { if (SC.stream) attachCamera(); return; }
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' }, width:{ ideal:1280 }, height:{ ideal:1280 } }, audio:false });
-    if (!scanner.classList.contains('show') || SC.state !== 'idle') { stream.getTracks().forEach(t => t.stop()); return; }
-    SC.stream = stream; renderScanner();
-  } catch (e) { SC.camOff = true; renderScanner(); }
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:SC.facing || 'environment' }, width:{ ideal:1920 }, height:{ ideal:1920 } }, audio:false });
+    if (!scanner.classList.contains('show') || SC.state !== 'camera') { stream.getTracks().forEach(t => t.stop()); return; }
+    SC.stream = stream; attachCamera();
+  } catch (e) { SC.camOff = true; if (SC.state === 'camera') { SC.state = 'idle'; renderScanner(); } }
 }
 function stopCamera(){ if (SC.stream) { SC.stream.getTracks().forEach(t => t.stop()); SC.stream = null; } }
 function attachCamera(){
   const v = $('#camVideo'); if (!v || !SC.stream) return;
   v.srcObject = SC.stream; v.play().catch(() => {});
+  v.classList.toggle('mirror', SC.facing === 'user');
+  const w = $('#camWait'); if (w) w.hidden = true;
 }
 async function snapCamera(){
   const v = $('#camVideo'); if (!v || !v.videoWidth) return;
-  const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight;
-  c.getContext('2d').drawImage(v, 0, 0);
-  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .9));
+  const f = $('#camFlash'); if (f) { f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
+  // ritaglia esattamente ciò che vedi nel mirino (object-fit: cover + zoom)
+  const vw = v.videoWidth, vh = v.videoHeight, ew = v.clientWidth, eh = v.clientHeight;
+  const sc = Math.max(ew / vw, eh / vh), z = SC.zoom || 1;
+  const cw = ew / sc / z, ch = eh / sc / z;
+  const c = document.createElement('canvas'); c.width = Math.round(cw); c.height = Math.round(ch);
+  c.getContext('2d').drawImage(v, (vw - cw) / 2, (vh - ch) / 2, cw, ch, 0, 0, c.width, c.height);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .92));
+  await sleep(180);
   stopCamera();
   if (blob) handlePhoto(blob);
 }
+function renderCamera(){
+  const last = (S.foods.find(f => f.thumb) || {}).thumb;
+  scanner.innerHTML = `<div class="cam">
+    <div class="cam-top"><button class="scan-close" data-a="scan-close" aria-label="Chiudi">${I.x}</button><span class="pill">${esc(mealByK(SC.meal).l)}</span><span style="width:34px"></span></div>
+    <div class="cam-view">
+      <video id="camVideo" playsinline muted autoplay style="--z:${SC.zoom || 1}"></video>
+      <div class="cam-wait" id="camWait" ${SC.stream ? 'hidden' : ''}>Avvio la fotocamera…</div>
+      <div class="cam-guide"><i></i><i></i><i></i><i></i></div>
+      <div class="cam-hint">Inquadra il piatto dall'alto</div>
+      <div class="cam-zoom">${[1, 2].map(z => `<button class="${(SC.zoom || 1) === z ? 'on' : ''}" data-a="cam-zoom" data-z="${z}" aria-label="Zoom ${z}x">${z}×</button>`).join('')}</div>
+      <div class="cam-flash" id="camFlash"></div>
+    </div>
+    <div class="cam-bottom">
+      <div class="cam-modes"><button data-a="scan-describe">DESCRIVI</button><button class="on" aria-current="true">FOTO</button></div>
+      <div class="cam-controls">
+        <button class="cam-lib" data-a="pick-photo" aria-label="Scegli dalla libreria">${last ? `<img src="${esc(last)}" alt="">` : I.photos}</button>
+        <button class="shutter" data-a="cam-shot" aria-label="Scatta"><span></span></button>
+        <button class="cam-flip" data-a="cam-flip" aria-label="Cambia fotocamera">${I.flip}</button>
+      </div>
+    </div>
+  </div>`;
+  attachCamera();
+}
 function particles(){ return Array.from({length:14}, (_, i) => `<span class="particle" style="left:${(8 + Math.random()*84).toFixed(0)}%;animation-delay:${(i*0.21).toFixed(2)}s;animation-duration:${(2.4 + Math.random()*1.6).toFixed(2)}s"></span>`).join(''); }
 function renderScanner(){
+  if (SC.state === 'camera') return renderCamera();
   const st = SC.state;
   const cls = st === 'scanning' ? 'scanning' : (st === 'idle' || st === 'describe') ? 'idle-mode' : 'done';
-  const live = st === 'idle' && !!SC.stream;
-  const status = { idle: live ? 'Inquadra il tuo piatto' : 'Fotografa il tuo piatto', describe:'Descrivi il tuo piatto', scanning:`<span class="dots">${SC.desc ? 'Leggo la descrizione' : 'Analizzo la foto'}</span>`, error:'Non ci sono riuscito', result:'Ecco cosa ho trovato' }[st];
+  const status = { idle: 'Fotografa il tuo piatto', describe:'Descrivi il tuo piatto', scanning:`<span class="dots">${SC.desc ? 'Leggo la descrizione' : 'Analizzo la foto'}</span>`, error:'Non ci sono riuscito', result:'Ecco cosa ho trovato' }[st];
   const sub = st === 'idle' ? 'Il riconoscimento avviene sul tuo telefono: le foto non escono dal dispositivo.' : st === 'error' ? esc(SC.err) : st === 'scanning' ? esc(SC.sub || 'Riconosco forme, colori e ingredienti') : st === 'describe' ? 'Scrivi cosa hai mangiato, anche con le quantità: «2 uova, 50 g di pane e un\'insalata».' : '';
   scanner.innerHTML = `
   <div class="scan-top"><button class="scan-close" data-a="scan-close" aria-label="Chiudi">${I.x}</button><span class="scan-title">Scansiona il piatto</span><span style="width:34px"></span></div>
   <div class="scan-main ${cls}">
     <div class="stage"><div class="rig">
       <div class="orbit c"></div><div class="orbit a"></div><div class="orbit b"></div>
-      <div class="plate">${live ? `<video id="camVideo" playsinline muted autoplay></video>` : SC.img ? `<img src="${SC.img}" alt="La tua foto">` : `<div class="idle">🍽️</div>`}</div>
+      <div class="plate">${SC.img ? `<img src="${SC.img}" alt="La tua foto">` : `<div class="idle">🍽️</div>`}</div>
       <div class="grid3d"></div><div class="beam"></div>
       <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
       ${particles()}
@@ -1026,17 +1161,15 @@ function renderScanner(){
     </div></div>
     <div class="status glow-green" id="scanStatus">${status}</div>
     <div class="status-sub" id="scanSub">${sub}</div>
+    ${st === 'scanning' ? `<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="scanProg"><div class="prog-pct" id="scanPct">${Math.round(SC.pctShown || 0)}%</div><div class="prog-bar"><i id="scanBar" style="width:${SC.pctShown || 0}%"></i></div></div>` : ''}
     <div class="scan-actions">
-      ${st === 'idle' ? (live
-        ? `<button class="btn green" data-a="cam-shot">${I.camera} Scatta</button><button class="btn tinted" data-a="pick-photo">Scegli dalla libreria</button>`
-        : `<button class="btn green" data-a="pick-photo">${I.camera} Scatta o scegli una foto</button>`) + `<button class="btn tinted" data-a="scan-describe">Descrivi a parole</button>` : ''}
-      ${st === 'describe' ? `<textarea id="scanDesc" class="scan-desc" rows="3" maxlength="400" placeholder="Es. un piatto di pasta al pomodoro, una mela e un bicchiere di latte">${esc(SC.desc || '')}</textarea><button class="btn green" data-a="scan-desc-go">${I.spark} Analizza</button>` : ''}
+      ${st === 'idle' ? `<button class="btn green" data-a="pick-photo">${I.camera} Scatta o scegli una foto</button><button class="btn tinted" data-a="scan-describe">Descrivi a parole</button>` : ''}
+      ${st === 'describe' ? `<textarea id="scanDesc" class="scan-desc" rows="3" maxlength="400" placeholder="Es. un piatto di pasta al pomodoro, una mela e un bicchiere di latte">${esc(SC.desc || '')}</textarea><button class="btn green" data-a="scan-desc-go">${I.spark} Analizza</button>${canCamera() ? `<button class="btn tinted" data-a="scan-again">Torna alla fotocamera</button>` : ''}` : ''}
       ${st === 'scanning' ? `<button class="btn tinted" data-a="scan-stop">Annulla</button>` : ''}
       ${st === 'error' ? `<button class="btn green" data-a="scan-again">${I.camera} Riprova</button><button class="btn tinted" data-a="scan-describe">Descrivi a parole</button><button class="btn tinted" data-a="scan-manual">Cerca nell'elenco</button>` : ''}
     </div>
   </div>
   <div class="result" id="scanResult"></div>`;
-  if (live) attachCamera();
   if (st === 'describe') setTimeout(() => $('#scanDesc')?.focus(), 350);
 }
 const STATUS_STEPS = ['Analizzo forme e colori', 'Riconosco gli ingredienti', 'Stimo le porzioni', 'Calcolo i nutrienti'];
@@ -1053,7 +1186,14 @@ async function prepImage(file){
   return { url, square: sq, thumb: t.toDataURL('image/jpeg', .7) };
 }
 
-/* on-device recognition: MobileNet (ImageNet) mapped to the food list */
+/* on-device recognition: two models working together
+   - MobileNet (ImageNet): frutta, verdura e cibi semplici
+   - AIY Food V1 (Google): 2.024 piatti da tutto il mondo, convertito in TensorFlow.js float16 */
+const MODELS = {
+  mobile: { url:'model/model.json', mb:14 },
+  food: { url:'model-food/model.json', labels:'model-food/labels.json', mb:10 },
+};
+const MODEL = { mb: MODELS.mobile.mb + MODELS.food.mb };
 const LABELS = {
   'banana':'banana','granny smith':'mela','strawberry':'fragole','orange':'arancia','lemon':'limone','fig':'fichi','pineapple':'ananas','ananas':'ananas',
   'pomegranate':'melagrana','custard apple':'frutta','jackfruit':'frutta','broccoli':'broccoli','cauliflower':'cavolfiore','zucchini':'zucchine','courgette':'zucchine',
@@ -1065,31 +1205,102 @@ const LABELS = {
   'hot pot':'stufato','hotpot':'stufato','chocolate sauce':'cioccolata','chocolate syrup':'cioccolata','eggnog':'latte','soup bowl':'minestrone',
 };
 const DISH_HINTS = ['plate','soup bowl','mixing bowl','tray','wok','frying pan','dining table','restaurant','bakery','grocery store','ladle','spatula','coffee mug','cup'];
-let modelP = null;
+// categorie per i 2.024 piatti del secondo modello: nome, emoji, kcal, proteine, carboidrati, grassi (per 100 g), porzione, frutta/verdura
+const CATS = {
+  pasta:['Primo di pasta','🍝',160,6,25,4.5,300,0], rice:['Piatto di riso','🍚',150,4,26,3.5,300,0], noodle:['Noodles','🍜',170,6,27,4,300,0],
+  soup:['Zuppa','🍲',55,3,6,2,350,1], salad:['Insalata condita','🥗',90,2.5,6,6.5,200,1], dessert:['Dolce','🍰',330,5,45,15,100,0],
+  sandwich:['Panino','🥪',250,11,28,10,200,0], meat:['Secondo di carne','🥩',210,24,3,12,180,0], chicken:['Pollo','🍗',200,25,4,9,180,0],
+  fish:['Pesce','🐟',150,20,3,6,180,0], seafood:['Frutti di mare','🦐',110,17,4,3,180,0], egg:['Uova','🍳',155,11,2,11.5,150,0],
+  fried:['Fritto','🍤',280,10,25,16,150,0], bread:['Pane e lievitati','🥖',290,9,50,6,80,0], pancake:['Frittelle','🥞',230,6,30,9,150,0],
+  veg:['Verdure cucinate','🥘',80,2.5,8,4.5,200,1], legumes:['Legumi','🫘',140,8,20,3,250,0], curry:['Spezzatino o curry','🍛',130,9,8,7,300,0],
+  dumpling:['Ravioli e fagottini','🥟',220,9,28,8,200,0], cheese:['Formaggio','🧀',350,24,2,28,60,0], dish:['Piatto misto','🍽️',170,8,18,7,250,0],
+};
+const FOOD_RULES = [
+  [/lasagn/, 'db:lasagne'], [/carbonara/, 'db:carbonara'], [/minestrone/, 'db:minestrone'], [/cheeseburger|hamburger/, 'db:burger'], [/hot dog/, 'db:hotdog'],
+  [/mashed potato/, 'db:pure'], [/^hummus$/, 'db:hummus'], [/guacamole/, 'db:guacamole'], [/muesli/, 'db:muesli'], [/pizza/, 'db:pizza'],
+  [/ice cream|gelato|frozen yogurt|sorbet|sundae/, 'db:gelato'], [/french fries|^fries$|chips$/, 'db:patatine'], [/pancake|waffle|crêpe|crepe|french toast/, 'pancake'],
+  [/omelet|frittata|scrambled|egg(s)?\b|shakshuka/, 'egg'], [/curry|stew|chili|tagine|goulash|ragout|casserole/, 'curry'],
+  [/risotto|arancini|paella|rice|biryani|pilaf|pilau|jollof|sushi|onigiri|congee/, 'rice'],
+  [/spaghetti|pasta|macaroni|penne|fettuccine|linguine|tagliatelle|rigatoni|ravioli|tortellini|gnocchi|cannelloni|orecchiette/, 'pasta'],
+  [/noodle|ramen|\bpho\b|pad thai|lo mein|chow mein|udon|soba|laksa/, 'noodle'], [/soup|broth|chowder|bisque|borscht|gazpacho|consomm/, 'soup'], [/salad|slaw/, 'salad'],
+  [/pot pie|meat pie|pork pie|shepherd|cottage pie/, 'meat'],
+  [/cake|\bpie\b|tart|pudding|cookie|biscuit|brownie|muffin|donut|doughnut|pastry|strudel|baklava|macaron|mousse|brûlée|brulee|panna cotta|tiramis|cupcake|meringue|trifle|fudge|candy|chocolate|cannoli|churro|éclair|eclair|flan|custard|halva|dessert|sweet/, 'dessert'],
+  [/sandwich|burger|wrap|kebab|shawarma|gyro|taco|burrito|quesadilla|panini|piadina|\bsub\b|toast|bruschetta/, 'sandwich'],
+  [/chicken|duck|turkey|goose|poultry/, 'chicken'], [/salmon|tuna|cod\b|fish|trout|herring|sardine|anchov|mackerel|kipper|halibut|ceviche/, 'fish'],
+  [/shrimp|prawn|lobster|crab|clam|mussel|oyster|scallop|squid|calamari|octopus|seafood/, 'seafood'],
+  [/beef|steak|pork|lamb|veal|mutton|ham\b|bacon|sausage|meatball|meat|ribs|brisket|schnitzel|cutlet|pizzaiola/, 'meat'],
+  [/dumpling|gyoza|pierogi|momo|wonton|samosa|empanada|bao\b/, 'dumpling'], [/bean|lentil|chickpea|\bdal\b|dhal|falafel/, 'legumes'],
+  [/bread|\bbun\b|\broll\b|bagel|focaccia|pretzel|baguette|naan|pita|flatbread|croissant|brioche/, 'bread'],
+  [/fried|tempura|fritter|croquette|nugget|pakora/, 'fried'], [/cheese|fondue|raclette/, 'cheese'],
+  [/eggplant|aubergine|vegetable|zucchini|spinach|cabbage|mushroom|pepper|tomato|potato|parmigiana|ratatouille/, 'veg'],
+];
+function foodTarget(label){
+  const l = label.toLowerCase();
+  for (const [re, t] of FOOD_RULES) if (re.test(l)) return t;
+  return 'dish';
+}
+let modelP = null, FOOD_LABELS = null, IMAGENET = null;
 function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(el); }); }
-function ensureModel(){
+function ensureModel(onFrac = () => {}){
   if (!modelP) modelP = (async () => {
+    const share = { mobile: MODELS.mobile.mb / MODEL.mb, food: MODELS.food.mb / MODEL.mb };
+    let fm = 0, ff = 0; const report = () => onFrac(.04 + .94 * (fm * share.mobile + ff * share.food));
     if (!window.tf) await loadScript('vendor/tf.min.js');
-    if (!window.mobilenet) await loadScript('vendor/mobilenet.min.js');
-    await tf.ready();
-    return mobilenet.load({ version:2, alpha:1.0, modelUrl:'model/model.json' });
+    onFrac(.04); await tf.ready();
+    [FOOD_LABELS, IMAGENET] = await Promise.all([fetch(MODELS.food.labels).then(r => r.json()), fetch('model/imagenet.json').then(r => r.json())]);
+    const [mobile, food] = await Promise.all([
+      tf.loadGraphModel(MODELS.mobile.url, { onProgress: f => { fm = f; report(); } }),
+      tf.loadGraphModel(MODELS.food.url, { onProgress: f => { ff = f; report(); } }),
+    ]);
+    fm = ff = 1; report();
+    tf.tidy(() => { mobile.predict(tf.zeros([1, 224, 224, 3])); food.predict(tf.zeros([1, 192, 192, 3])); });
+    onFrac(1);
+    return { mobile, food };
   })().catch(e => { modelP = null; throw e; });
+  else modelP.then(() => onFrac(1), () => {});
   return modelP;
 }
+function topK(arr, k){ return Array.from(arr, (p, i) => [i, p]).sort((a, b) => b[1] - a[1]).slice(0, k); }
 const itemFromFood = (f, grams, conf, on) => ({ id:rid(), name:f.name, emoji:f.emoji, grams, base:grams, k:f.kcal/100, pp:f.p/100, cc:f.c/100, ff:f.f/100, fvv:f.fv ? 1/130 : 0, conf, on });
-async function recognizePhoto(canvas){
-  const model = await ensureModel();
-  const preds = await model.classify(canvas, 12);
-  const score = {}; let dish = 0;
-  preds.forEach(pr => {
-    const names = pr.className.toLowerCase().split(/,\s*/);
-    const key = names.map(n => LABELS[n]).find(Boolean);
-    if (key) score[key] = (score[key] || 0) + pr.probability;
-    else if (names.some(n => DISH_HINTS.includes(n))) dish += pr.probability;
+const itemFromCat = (c, label, conf) => ({ id:rid(), name:`${c[0]} · ${label}`, emoji:c[1], grams:c[6], base:c[6], k:c[2]/100, pp:c[3]/100, cc:c[4]/100, ff:c[5]/100, fvv:c[7] ? 1/130 : 0, conf, on:false });
+async function recognizePhoto(canvas, onFrac){
+  const { mobile, food } = await ensureModel(onFrac);
+  SC.creep = 97; setPct(82, 'Riconosco il cibo');
+  await sleep(30);   // lascia disegnare la percentuale prima del calcolo
+  const [pm, pf] = tf.tidy(() => {
+    const px = tf.browser.fromPixels(canvas).toFloat().div(255);
+    let ym = mobile.predict(px.resizeBilinear([224, 224]).expandDims(0)); if (Array.isArray(ym)) ym = ym[0];
+    let yf = food.predict(px.resizeBilinear([192, 192]).expandDims(0)); if (Array.isArray(yf)) yf = yf[0];
+    const m = tf.softmax(ym.slice([0, 1], [-1, 1000]));                // MobileNet: 1001 logit, il primo è lo sfondo
+    return [m.reshape([-1]), yf.reshape([-1])];                                         // AIY Food: già probabilità (softmax)
   });
-  const ranked = Object.entries(score).filter(([, p]) => p >= .04).sort((a, b) => b[1] - a[1]).slice(0, 4);
-  // sotto il 25% non scegliamo al posto tuo: proponiamo le alternative
-  return { items: ranked.map(([k, p], i) => itemFromFood(FOOD[k], FOOD[k].portion, p, i === 0 && p >= .25)), dish };
+  const [dm, df] = await Promise.all([pm.data(), pf.data()]); pm.dispose(); pf.dispose();
+  setPct(94, 'Stimo porzioni e calorie');
+  const cands = new Map(); let dish = 0;
+  const add = (key, make, p) => { const c = cands.get(key); if (c) c.p += p; else cands.set(key, { make, p }); };
+  // 1) frutta, verdura e cibi semplici
+  topK(dm, 12).forEach(([i, p]) => {
+    const names = IMAGENET[i].toLowerCase().split(/,\s*/);
+    const key = names.map(n => LABELS[n]).find(Boolean);
+    if (key) add('db:' + key, () => FOOD[key], p);
+    else if (names.some(n => DISH_HINTS.includes(n))) dish += p;
+  });
+  // 2) piatti
+  topK(df, 10).forEach(([i, p]) => {
+    const label = FOOD_LABELS[i]; if (!label || i === 0 || /^\/[mg]\//.test(label)) return;
+    const t = foodTarget(label);
+    if (t.startsWith('db:')) add(t, () => FOOD[t.slice(3)], p);
+    else add('cat:' + label, () => ({ cat: CATS[t], label }), p);
+    dish += p * .5;
+  });
+  const ranked = [...cands.entries()].filter(([, c]) => c.p >= .05).sort((a, b) => b[1].p - a[1].p).slice(0, 4);
+  const items = ranked.map(([k, c], i) => {
+    const conf = Math.min(1, c.p); const v = c.make();
+    const it = v.cat ? itemFromCat(v.cat, v.label, conf) : itemFromFood(v, v.portion, conf, false);
+    it.on = i === 0 && conf >= .25;   // sotto il 25% non scegliamo al posto tuo
+    return it;
+  });
+  return { items, dish };
 }
 
 /* description in words: «2 uova, 50 g di pane e un'insalata» */
@@ -1137,6 +1348,25 @@ const TIPS = {
   adult: ['Metà piatto di verdure è la regola più semplice.', 'Controlla l\'olio: un cucchiaio sono circa 10 g.', 'Mangiare lentamente aiuta a sentirsi sazi prima.'],
   senior: ['Un bicchiere d\'acqua con il pasto aiuta la digestione.', 'Le proteine a ogni pasto mantengono forti i muscoli.', 'Le verdure cotte sono facili da digerire e piene di vitamine.'],
 };
+/* progress: the number follows the real work and never goes backwards */
+function setPct(target, sub){
+  SC.pctTarget = Math.max(SC.pctTarget || 0, Math.min(100, target));
+  if (sub) { SC.sub = sub; const el = $('#scanSub'); if (el) el.textContent = sub; }
+  if (!SC.pctRaf) SC.pctRaf = requestAnimationFrame(tickPct);
+}
+function tickPct(){
+  SC.pctRaf = 0;
+  if (SC.creep && SC.pctTarget < SC.creep) SC.pctTarget = Math.min(SC.creep, SC.pctTarget + .15);
+  const cur = SC.pctShown || 0, tgt = SC.pctTarget || 0;
+  SC.pctShown = tgt > cur ? Math.min(tgt, cur + Math.max(.4, (tgt - cur) * .16)) : cur;
+  const n = Math.round(SC.pctShown);
+  const el = $('#scanPct'); if (el) el.textContent = n + '%';
+  const bar = $('#scanBar'); if (bar) bar.style.width = SC.pctShown + '%';
+  $('#scanProg')?.setAttribute('aria-valuenow', n);
+  if (SC.state === 'scanning' && (SC.pctShown < tgt || SC.creep)) SC.pctRaf = requestAnimationFrame(tickPct);
+}
+const waitPct = v => new Promise(res => { const t0 = Date.now(); (function chk(){ if ((SC.pctShown || 0) >= v - .5 || Date.now() - t0 > 1500 || SC.state !== 'scanning') res(); else setTimeout(chk, 40); })(); });
+
 async function handlePhoto(file){
   if (!file) return;
   stopCamera();
@@ -1150,20 +1380,27 @@ async function handlePhoto(file){
 async function runScan(){
   const run = SC.run = (SC.run || 0) + 1;
   const fromText = !!SC.desc;
-  SC.items = []; SC.tip = ''; SC.sub = '';
+  Object.assign(SC, { items:[], tip:'', sub:'', pctShown:0, pctTarget:0, creep:0 });
   SC.state = 'scanning'; renderScanner();
-  let i = 0; const statusTimer = setInterval(() => { const el = $('#scanSub'); if (el && SC.state === 'scanning' && !SC.loadingModel) el.textContent = STATUS_STEPS[++i % STATUS_STEPS.length]; }, 1400);
-  const minWait = sleep(fromText ? 1800 : 2600);
+  const t0 = Date.now();
   let items = [], dish = 0, failed = false;
   try {
-    if (fromText) items = parseDescription(SC.desc);
-    else {
-      if (!modelP) { SC.loadingModel = true; const el = $('#scanSub'); if (el) el.textContent = 'Preparo il riconoscimento: solo la prima volta serve internet'; }
-      const r = await recognizePhoto(SC.square); items = r.items; dish = r.dish;
+    if (fromText) {
+      setPct(35, 'Leggo la descrizione');
+      items = parseDescription(SC.desc);
+      await sleep(350); setPct(75, 'Calcolo i nutrienti');
+    } else {
+      setPct(8, 'Foto pronta');
+      const MB = MODEL.mb;
+      const r = await recognizePhoto(SC.square, f => setPct(8 + f * 72, f < 1 ? `Scarico il riconoscimento dei cibi: ${fmt1(f * MB)} di ${MB} MB (solo la prima volta)` : 'Riconoscimento pronto'));
+      items = r.items; dish = r.dish;
     }
-  } catch (e) { failed = true; }
-  SC.loadingModel = false;
-  await minWait; clearInterval(statusTimer);
+  } catch (e) { failed = true; console.error(e); }
+  SC.creep = 0;
+  if (run !== SC.run || SC.state !== 'scanning') return;
+  setPct(100, failed ? '' : 'Fatto');
+  await waitPct(100);
+  const min = fromText ? 1200 : 1600; if (Date.now() - t0 < min) await sleep(min - (Date.now() - t0));
   if (run !== SC.run || SC.state !== 'scanning') return;
   if (failed || !items.length) {
     SC.state = 'error';
@@ -1189,6 +1426,7 @@ function showResults(items){
   scanner.querySelector('.scan-actions').innerHTML = '';
   setTimeout(() => { if (SC.state !== 'result') return; renderResult(); $('#scanResult')?.classList.add('show'); }, 700 + items.length*180);
 }
+const PORTIONS = [['Piccola', .65], ['Media', 1], ['Grande', 1.5]];
 const itemEntry = x => ({ id:rid(), name:x.name, emoji:x.emoji, thumb:SC.thumb, grams:Math.round(x.grams), kcal:Math.round(x.k*x.grams), p:Math.round(x.pp*x.grams*10)/10, c:Math.round(x.cc*x.grams*10)/10, f:Math.round(x.ff*x.grams*10)/10, fv:Math.round(x.fvv*x.grams*2)/2 });
 function renderResult(){
   const box = $('#scanResult'); if (!box) return;
@@ -1200,7 +1438,8 @@ function renderResult(){
     <div class="group" style="margin-top:10px">${SC.items.map(x => { const e = itemEntry(x); return `<div class="res-item ${x.on ? '' : 'off'}">
       <button class="check" data-a="res-toggle" data-id="${x.id}" aria-label="${x.on ? 'Escludi' : 'Includi'} ${esc(x.name)}">${I.check}</button>
       <span class="thumb">${esc(x.emoji)}</span>
-      <div class="grow"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</div><div class="small muted num">${x.conf != null ? `<b class="conf">${Math.round(x.conf * 100)}%</b> · ` : ''}${fmt(e.kcal)} kcal · P ${fmt(e.p)} · C ${fmt(e.c)} · G ${fmt(e.f)}</div></div>
+      <div class="grow"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</div><div class="small muted num">${x.conf != null ? `<b class="conf">${Math.round(x.conf * 100)}%</b> · ` : ''}<b style="color:var(--label)">${fmt(e.kcal)} kcal</b> · P ${fmt(e.p)} · C ${fmt(e.c)} · G ${fmt(e.f)}</div>
+        <div class="portion" role="group" aria-label="Porzione">${PORTIONS.map(([l, fct]) => `<button class="${Math.abs(x.grams - Math.round(x.base * fct / 5) * 5) < 3 ? 'on' : ''}" data-a="res-portion" data-id="${x.id}" data-f="${fct}">${l}</button>`).join('')}</div></div>
       <div class="mini-step"><button data-a="res-step" data-id="${x.id}" data-d="-1" aria-label="Porzione più piccola">−</button><span>${fmt(x.grams)} g</span><button data-a="res-step" data-id="${x.id}" data-d="1" aria-label="Porzione più grande">+</button></div>
     </div>`; }).join('')}</div>
     <div class="nutri num">${nutriHtml(tot)}</div>
@@ -1212,7 +1451,7 @@ function renderResult(){
       <button class="btn tinted" data-a="scan-manual">Non è giusto? Cerca nell'elenco</button>
       <button class="btn tinted" data-a="scan-again">Scansiona un altro piatto</button>
     </div>
-    <p class="foot">${SC.items.some(x => x.conf != null) ? 'La percentuale indica quanto è sicuro il riconoscimento. Tocca il cerchio per scegliere i cibi giusti e correggi le porzioni con − e +.' : 'Porzioni stimate dalla descrizione: correggile con − e +.'}</p>
+    <p class="foot">${SC.items.some(x => x.conf != null) ? 'La percentuale indica quanto è sicuro il riconoscimento. Tocca il cerchio per scegliere i cibi giusti e correggi le porzioni: scegli Piccola, Media o Grande, oppure regola i grammi con − e +.' : 'Porzioni stimate dalla descrizione: correggile con Piccola, Media, Grande o con − e +.'}</p>
   </div>`;
   $('#memo').addEventListener('change', e => SC.memo = e.target.checked);
 }
@@ -1261,13 +1500,17 @@ const actions = {
   scan: () => { S.date = S.date || todayKey(); openScanner(); },
   'scan-close': () => closeScanner(),
   'cam-shot': () => snapCamera(),
-  'scan-again': () => { SC.run = (SC.run || 0) + 1; SC.state = 'idle'; SC.img = null; SC.desc = ''; SC.items = []; renderScanner(); if (SC.camOff) actions['pick-photo'](); else startCamera(); },
+  'cam-zoom': el => { SC.zoom = +el.dataset.z; const v = $('#camVideo'); if (v) v.style.setProperty('--z', SC.zoom); document.querySelectorAll('.cam-zoom button').forEach(b => b.classList.toggle('on', +b.dataset.z === SC.zoom)); },
+  'cam-flip': () => { SC.facing = SC.facing === 'user' ? 'environment' : 'user'; stopCamera(); const w = $('#camWait'); if (w) w.hidden = false; startCamera(); },
+  'scan-again': () => { SC.run = (SC.run || 0) + 1; Object.assign(SC, { img:null, desc:'', items:[] }); SC.state = canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); else actions['pick-photo'](); },
+  'res-portion': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.grams = Math.max(5, Math.round(x.base * +el.dataset.f / 5) * 5); renderResult(); },
   export: () => exportData(),
+  preload: () => preloadModel(),
   import: () => { const inp = $('#backupInput'); inp.value = ''; inp.click(); },
   'import-yes': () => { const d = S.pendingImport; if (!d) return; S.profile = d.profile; S.days = d.days || {}; S.foods = d.foods || []; S.pendingImport = null; Store.saveNow(); S.view = 'today'; S.date = todayKey(); render(); window.scrollTo(0, 0); toast('Backup importato'); },
   'scan-describe': () => { stopCamera(); SC.state = 'describe'; renderScanner(); },
   'scan-desc-go': () => { const t = ($('#scanDesc')?.value || '').trim(); if (!t) { $('#scanDesc')?.focus(); return; } SC.desc = t.slice(0, 400); runScan(); },
-  'scan-stop': () => { SC.run = (SC.run || 0) + 1; SC.state = SC.desc ? 'describe' : 'idle'; SC.img = null; renderScanner(); if (SC.state === 'idle') startCamera(); },
+  'scan-stop': () => { SC.run = (SC.run || 0) + 1; SC.img = null; SC.state = SC.desc ? 'describe' : canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); },
   'pick-photo': () => { stopCamera(); const inp = $('#photoInput'); inp.value = ''; inp.click(); },
   'scan-manual': () => { const thumb = SC.thumb; closeScanner(); openAdd(SC.meal); A.pendingThumb = thumb; },
   'res-toggle': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (x) { x.on = !x.on; SC.touched = true; renderResult(); } },
@@ -1293,7 +1536,9 @@ document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.a === 'quote') { e.preventDefault(); actions.quote(); }
   if (e.key === 'Escape') { if (sheetEl) closeSheet(); else if (scanner.classList.contains('show')) closeScanner(); }
 });
-$('#photoInput').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) handlePhoto(f); else if (SC.state === 'idle') startCamera(); });
+$('#photoInput').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) handlePhoto(f); else if (SC.state === 'camera') startCamera(); });
+// iOS: se l'utente annulla la scelta della foto non arriva nessun evento, quindi al ritorno riaccendiamo la fotocamera
+window.addEventListener('focus', () => setTimeout(() => { if (scanner.classList.contains('show') && SC.state === 'camera' && !SC.stream) startCamera(); }, 400));
 $('#backupInput').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
   let d = null; try { d = JSON.parse(await f.text()); } catch (err) {}
