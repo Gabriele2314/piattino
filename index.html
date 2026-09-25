@@ -585,7 +585,7 @@ const QUOTES = {
   adult: ['I piccoli passi di ogni giorno fanno i grandi risultati.','Non serve la perfezione, serve la costanza.','Oggi è un buon giorno per prenderti cura di te.','Ogni pasto è una nuova occasione.','La salute è l\'investimento che rende di più.','Progresso, non perfezione.','Hai già fatto la parte difficile: hai cominciato.','Il tuo futuro ti ringrazierà per la scelta di oggi.'],
   senior: ['Mangiare con gusto è il primo passo del benessere.','Idratazione e proteine: i tuoi alleati di ogni giorno.','Il sapore dei cibi semplici è una ricchezza.','Un po\' di movimento e un buon piatto: la ricetta perfetta.','Ogni giorno è l\'occasione giusta per stare bene.','Le buone abitudini non hanno età.'],
 };
-const CHEERS = ['Registrato! Ottimo lavoro.','Fatto! Un passo in più.','Aggiunto. Continua così!','Perfetto, il diario è aggiornato.','Bravo o brava: la costanza paga!'];
+const CHEERS = ['Registrato! Ottimo lavoro.','Fatto! Un passo in più.','Aggiunto. Continua così!','Perfetto, il diario è aggiornato.','La costanza paga!'];
 const RULES = {
   kid: ['Fai sempre colazione: è il pieno di energia per la scuola.','Cinque porzioni al giorno tra frutta e verdura, di tanti colori.','Bevi acqua invece delle bibite zuccherate.','Mangia seduto a tavola, con calma e senza schermi.','Muoviti e gioca all\'aperto ogni giorno.'],
   teen: ['Tre pasti e due spuntini tengono stabile l\'energia.','Proteine a ogni pasto aiutano muscoli e concentrazione.','Porta una borraccia: l\'acqua aiuta studio e sport.','Nessun cibo è vietato: conta l\'equilibrio della settimana.','Dormi bene: il sonno regola anche la fame.'],
@@ -1011,7 +1011,7 @@ function bindProfileForm(root){
     if (first || +prev.weight !== p.weight) logWeight(p.weight);
     saveProfile(); S.currentQuote = null;
     closeSheet(); S.view = 'today'; render(); window.scrollTo(0, 0);
-    toast(first ? 'Benvenuto su Piattino!' : 'Profilo aggiornato');
+    toast(first ? 'Ti diamo il benvenuto su Piattino!' : 'Profilo aggiornato');
     if (age >= 18 && ['lose','gain','muscle'].includes(p.goal) && !S.profile.target) setTimeout(openGoal, 700);
   });
 }
@@ -1166,7 +1166,8 @@ function trendAdvice(a){
   const pw = tr.perWeek, fmtR = v => `${v > 0 ? '+' : ''}${fmt1(v)} kg a settimana`;
   if (a.goal === 'lose') {
     if (pw > -.1 && tr.span >= 13) {
-      if (a.logged >= 5) { out.tips.push(`Il peso è fermo (${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni) anche se registri con costanza. Ti propongo di **abbassare l'obiettivo di 150 kcal** al giorno.`); out.acts.push({ l:'Abbassa di 150 kcal', a:'kcal:-150' }); }
+      if (a.logged >= 5 && a.avgK && a.avgK < a.g.kcal * .95) { out.tips.push(`Il peso è fermo (${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni), ma registri in media **${fmt(a.avgK)} kcal**, meno del tuo obiettivo. Probabilmente qualcosa sfugge: olio, bevande, assaggi o porzioni più grandi di quelle segnate. **Per una settimana pesa gli alimenti** con una bilancia da cucina. Se il peso resta fermo, abbassa l'obiettivo di 150 kcal.`); out.acts.push({ l:'Abbassa comunque di 150 kcal', a:'kcal:-150' }); }
+      else if (a.logged >= 5) { out.tips.push(`Il peso è fermo (${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni) anche se registri con costanza. Ti propongo di **abbassare l'obiettivo di 150 kcal** al giorno.`); out.acts.push({ l:'Abbassa di 150 kcal', a:'kcal:-150' }); }
       else out.tips.push(`Il peso è fermo, ma hai registrato solo ${a.logged} giorni su 7. Prima di cambiare il piano, **segna tutto per una settimana**: spesso le calorie in più si nascondono in olio, bevande e assaggi.`);
     } else if (pw < -1) { out.tips.push(`Stai perdendo ${fmtR(pw)}: è **troppo veloce** e rischi di perdere muscoli. Aggiungiamo 150 kcal al giorno.`); out.acts.push({ l:'Aggiungi 150 kcal', a:'kcal:150' }); }
     else if (pw <= -.1) out.tips.push(`Il piano funziona: stai scendendo di ${fmt1(-pw)} kg a settimana. Non cambiare niente!`);
@@ -1181,7 +1182,7 @@ function habitTips(a){
   const g = a.g, tips = [], acts = [];
   if (a.logged < 4) tips.push(`Negli ultimi 7 giorni hai registrato bene solo **${a.logged} ${a.logged === 1 ? 'giorno' : 'giorni'}**. Senza dati completi non posso capire cosa non va: segna tutto per i prossimi 5 giorni, anche condimenti e bevande.`);
   if (a.logged && a.avgP < g.protein * .8) tips.push(`Proteine: in media **${fmt(a.avgP)} g** al giorno, l'obiettivo è ${g.protein} g. Aggiungi una fonte a ogni pasto: yogurt greco, uova, legumi, pollo, pesce o ricotta.`);
-  if (a.logged && a.avgFv < 3) tips.push(`Frutta e verdura: **${fmt1(a.avgFv)} porzioni** al giorno, l'obiettivo è 5. Metti una verdura a pranzo e a cena e un frutto a merenda.`);
+  if (a.logged && a.avgFv < 3) tips.push(`Frutta e verdura: **${porz(a.avgFv)}** al giorno, l'obiettivo è 5. Metti una verdura a pranzo e a cena e un frutto a merenda.`);
   if (a.logged >= 3 && a.breakfast < .6) tips.push(`Salti spesso la colazione (${Math.round((1 - a.breakfast) * 100)}% dei giorni). ${a.minor ? 'Per la scuola serve energia:' : 'Una colazione con proteine riduce la fame del pomeriggio:'} latte o yogurt, pane o fiocchi d'avena e un frutto.`);
   if (a.logged >= 3 && !a.minor) {
     if (a.goal === 'lose' && a.avgK > g.kcal * 1.08) tips.push(`Calorie: in media **${fmt(a.avgK)} kcal**, ${fmt(a.avgK - g.kcal)} oltre l'obiettivo di ${fmt(g.kcal)}.${a.top[0] ? ` Il cibo che pesa di più nelle ultime due settimane è **${a.top[0].name.toLowerCase()}** (${fmt(a.top[0].kcal)} kcal in ${a.top[0].n} ${a.top[0].n === 1 ? 'volta' : 'volte'}): riduci la porzione o sostituiscilo qualche volta.` : ''}`);
@@ -1194,6 +1195,7 @@ function habitTips(a){
   if ((a.today.water || 0) < g.water / 2 && h >= 13) { tips.push(`Acqua: oggi sei a **${a.today.water || 0} su ${g.water} bicchieri**. Bevine uno adesso.`); acts.push({ l:'Ho bevuto un bicchiere', a:'water' }); }
   return { tips, acts };
 }
+const porz = v => `${fmt1(v)} ${Math.round(v * 10) === 10 ? 'porzione' : 'porzioni'}`;
 const numbered = tips => tips.map((x, i) => `${i + 1}. ${x}`).join('\n\n');
 const coachIntents = [
   ['safety', /(non (voglio )?mangi(o|are) (più|niente|nulla)|digiun|vomit|anoress|bulimi|lassativ|odio il mio corpo|mi faccio schifo|saltare tutti i pasti|mangiare niente)/],
@@ -1251,7 +1253,7 @@ function coachReply(text){
       return { t:`${left > 200 ? `Oggi hai ancora circa **${fmt(left)} kcal** a disposizione: mangia pure.\n\n${idea.t}` : `Oggi sei quasi al tuo obiettivo (${fmt(a.tt.kcal)} su ${fmt(g.kcal)} kcal). Scegli cibi che saziano con poche calorie:\n\n1. Verdure crude: carote, finocchi, pomodori, cetrioli.\n2. Un frutto o uno yogurt greco.\n3. Un bicchiere d'acqua o una tisana: a volte la sete sembra fame.`}\n\nPer avere meno fame domani: proteine e verdure a ogni pasto e niente pasti saltati.`, acts:left > 200 ? idea.acts : [] };
     }
     case 'cheat':
-      return { t:`Tranquillo: **un pasto non rovina niente**. Conta la media della settimana${a.logged && !a.minor ? `, che per ora è ${fmt(a.avgK)} kcal al giorno` : ''}.\n\n1. Al prossimo pasto torna alla normalità: niente digiuni per compensare.\n2. Bevi acqua e, se puoi, fai una passeggiata.\n3. Registra comunque quello che hai mangiato: serve per capire, non per giudicarti.`, acts:[{ l:'Registra un pasto', a:'open:scan' }] };
+      return { t:`Nessun problema: **un pasto non rovina niente**. Conta la media della settimana${a.logged && !a.minor ? `, che per ora è ${fmt(a.avgK)} kcal al giorno` : ''}.\n\n1. Al prossimo pasto torna alla normalità: niente digiuni per compensare.\n2. Bevi acqua e, se puoi, fai una passeggiata.\n3. Registra comunque quello che hai mangiato: serve per capire, non per giudicarti.`, acts:[{ l:'Registra un pasto', a:'open:scan' }] };
     case 'meal': {
       const map = { colazione:'Colazione', pranzo:'Pranzo', cena:'Cena', spuntino:'Spuntino', merenda:'Merenda' };
       const k = Object.keys(map).find(x => q.includes(x)); const slot = k ? map[k] : nextSlot();
@@ -1265,7 +1267,7 @@ function coachReply(text){
         `Giorni registrati: **${a.logged} su 7**, serie attuale ${a.streak} ${a.streak === 1 ? 'giorno' : 'giorni'}.`,
         a.minor ? null : `Calorie medie: **${fmt(a.avgK)}** su ${fmt(g.kcal)} kcal.`,
         `Proteine medie: **${fmt(a.avgP)} g** su ${g.protein} g.`,
-        `Frutta e verdura: **${fmt1(a.avgFv)}** porzioni al giorno su 5.`,
+        `Frutta e verdura: **${porz(a.avgFv)}** al giorno su 5.`,
         `Acqua: **${fmt1(a.avgW)}** bicchieri al giorno su ${g.water}.`,
         best && !a.minor ? `Il giorno più in linea: ${esc(longDate(best.k))}.` : null,
         a.trend && !a.minor ? `Peso: ${a.trend.perWeek > 0 ? '+' : ''}${fmt1(a.trend.perWeek)} kg a settimana.` : null,
@@ -1274,7 +1276,7 @@ function coachReply(text){
       return { t:`Ecco la tua settimana:\n\n${lines.map(l => '• ' + l).join('\n')}${h.tips.length ? `\n\nDa migliorare: ${h.tips[0]}` : '\n\nOttima settimana, continua così!'}`, acts:h.acts };
     }
     case 'water':
-      return { t:`Oggi hai bevuto **${a.today.water || 0} bicchieri su ${g.water}**. ${(a.today.water || 0) >= g.water ? 'Obiettivo raggiunto, bravo!' : 'Tieni una borraccia sempre vicino e bevi un bicchiere a ogni pasto.'}`, acts:(a.today.water || 0) < g.water ? [{ l:'Ho bevuto un bicchiere', a:'water' }] : [] };
+      return { t:`Oggi hai bevuto **${a.today.water || 0} bicchieri su ${g.water}**. ${(a.today.water || 0) >= g.water ? 'Obiettivo raggiunto, ottimo lavoro!' : 'Tieni una borraccia sempre vicino e bevi un bicchiere a ogni pasto.'}`, acts:(a.today.water || 0) < g.water ? [{ l:'Ho bevuto un bicchiere', a:'water' }] : [] };
     case 'motivation':
       return { t:`${pickQuote()}\n\n${a.streak ? `Hai già una serie di **${a.streak} ${a.streak === 1 ? 'giorno' : 'giorni'}**: non fermarti proprio adesso.` : 'Oggi è un ottimo giorno per ricominciare.'} Non serve fare tutto: scegli **una sola cosa** per oggi, per esempio un bicchiere d'acqua in più o una verdura a cena.` };
     case 'weight': {
@@ -1282,7 +1284,7 @@ function coachReply(text){
       const t = S.profile.target;
       if (!t) return { t:`Non hai ancora un obiettivo di peso. Impostalo: ti dico quando ci arrivi e quante calorie ti servono al giorno.`, acts:[{ l:'Imposta l\'obiettivo', a:'open:goal' }] };
       const left = Math.round((t.kg - S.profile.weight) * 10) / 10, tr = trendAdvice(a);
-      return { t:`Obiettivo: **${fmt1(t.kg)} kg**. Ora pesi ${fmt1(S.profile.weight)} kg: ${Math.abs(left) <= .2 ? 'ci sei arrivato, complimenti!' : `mancano **${fmt1(Math.abs(left))} kg**.`}${tr.tips.length ? '\n\n' + tr.tips.join('\n\n') : ''}`, acts:[...tr.acts, { l:'Aggiorna il peso', a:'open:goal' }] };
+      return { t:`Obiettivo: **${fmt1(t.kg)} kg**. Ora pesi ${fmt1(S.profile.weight)} kg: ${Math.abs(left) <= .2 ? 'obiettivo raggiunto, complimenti!' : `mancano **${fmt1(Math.abs(left))} kg**.`}${tr.tips.length ? '\n\n' + tr.tips.join('\n\n') : ''}`, acts:[...tr.acts, { l:'Aggiorna il peso', a:'open:goal' }] };
     }
     case 'now': case 'fallback': default: {
       if (intent === 'fallback' && q.trim()) return { t:`Non sono sicuro di aver capito. Posso aiutarti con queste cose: tocca una delle domande qui sotto.` };
