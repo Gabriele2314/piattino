@@ -291,6 +291,14 @@ body{overscroll-behavior-y:none}
 @keyframes shadow{50%{transform:scaleX(.85);opacity:.7}}
 .splash{min-height:70vh;display:grid;place-items:center;text-align:center}
 .welcome h1{font-size:40px;font-weight:800;letter-spacing:.2px;margin:48px 0 6px;text-align:center}
+.gate{display:flex;flex-direction:column;gap:4px;margin-top:22px;position:relative}
+.gate-lock{width:56px;height:56px;border-radius:16px;margin:0 auto 14px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,#5E5CE6,#BF5AF2);box-shadow:0 8px 24px rgba(191,90,242,.4),0 0 24px rgba(191,90,242,.35)}
+.gate-lock svg{width:28px;height:28px;filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}
+.gate .field label{width:auto;flex:none}
+.gate .field input{text-align:right}
+.gate.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.gate.gate-ok .gate-lock{background:linear-gradient(145deg,#30D158,#34C759);box-shadow:0 8px 24px rgba(52,199,89,.45),0 0 24px var(--glow-green);transform:scale(1.08);transition:all .3s}
 .welcome .tag{text-align:center;color:var(--label2);font-size:17px;margin:0 auto;max-width:34ch;text-wrap:balance}
 
 /* Scanner (full screen, always dark) */
@@ -479,6 +487,7 @@ const I = {
   scan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5V6.5a2.5 2.5 0 0 1 2.5-2.5h2M15.5 4h2A2.5 2.5 0 0 1 20 6.5v2M20 15.5v2a2.5 2.5 0 0 1-2.5 2.5h-2M8.5 20h-2A2.5 2.5 0 0 1 4 17.5v-2"/><circle cx="12" cy="12" r="3.6"/></svg>',
   chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>',
   person:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3" fill="currentColor"/></svg>',
   up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
@@ -971,7 +980,53 @@ function goalOptions(age, cur){
   if (!opts.some(o => o[0] === cur)) cur = 'healthy';
   return opts.map(([v, l, d], i) => `<input type="radio" name="goal" id="gl-${v}" value="${v}" ${v === cur ? 'checked' : ''}><label for="gl-${v}" class="${opts.length % 2 && i === opts.length - 1 ? 'wide' : ''}"><b>${l}</b><span>${d}</span></label>`).join('');
 }
+/* ---------- parola d'ordine: solo alla prima configurazione ----------
+   Nel codice c'è solo l'impronta PBKDF2 della parola, non la parola. */
+const GATE = { salt:'9J+dAwidEnfMNwyjFhRK4Q==', iter:150000, hash:'B0COZEAtcTpRRQr7S0WMrA6oJTgxRwErKWUN4u5vbXE=' };
+const b64bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function checkPass(word){
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(word.trim().toLowerCase()), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', salt:b64bytes(GATE.salt), iterations:GATE.iter }, key, 256);
+  return btoa(String.fromCharCode(...new Uint8Array(bits))) === GATE.hash;
+}
+const gateOpen = () => { try { return sessionStorage.getItem('piattino-gate') === '1'; } catch (e) { return !!S.gateOk; } };
+function renderGate(){
+  const wait = Math.max(0, Math.ceil(((S.gateUntil || 0) - Date.now()) / 1000));
+  app.innerHTML = `<div class="welcome">
+    <div class="cube-stage" style="margin-top:36px"><div class="cube"><div class="f1">🍎</div><div class="f2">🥦</div><div class="f3">🥕</div><div class="f4">🍋</div><div class="f5">🍇</div><div class="f6">🥑</div></div><div class="cube-shadow"></div></div>
+    <h1>Piattino</h1>
+    <p class="tag">Ti diamo il benvenuto! Per configurare l'app inserisci la parola d'ordine.</p>
+    <form id="gateForm" class="gate" novalidate>
+      <span class="gate-lock" aria-hidden="true">${I.lock}</span>
+      <div class="group"><div class="field"><label for="g-pass">Parola d'ordine</label><input id="g-pass" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="Scrivila qui" ${wait ? 'disabled' : ''}></div></div>
+      <div class="err" id="gerr" role="alert">${wait ? `Troppi tentativi. Riprova tra ${wait} secondi.` : ''}</div>
+      <button class="btn primary" type="submit" id="gateBtn" ${wait ? 'disabled' : ''}>Entra</button>
+      <p class="foot" style="text-align:center">Non hai la parola d'ordine? Chiedila a Gabriele. Te la chiediamo solo adesso, la prima volta.</p>
+    </form>
+  </div>`;
+  const f = $('#gateForm'), inp = $('#g-pass'), err = $('#gerr'), btn = $('#gateBtn');
+  if (wait) { setTimeout(() => { if (!S.profile && !gateOpen()) renderGate(); }, 1000); return; }
+  setTimeout(() => inp.focus(), 300);
+  f.addEventListener('submit', async e => {
+    e.preventDefault();
+    const word = inp.value; if (!word.trim()) { err.textContent = 'Scrivi la parola d\'ordine.'; return; }
+    btn.disabled = true; btn.textContent = 'Controllo…'; err.textContent = '';
+    let ok = false;
+    try { ok = await checkPass(word); } catch (x) { err.textContent = 'Il controllo non funziona in questo browser: apri Piattino in Safari.'; btn.disabled = false; btn.textContent = 'Entra'; return; }
+    if (ok) {
+      S.gateOk = true; S.gateFails = 0; try { sessionStorage.setItem('piattino-gate', '1'); } catch (x) {}
+      f.classList.add('gate-ok'); await sleep(450); renderWelcome(); window.scrollTo(0, 0); return;
+    }
+    S.gateFails = (S.gateFails || 0) + 1;
+    if (S.gateFails >= 5) { S.gateFails = 0; S.gateUntil = Date.now() + 30000; renderGate(); return; }
+    btn.disabled = false; btn.textContent = 'Entra';
+    err.textContent = 'Parola d\'ordine sbagliata. Riprova.';
+    inp.value = ''; inp.focus();
+    f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake');
+  });
+}
 function renderWelcome(){
+  if (!S.gateOk && !gateOpen()) return renderGate();
   app.innerHTML = `<div class="welcome">
     <div class="cube-stage" style="margin-top:36px"><div class="cube"><div class="f1">🍎</div><div class="f2">🥦</div><div class="f3">🥕</div><div class="f4">🍋</div><div class="f5">🍇</div><div class="f6">🥑</div></div><div class="cube-shadow"></div></div>
     <h1>Piattino</h1>
@@ -1009,6 +1064,7 @@ function bindProfileForm(root){
     S.profile = { ...prev, ...p };
     if (age < 18) { delete S.profile.target; delete S.profile.kcalAdj; }
     if (first || +prev.weight !== p.weight) logWeight(p.weight);
+    if (first) { S.gateOk = false; try { sessionStorage.removeItem('piattino-gate'); } catch (x) {} }
     saveProfile(); S.currentQuote = null;
     closeSheet(); S.view = 'today'; render(); window.scrollTo(0, 0);
     toast(first ? 'Ti diamo il benvenuto su Piattino!' : 'Profilo aggiornato');
@@ -1888,7 +1944,8 @@ const actions = {
   'reset-yes': () => {
     Store.del('profile'); Object.keys(S.days).forEach(k => Store.del('day-' + k)); S.foods.forEach(f => Store.del('food-' + f.id));
     S.profile = null; S.days = {}; S.foods = []; S.weights = []; S.chat = []; S.view = 'today'; S.date = todayKey();
-    try { localStorage.removeItem(LKEY); } catch (e) {}
+    S.gateOk = false;
+    try { localStorage.removeItem(LKEY); sessionStorage.removeItem('piattino-gate'); } catch (e) {}
     render(); window.scrollTo(0, 0);
   },
   scan: () => { S.date = S.date || todayKey(); openScanner(); },

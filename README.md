@@ -18,6 +18,10 @@ Funziona senza account e senza server: i dati restano sul telefono.
 - **Frasi motivazionali** diverse per bambini, ragazzi, adulti e over 65.
 - **Backup**: esporta e importa i dati in un file JSON.
 
+## Parola d'ordine
+
+La prima configurazione chiede una parola d'ordine (chiedila a Gabriele). Dopo non viene più chiesta. Nel codice c'è solo la sua impronta PBKDF2, non la parola. È un lucchetto per l'installazione, non una protezione dei dati: i dati restano comunque solo sul telefono.
+
 ## Per chi ha meno di 18 anni
 
 Il profilo si compila con la data di nascita. Sotto i 18 anni Piattino non propone diete dimagranti: il fabbisogno è calcolato per la crescita (equazioni di Schofield) e l'obiettivo è solo «Mangiare sano» o «Energia per lo sport».
