@@ -56,7 +56,7 @@ body.locked{overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible,label:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:10px}
 input,select,textarea{font:inherit;color:var(--label)}
-.wrap{max-width:560px;margin:0 auto;padding-block:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-bottom,0px) + 128px)}
+.wrap{max-width:560px;margin:0 auto;padding-block:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-bottom,0px) + 180px)}
 button,.tab,.glass{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 body{overscroll-behavior-y:none}
 .num{font-variant-numeric:tabular-nums}
@@ -374,6 +374,39 @@ body{overscroll-behavior-y:none}
 .shutter:active span{transform:scale(.86)}
 .cam-flip{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;justify-self:end}
 .cam-flip svg{width:24px;height:24px}
+/* Coach */
+.coach-fab{position:fixed;right:max(16px,calc(50% - 264px));bottom:calc(env(safe-area-inset-bottom,0px) + 72px);z-index:19;display:flex;align-items:center;gap:7px;height:44px;padding:0 16px 0 13px;border-radius:22px;color:#fff;font-weight:600;font-size:15px;background:linear-gradient(135deg,#5E5CE6,#BF5AF2 55%,#FF375F);box-shadow:0 8px 24px rgba(191,90,242,.45);text-shadow:0 0 10px rgba(255,255,255,.55);animation:fabIn .5s cubic-bezier(.2,1.3,.4,1)}
+.coach-fab svg{width:18px;height:18px;filter:drop-shadow(0 0 6px rgba(255,255,255,.8))}
+.coach-fab:active{transform:scale(.95)}
+@keyframes fabIn{from{transform:translateY(20px) scale(.8);opacity:0}}
+.chat{display:flex;flex-direction:column;min-height:0;flex:1}
+.chat-sub{margin:-4px 16px 4px;text-align:center;font-size:12px;color:var(--label2)}
+.chat-log{flex:1;overflow-y:auto;padding:8px 16px 12px;display:flex;flex-direction:column;gap:8px;min-height:0}
+.msg{max-width:86%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.38;overflow-wrap:anywhere}
+.msg.bot{align-self:flex-start;background:var(--card);border-bottom-left-radius:6px;box-shadow:var(--shadow)}
+.msg.me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.msg .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.msg .acts button{font-size:14px;font-weight:600;padding:7px 12px;border-radius:15px;background:var(--fill);color:var(--blue)}
+.typing{align-self:flex-start;background:var(--card);border-radius:20px;border-bottom-left-radius:6px;padding:13px 15px;display:flex;gap:5px}
+.typing i{width:8px;height:8px;border-radius:50%;background:var(--label3);animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,60%,100%{opacity:.35;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:6px 16px 8px;scrollbar-width:none;flex:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;font-size:14px;font-weight:600;padding:8px 13px;border-radius:16px;background:var(--card);color:var(--blue);box-shadow:var(--shadow);border:.5px solid var(--sep)}
+.chat-input{display:flex;gap:8px;align-items:flex-end;padding:8px 12px 10px;border-top:.5px solid var(--sep);flex:none}
+.chat-input textarea{flex:1;border:.5px solid var(--sep);border-radius:18px;padding:8px 14px;background:var(--card);resize:none;max-height:100px;font-size:16px;outline:none;min-height:36px;line-height:1.3}
+.send{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;flex:none}
+.send svg{width:18px;height:18px}
+/* Goal */
+.sheet.tall{height:92%}
+.goal-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left}
+.goal-card .chev{width:14px;height:14px;color:var(--label3)}
+.track.light{background:var(--fill);height:8px;border-radius:4px;margin-top:10px}
+.track.light i{background:linear-gradient(90deg,#30D158,#34C759);box-shadow:0 0 10px var(--glow-green)}
+.glow-t{color:var(--green);text-shadow:0 0 12px var(--glow-green)}
+.seg button .small{font-weight:400}
+.link[disabled]{opacity:.4}
 /* Progress */
 .prog{width:100%;max-width:300px;display:flex;flex-direction:column;align-items:center;gap:8px}
 .prog-pct{font-family:var(--round);font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;color:#B4FFCB;text-shadow:0 0 14px rgba(108,255,154,.8),0 0 34px rgba(48,209,88,.5);line-height:1}
@@ -412,6 +445,7 @@ body{overscroll-behavior-y:none}
 </head>
 <body>
 <div id="app" class="wrap"><div class="splash"><div><div class="cube-stage"><div class="cube"><div class="f1">🍎</div><div class="f2">🥦</div><div class="f3">🥕</div><div class="f4">🍋</div><div class="f5">🍇</div><div class="f6">🥑</div></div><div class="cube-shadow"></div></div><p class="sub" style="margin-top:52px">Preparo il tuo piattino…</p></div></div></div>
+<button class="coach-fab" id="coachFab" data-a="coach" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.2 6.3 6.3 2.2-6.3 2.2L12 19.5l-2.2-6.3L3.5 11l6.3-2.2z"/></svg>Cosa faccio ora?</button>
 <nav class="tabbar" id="tabbar" hidden></nav>
 <div class="scanner" id="scanner" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -445,6 +479,7 @@ const I = {
   scan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5V6.5a2.5 2.5 0 0 1 2.5-2.5h2M15.5 4h2A2.5 2.5 0 0 1 20 6.5v2M20 15.5v2a2.5 2.5 0 0 1-2.5 2.5h-2M8.5 20h-2A2.5 2.5 0 0 1 4 17.5v-2"/><circle cx="12" cy="12" r="3.6"/></svg>',
   chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>',
   person:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>',
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
   right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
@@ -559,6 +594,7 @@ const RULES = {
 };
 
 const RULES_MUSCLE = {
+  kid: ['Gioca e fai sport ogni giorno: corsa, nuoto, calcio, arrampicata.','Esercizi a corpo libero: piegamenti, squat, plank e salti.','Proteine a ogni pasto: latte, yogurt, uova, legumi, pesce o carne.','Dormi 9-11 ore: mentre dormi il corpo cresce.','Niente pesi pesanti e niente integratori: basta il cibo vero.'],
   teen: ['Proteine a ogni pasto: carne, pesce, uova, legumi o latticini.','Dopo l\'allenamento: uno spuntino con latte, yogurt o un panino al prosciutto.','Allenati con un istruttore e aumenta i carichi un po\' alla volta.','Dormi almeno 8 ore: i muscoli crescono mentre riposi.','Niente integratori senza il parere del medico: basta il cibo vero.'],
   adult: ['20-40 g di proteine a ogni pasto, distribuite nella giornata.','Uno spuntino proteico entro 2 ore dall\'allenamento aiuta il recupero.','Carboidrati integrali prima dell\'allenamento per avere energia.','Allenamento di forza 3-4 volte a settimana, con carichi progressivi.','Dormi 7-9 ore: il recupero fa parte dell\'allenamento.'],
 };
@@ -579,46 +615,62 @@ function tierOf(age){ return age < 14 ? 'kid' : age < 18 ? 'teen' : age < 65 ? '
 function targets(p){
   const age = ageOf(p), w = +p.weight, h = +p.height, male = p.sex === 'M', act = +p.activity || 0;
   const tier = tierOf(age);
-  let bmr, kcal, note = '';
+  let bmr, kcal, tdee, note = '', reached = false;
   const bmi = w / Math.pow(h / 100, 2);
   if (age < 18) {
     bmr = age < 10 ? (male ? 22.706*w + 504.3 : 20.315*w + 485.9) : (male ? 17.686*w + 658.2 : 13.384*w + 692.6);
-    kcal = bmr * [1.45,1.6,1.75,1.9][act];
+    kcal = tdee = bmr * [1.45,1.6,1.75,1.9][act];
     note = 'Chi sta crescendo ha bisogno di tutta l\'energia per il suo corpo: niente diete, solo pasti equilibrati.';
   } else {
     bmr = 10*w + 6.25*h - 5*age + (male ? 5 : -161);
     kcal = bmr * [1.2,1.375,1.55,1.725][act];
-    if (p.goal === 'lose') {
-      if (bmi < 18.5) note = 'Con un indice di massa corporea sotto 18,5 dimagrire non è consigliato: il piano resta di mantenimento.';
-      else kcal = Math.max(kcal * .85, male ? 1500 : 1200);
+    tdee = kcal;
+    const tg = p.target && p.target.kg ? p.target : null;
+    if (tg && ['lose','gain','muscle'].includes(p.goal)) {
+      const diff = tg.kg - w, delta = Math.round((tg.rate || .5) * 7700 / 7);
+      if (p.goal === 'lose' && diff < -.2) {
+        if (bmi < 18.5) note = 'Con un indice di massa corporea sotto 18,5 dimagrire non è consigliato: il piano resta di mantenimento.';
+        else kcal = tdee - delta;
+      } else if (p.goal !== 'lose' && diff > .2) kcal = tdee + delta;
+      else { reached = true; if (p.goal === 'muscle') kcal = tdee * 1.03; }
+    } else {
+      if (p.goal === 'lose') {
+        if (bmi < 18.5) note = 'Con un indice di massa corporea sotto 18,5 dimagrire non è consigliato: il piano resta di mantenimento.';
+        else kcal = kcal * .85;
+      }
+      if (p.goal === 'gain') kcal *= 1.1;
+      if (p.goal === 'muscle') kcal *= age >= 65 ? 1.05 : 1.08;
     }
-    if (p.goal === 'gain') kcal *= 1.1;
-    if (p.goal === 'muscle') kcal *= age >= 65 ? 1.05 : 1.08;
+    kcal += clamp(+p.kcalAdj || 0, -500, 500);                  // correzione suggerita dal coach
+    kcal = Math.max(kcal, male ? 1500 : 1200, bmr);             // mai sotto il metabolismo a riposo
   }
-  if (p.goal === 'muscle') note = age < 18
+  if (p.goal === 'muscle') note = age < 14
+    ? 'Alla tua età i muscoli crescono giocando: sport, corsa, salti, arrampicate ed esercizi a corpo libero. Proteine a ogni pasto, tanto sonno, niente pesi pesanti senza istruttore e niente integratori.'
+    : age < 18
     ? 'Per i muscoli contano allenamento, sonno e proteine a ogni pasto. Allenati con un istruttore e non usare integratori senza il parere del medico.'
     : 'Leggero surplus di calorie e più proteine: abbinalo ad allenamenti di forza 3-4 volte a settimana.';
   kcal = Math.round(clamp(kcal, 1200, 4200) / 10) * 10;
-  const perKg = p.goal === 'muscle' ? (tier === 'teen' ? 1.3 : tier === 'senior' ? 1.4 : 1.8)
+  const perKg = p.goal === 'muscle' ? (tier === 'kid' ? 1.1 : tier === 'teen' ? 1.3 : tier === 'senior' ? 1.4 : 1.8)
     : tier === 'kid' ? .95 : tier === 'teen' ? .9 : tier === 'senior' ? 1.1 : (p.goal === 'lose' || p.goal === 'gain') ? 1.3 : 1.0;
   const protein = Math.round(w * perKg);
   const fat = Math.round(kcal * (p.goal === 'muscle' ? .27 : .3) / 9);
   const carbs = Math.max(0, Math.round((kcal - protein*4 - fat*9) / 4));
   const water = age < 14 ? 7 : male ? 10 : 8;
-  return { kcal, protein, fat, carbs, water, fv:5, bmr:Math.round(bmr), bmi, tier, note };
+  if (reached && age >= 18) note = 'Hai raggiunto il tuo obiettivo di peso: il piano passa al mantenimento. Complimenti!';
+  return { kcal, protein, fat, carbs, water, fv:5, bmr:Math.round(bmr), tdee:Math.round(tdee), bmi, tier, note, reached };
 }
 
 /* ---------- storage: on this device ---------- */
 const LKEY = 'piattino-v1';
 const Store = {
   load(){
-    const st = { profile:null, days:{}, foods:[] };
-    try { const raw = localStorage.getItem(LKEY); if (raw) { const v = JSON.parse(raw); st.profile = v.profile || null; st.days = v.days || {}; st.foods = v.foods || []; } } catch (e) {}
+    const st = { profile:null, days:{}, foods:[], weights:[], chat:[] };
+    try { const raw = localStorage.getItem(LKEY); if (raw) { const v = JSON.parse(raw); st.profile = v.profile || null; st.days = v.days || {}; st.foods = v.foods || []; st.weights = v.weights || []; st.chat = v.chat || []; } } catch (e) {}
     return st;
   },
   saveNow(){
     clearTimeout(this._t);
-    try { localStorage.setItem(LKEY, JSON.stringify({ v:1, profile:S.profile, days:S.days, foods:S.foods })); return true; }
+    try { localStorage.setItem(LKEY, JSON.stringify({ v:1, profile:S.profile, days:S.days, foods:S.foods, weights:S.weights, chat:S.chat.slice(-40) })); return true; }
     catch (e) { toast('Memoria piena: esporta un backup e rimuovi qualche cibo memorizzato.', true); return false; }
   },
   put(){ clearTimeout(this._t); this._t = setTimeout(() => this.saveNow(), 150); },
@@ -632,7 +684,7 @@ document.addEventListener('visibilitychange', () => {
 const isStandalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
 
 /* ---------- state ---------- */
-const S = { profile:null, days:{}, foods:[], view:'today', date:todayKey(), planShift:0, quoteIdx:-1, quoteDeg:0, ringPrev:{} };
+const S = { profile:null, days:{}, foods:[], weights:[], chat:[], view:'today', date:todayKey(), planShift:0, quoteIdx:-1, quoteDeg:0, ringPrev:{} };
 const blankDay = () => ({ meals:{ colazione:[], pranzo:[], cena:[], spuntini:[] }, water:0 });
 const getDay = k => S.days[k] || blankDay();
 const ensureDay = k => (S.days[k] = S.days[k] || blankDay());
@@ -668,8 +720,8 @@ function toast(msg, warn){
 /* ---------- rendering ---------- */
 const app = $('#app');
 function render(){
-  if (!S.profile) { $('#tabbar').hidden = true; renderWelcome(); return; }
-  $('#tabbar').hidden = false; renderTabbar();
+  if (!S.profile) { $('#tabbar').hidden = true; $('#coachFab').hidden = true; renderWelcome(); return; }
+  $('#tabbar').hidden = false; $('#coachFab').hidden = false; renderTabbar();
   if (S.view === 'today') renderToday();
   else if (S.view === 'plan') renderPlan();
   else if (S.view === 'diary') renderDiary();
@@ -754,6 +806,15 @@ function buildPlan(k){
     return { label: sl.l, meal: sl.meal, items };
   });
 }
+function goalCard(){
+  const p = S.profile, minor = ageOf(p) < 18, t = p.target;
+  if (minor) return `<button class="card pad goal-card" data-a="goal" style="margin-top:14px"><div class="grow"><div class="meal-name">Come cresci</div><div class="small muted">Segna il tuo peso e guarda il tuo andamento</div></div>${I.right.replace('<svg', '<svg class="chev"')}</button>`;
+  if (!t) return `<button class="card pad goal-card" data-a="goal" style="margin-top:14px"><div class="grow"><div class="meal-name">Obiettivo di peso</div><div class="small muted">Scegli quanti chili vuoi perdere o mettere su</div></div><span class="chip-btn accent">Imposta</span></button>`;
+  const left = Math.round((t.kg - p.weight) * 10) / 10;
+  const prog = Math.abs(t.kg - t.startKg) > .2 ? clamp((t.startKg - p.weight) / (t.startKg - t.kg), 0, 1) : 1;
+  return `<button class="card pad goal-card" data-a="goal" style="margin-top:14px"><div class="grow"><div class="row" style="justify-content:space-between"><span class="meal-name">Obiettivo ${fmt1(t.kg)} kg</span><b class="glow-t num">${Math.round(prog * 100)}%</b></div>
+    <div class="track light"><i style="width:${prog * 100}%"></i></div><div class="small muted num" style="margin-top:6px">${Math.abs(left) <= .2 ? 'Obiettivo raggiunto!' : `Ora ${fmt1(p.weight)} kg · ${left < 0 ? 'mancano ' + fmt1(-left) + ' kg da perdere' : 'mancano ' + fmt1(left) + ' kg da mettere su'}`}</div></div></button>`;
+}
 function renderPlan(){
   const g = T(), day = getDay(S.date), minor = ageOf(S.profile) < 18;
   const custom = day.plan && Array.isArray(day.plan.meals) ? day.plan : null;
@@ -761,7 +822,8 @@ function renderPlan(){
   const goalTxt = { lose:'Dimagrire con gradualità', maintain:'Mantenere il peso', gain:'Aumentare di peso', muscle:'Fare muscoli', healthy:'Mangiare sano', sport:'Energia per lo sport' }[S.profile.goal] || 'Mangiare sano';
   app.innerHTML = `
   ${header(S.date === todayKey() ? 'Menu di oggi' : longDate(S.date), 'Piano')}
-  <section class="card pad" style="margin-top:14px">
+  ${goalCard()}
+  <section class="card pad" style="margin-top:12px">
     <div class="row" style="justify-content:space-between;margin-bottom:12px"><div><div class="meal-name">${esc(goalTxt)}</div><div class="small muted">Obiettivo giornaliero calcolato sul tuo profilo</div></div></div>
     <div class="target-grid num"><div><b>${fmt(g.kcal)}</b><span>kcal</span></div><div><b>${g.protein}</b><span>Proteine g</span></div><div><b>${g.carbs}</b><span>Carboidr. g</span></div><div><b>${g.fat}</b><span>Grassi g</span></div></div>
     ${g.note ? `<p class="note" style="margin:12px 0 0">${esc(g.note)}</p>` : ''}
@@ -778,7 +840,7 @@ function renderPlan(){
     ${custom ? `<button class="btn tinted" data-a="plan-reset">Torna al menu mediterraneo</button>` : `<button class="btn tinted" data-a="plan-shuffle">Cambia menu</button>`}
   </div>
   <h2 class="section-title">Regole d'oro</h2>
-  <ul class="card rules">${(S.profile.goal === 'muscle' ? RULES_MUSCLE[g.tier === 'teen' ? 'teen' : 'adult'] : RULES[g.tier]).map(r => `<li><span class="dot">${I.check}</span><span>${esc(r)}</span></li>`).join('')}</ul>
+  <ul class="card rules">${(S.profile.goal === 'muscle' ? RULES_MUSCLE[g.tier === 'kid' ? 'kid' : g.tier === 'teen' ? 'teen' : 'adult'] : RULES[g.tier]).map(r => `<li><span class="dot">${I.check}</span><span>${esc(r)}</span></li>`).join('')}</ul>
   <p class="foot">Valori nutrizionali indicativi. Piattino non sostituisce il parere di un medico o di un dietista.</p>`;
 }
 
@@ -861,7 +923,7 @@ function renderProfile(){
     <div class="field"><label>Attività</label><span class="grow" style="text-align:right">${act}</span></div>
     <div class="field"><label>Metabolismo</label><span class="grow num" style="text-align:right">${fmt(g.bmr)} kcal a riposo</span></div>
   </div>
-  <div style="margin-top:12px"><button class="btn tinted" data-a="edit-profile">Modifica profilo</button></div>
+  <div class="stack" style="margin-top:12px"><button class="btn tinted" data-a="edit-profile">Modifica profilo</button><button class="btn tinted" data-a="goal">${ageOf(p) < 18 ? 'Come cresci' : 'Obiettivo di peso'}</button></div>
   <h2 class="section-title">Dati</h2>
   <div class="card pad"><div class="meal-name">Salvati su questo dispositivo</div><div class="small muted" style="margin-top:4px">Profilo, diario e foto restano solo qui: nessun account, nessun server. Esporta un backup ogni tanto, oppure per passare a un altro telefono.</div></div>
   <h2 class="section-title">Riconoscimento delle foto</h2>
@@ -903,7 +965,7 @@ function profileForm(p){
 }
 function maxBirth(years){ const d = new Date(); d.setFullYear(d.getFullYear() - years); return dkey(d); }
 function goalOptions(age, cur){
-  const opts = age && age < 14 ? [['healthy','Mangiare sano','Pasti vari per crescere'],['sport','Energia per lo sport','Per chi si muove tanto']]
+  const opts = age && age < 14 ? [['healthy','Mangiare sano','Pasti vari per crescere'],['sport','Energia per lo sport','Per chi si muove tanto'],['muscle','Forza e muscoli','Giochi, sport e proteine']]
     : age && age < 18 ? [['healthy','Mangiare sano','Pasti vari per crescere'],['sport','Energia per lo sport','Per chi si muove tanto'],['muscle','Muscoli e forza','Più proteine, niente diete']]
     : [['lose','Dimagrire','Calorie −15%'],['maintain','Mantenere','Peso stabile'],['muscle','Fare muscoli','Proteine 1,8 g/kg'],['gain','Aumentare di peso','Calorie +10%'],['healthy','Mangiare sano','Senza obiettivi di peso']];
   if (!opts.some(o => o[0] === cur)) cur = 'healthy';
@@ -942,20 +1004,347 @@ function bindProfileForm(root){
     if (!(p.height >= 100 && p.height <= 230)) return err.textContent = 'Inserisci un\'altezza tra 100 e 230 cm.';
     if (!(p.weight >= 20 && p.weight <= 300)) return err.textContent = 'Inserisci un peso tra 20 e 300 kg.';
     if (age < 18 && !['healthy','sport','muscle'].includes(p.goal)) p.goal = 'healthy';
-    if (age < 14 && p.goal === 'muscle') p.goal = 'sport';
     const first = !S.profile;
-    S.profile = p; saveProfile(); S.currentQuote = null;
+    const prev = S.profile || {};
+    S.profile = { ...prev, ...p };
+    if (age < 18) { delete S.profile.target; delete S.profile.kcalAdj; }
+    if (first || +prev.weight !== p.weight) logWeight(p.weight);
+    saveProfile(); S.currentQuote = null;
     closeSheet(); S.view = 'today'; render(); window.scrollTo(0, 0);
     toast(first ? 'Benvenuto su Piattino!' : 'Profilo aggiornato');
+    if (age >= 18 && ['lose','gain','muscle'].includes(p.goal) && !S.profile.target) setTimeout(openGoal, 700);
   });
+}
+
+/* ---------- weight: log, trend, goal screen ---------- */
+function logWeight(kg, d = todayKey()){
+  kg = Math.round(kg * 10) / 10;
+  S.weights = [...S.weights.filter(x => x.d !== d), { d, kg }].sort((a, b) => a.d < b.d ? -1 : 1).slice(-400);
+  Store.put();
+}
+function weightTrend(days = 35){
+  const since = addDays(todayKey(), -days);
+  const pts = S.weights.filter(x => x.d >= since).map(x => [(parseKey(x.d) - parseKey(since)) / 864e5, x.kg]);
+  if (pts.length < 2) return null;
+  const span = pts[pts.length - 1][0] - pts[0][0]; if (span < 6) return null;
+  const n = pts.length, mx = pts.reduce((a, q) => a + q[0], 0) / n, my = pts.reduce((a, q) => a + q[1], 0) / n;
+  const slope = pts.reduce((a, q) => a + (q[0] - mx) * (q[1] - my), 0) / pts.reduce((a, q) => a + (q[0] - mx) ** 2, 0);
+  return { perWeek: slope * 7, span, n, first: pts[0][1], last: pts[n - 1][1] };
+}
+const healthyRange = h => [Math.ceil(18.5 * (h / 100) ** 2), Math.floor(24.9 * (h / 100) ** 2)];
+const G = {};
+function openGoal(){
+  const p = S.profile, t = p.target || {};
+  G.cur = +p.weight; G.kg = t.kg || (p.goal === 'lose' ? Math.round(p.weight - 5) : p.goal === 'maintain' || p.goal === 'healthy' ? +p.weight : Math.round(p.weight + 3));
+  G.rate = t.rate || (G.kg < G.cur ? .5 : .25); G.err = '';
+  openSheet(`<div id="goalRoot" style="display:flex;flex-direction:column;min-height:0;flex:1"></div>`, true);
+  renderGoal();
+}
+function weightChart(target){
+  const pts = S.weights.slice(-60); if (pts.length < 2) return '';
+  const W = 340, H = 150, L = 34, R = 10, T = 12, B = 22;
+  const vals = pts.map(x => x.kg).concat(target ? [target] : []);
+  const lo = Math.floor(Math.min(...vals) - 1), hi = Math.ceil(Math.max(...vals) + 1);
+  const t0 = parseKey(pts[0].d), t1 = parseKey(pts[pts.length - 1].d), span = Math.max(1, (t1 - t0) / 864e5);
+  const x = d => L + (W - L - R) * ((parseKey(d) - t0) / 864e5) / span, y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  const line = pts.map(q => `${x(q.d).toFixed(1)},${y(q.kg).toFixed(1)}`).join(' ');
+  const last = pts[pts.length - 1];
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Andamento del peso">
+    ${[lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" style="stroke:var(--sep)"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${fmt1(v)}</text>`).join('')}
+    ${target ? `<line x1="${L}" x2="${W - R}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" style="stroke:var(--green)" stroke-dasharray="5 4"/><text x="${W - R}" y="${(y(target) - 5).toFixed(1)}" text-anchor="end" style="fill:var(--green)">obiettivo ${fmt1(target)}</text>` : ''}
+    <polyline points="${line}" fill="none" style="stroke:var(--blue)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${x(last.d).toFixed(1)}" cy="${y(last.kg).toFixed(1)}" r="4.5" style="fill:var(--blue);stroke:var(--card)" stroke-width="2"/>
+    <text x="${L}" y="${H - 6}">${esc(parseKey(pts[0].d).toLocaleDateString('it-IT', { day:'numeric', month:'short' }))}</text>
+    <text x="${W - R}" y="${H - 6}" text-anchor="end">${esc(parseKey(last.d).toLocaleDateString('it-IT', { day:'numeric', month:'short' }))}</text></svg>`;
+}
+function goalSummary(){
+  const p = S.profile, diff = Math.round((G.kg - G.cur) * 10) / 10;
+  const [lo, hi] = healthyRange(+p.height);
+  const tmp = { ...p, weight:G.cur, target:{ kg:G.kg, rate:G.rate }, goal: diff < -.2 ? 'lose' : diff > .2 ? (p.goal === 'muscle' ? 'muscle' : 'gain') : 'maintain' };
+  const tg = targets(tmp);
+  const weeks = Math.abs(diff) > .2 ? Math.ceil(Math.abs(diff) / G.rate) : 0;
+  const when = weeks ? addDays(todayKey(), weeks * 7) : null;
+  return { diff, lo, hi, tg, weeks, when, goal: tmp.goal };
+}
+function renderGoal(){
+  const root = $('#goalRoot'); if (!root) return;
+  const p = S.profile, age = ageOf(p);
+  if (age < 18) {
+    root.innerHTML = `${sheetHead('Come cresci', 'Chiudi')}
+    <div class="sheet-body">
+      <p class="note" style="margin:6px 0 14px">Mentre cresci il peso aumenta in modo naturale, insieme all'altezza. Per questo Piattino non ti fa scegliere un peso da raggiungere o da perdere: conta mangiare vario, muoversi e dormire bene. Se hai dubbi, parlane con un genitore o con il pediatra.</p>
+      <div class="card pad"><div class="small muted">Oggi pesi</div><div class="stepper" style="justify-content:flex-start;margin:4px 0 0"><button data-a="gw-step" data-d="-0.1" aria-label="Meno">−</button><input id="gwIn" type="number" inputmode="decimal" step="0.1" value="${fmt1(G.cur).replace(',', '.')}" aria-label="Peso in kg"><button data-a="gw-step" data-d="0.1" aria-label="Più">+</button><span class="muted">kg</span></div>
+      <button class="btn tinted" data-a="gw-save" style="margin-top:10px">Registra il peso di oggi</button></div>
+      ${S.weights.length > 1 ? `<h2 class="section-title">Il tuo andamento</h2><div class="card pad">${weightChart(null)}</div>` : ''}
+    </div>`;
+    bindGoalInputs(); return;
+  }
+  const sm = goalSummary(), t = p.target;
+  const tooLow = G.kg < sm.lo, dirTxt = sm.diff < -.2 ? `Vuoi perdere <b class="glow-t">${fmt1(-sm.diff)} kg</b>` : sm.diff > .2 ? `Vuoi mettere su <b class="glow-t">${fmt1(sm.diff)} kg</b>` : 'Vuoi mantenere il peso';
+  const rates = sm.diff < -.2 ? [[.25,'Tranquillo'],[.5,'Consigliato'],[.75,'Veloce']].filter(([r]) => r <= G.cur * .01 + .001 || r === .25) : [[.1,'Lento'],[.25,'Consigliato'],[.5,'Veloce']];
+  if (!rates.some(([r]) => r === G.rate)) G.rate = rates[Math.min(1, rates.length - 1)][0];
+  const prog = t && t.startKg && Math.abs(t.kg - t.startKg) > .2 ? clamp((t.startKg - G.cur) / (t.startKg - t.kg), 0, 1) : null;
+  root.innerHTML = `${sheetHead('Obiettivo di peso', 'Chiudi', `<button class="link" data-a="goal-save" style="font-weight:600" ${tooLow ? 'disabled' : ''}>Salva</button>`)}
+  <div class="sheet-body">
+    ${prog != null ? `<div class="card pad" style="margin-top:6px"><div class="row" style="justify-content:space-between"><span class="meal-name">Progresso</span><b class="glow-t num" style="font-size:20px">${Math.round(prog * 100)}%</b></div>
+      <div class="track light"><i style="width:${prog * 100}%"></i></div><div class="small muted num" style="margin-top:6px">Partenza ${fmt1(t.startKg)} kg · ora ${fmt1(G.cur)} kg · obiettivo ${fmt1(t.kg)} kg</div></div>` : ''}
+    <div class="form-label">Oggi pesi</div>
+    <div class="card pad"><div class="stepper" style="justify-content:flex-start;margin:0"><button data-a="gw-step" data-d="-0.1" aria-label="Meno">−</button><input id="gwIn" type="number" inputmode="decimal" step="0.1" value="${String(G.cur)}" aria-label="Peso di oggi in kg"><button data-a="gw-step" data-d="0.1" aria-label="Più">+</button><span class="muted">kg</span></div>
+      <button class="btn tinted" data-a="gw-save" style="margin-top:10px">Registra il peso di oggi</button></div>
+    <div class="form-label">Dove vuoi arrivare</div>
+    <div class="card pad" style="text-align:center">
+      <div class="stepper"><button data-a="gk-step" data-d="-0.5" aria-label="Meno mezzo chilo">−</button><input id="gkIn" type="number" inputmode="decimal" step="0.5" value="${String(G.kg)}" aria-label="Peso obiettivo in kg"><button data-a="gk-step" data-d="0.5" aria-label="Più mezzo chilo">+</button></div>
+      <div class="muted small">kg</div>
+      <p style="margin:10px 0 2px;font-size:17px">${dirTxt}</p>
+      <p class="small muted" style="margin:0">Peso nella norma per ${esc(p.height)} cm: ${sm.lo}–${sm.hi} kg</p>
+      ${tooLow ? `<p class="err" style="margin-top:8px">Questo peso è troppo basso per la tua altezza: il minimo consigliato è ${sm.lo} kg.</p>` : ''}
+    </div>
+    ${Math.abs(sm.diff) > .2 ? `<div class="form-label">Quanto veloce</div>
+    <div class="seg">${rates.map(([r, l]) => `<button class="${G.rate === r ? 'on' : ''}" data-a="g-rate" data-r="${r}">${l}<br><span class="small muted">${fmt1(r)} kg/sett.</span></button>`).join('')}</div>` : ''}
+    <div class="card pad" style="margin-top:14px">
+      ${sm.weeks ? `<div class="meal-name">Arrivi a ${fmt1(G.kg)} kg verso ${esc(parseKey(sm.when).toLocaleDateString('it-IT', { day:'numeric', month:'long' }))}</div><div class="small muted">circa ${sm.weeks} ${sm.weeks === 1 ? 'settimana' : 'settimane'}, se segui il piano</div>` : `<div class="meal-name">Mantieni il tuo peso</div>`}
+      <div class="target-grid num" style="margin-top:12px"><div><b>${fmt(sm.tg.kcal)}</b><span>kcal</span></div><div><b>${sm.tg.protein}</b><span>Prot. g</span></div><div><b>${fmt(sm.tg.kcal - sm.tg.tdee)}</b><span>vs fabbisogno</span></div><div><b>${sm.goal === 'lose' ? '−' : sm.goal === 'maintain' ? '=' : '+'}</b><span>${sm.goal === 'lose' ? 'Dimagrire' : sm.goal === 'maintain' ? 'Mantenere' : sm.goal === 'muscle' ? 'Muscoli' : 'Aumentare'}</span></div></div>
+      ${sm.tg.kcal <= (p.sex === 'M' ? 1500 : 1200) + 5 && sm.goal === 'lose' ? `<p class="small muted" style="margin:10px 0 0">Non scendiamo sotto ${p.sex === 'M' ? '1.500' : '1.200'} kcal: per te il ritmo reale sarà un po' più lento.</p>` : ''}
+    </div>
+    ${S.weights.length > 1 ? `<h2 class="section-title">Il tuo andamento</h2><div class="card pad">${weightChart(t && t.kg)}</div>` : '<p class="foot">Pesati una volta a settimana, al mattino, sempre nello stesso giorno: così vedi se il piano funziona.</p>'}
+    ${G.err ? `<p class="err">${esc(G.err)}</p>` : ''}
+    <div style="margin-top:14px"><button class="btn primary" data-a="goal-save" ${tooLow ? 'disabled' : ''}>Salva l'obiettivo</button></div>
+    ${t ? `<div style="margin-top:10px"><button class="btn danger" data-a="goal-clear">Togli l'obiettivo di peso</button></div>` : ''}
+  </div>`;
+  bindGoalInputs();
+}
+function bindGoalInputs(){
+  const gw = $('#gwIn'); if (gw) gw.addEventListener('change', () => { G.cur = clamp(Math.round(+gw.value * 10) / 10 || G.cur, 20, 300); renderGoal(); });
+  const gk = $('#gkIn'); if (gk) gk.addEventListener('change', () => { G.kg = clamp(Math.round(+gk.value * 2) / 2 || G.kg, 20, 300); renderGoal(); });
+}
+
+/* ---------- coach «Cosa faccio ora?»: consigli calcolati dai tuoi dati, sul telefono ---------- */
+const CHIPS = ['Cosa faccio ora?', 'Il piano non funziona', 'Cosa mangio adesso?', 'Ho fame', 'Ho sgarrato', 'Come va la settimana?', 'Muscoli', 'Obiettivo di peso', 'Acqua'];
+const pastKeys = (n, withToday) => Array.from({ length:n }, (_, i) => addDays(todayKey(), withToday ? -i : -(i + 1)));
+function analyze(){
+  const g = T(), age = ageOf(S.profile), minor = age < 18, goal = S.profile.goal;
+  const prev = pastKeys(7, false).map(k => ({ k, d:getDay(k), t:totals(getDay(k)) }));
+  const logged = prev.filter(x => x.t.n >= 2);
+  const avg = f => logged.length ? logged.reduce((a, x) => a + f(x), 0) / logged.length : 0;
+  const foods = {}; let sweet = 0, treats = 0;
+  const two = pastKeys(14, true).map(k => ({ k, d:getDay(k), t:totals(getDay(k)) }));
+  two.forEach(({ d }) => MEALS.forEach(m => (d.meals[m.k] || []).forEach(e => {
+    const f = foods[e.name] || (foods[e.name] = { name:e.name, kcal:0, n:0 }); f.kcal += +e.kcal || 0; f.n++;
+    const n = e.name.toLowerCase();
+    if (/bibita|cola|aranciata|succo|tè freddo/.test(n)) sweet++;
+    if (/dolce|gelato|biscott|cornetto|cioccolat|patatine|fritt|burger|hot dog|merendin|torta|crema/.test(n)) treats++;
+  })));
+  const wk = two.filter(x => x.t.n >= 2), isWe = k => [0, 6].includes(parseKey(k).getDay());
+  const we = wk.filter(x => isWe(x.k)), wd = wk.filter(x => !isWe(x.k));
+  const mean = arr => arr.length ? arr.reduce((a, x) => a + x.t.kcal, 0) / arr.length : 0;
+  const today = getDay(todayKey());
+  return { g, age, minor, goal, logged:logged.length, prev, avgK:avg(x => x.t.kcal), avgP:avg(x => x.t.p), avgFv:avg(x => x.t.fv), avgW:avg(x => x.d.water || 0),
+    breakfast: logged.length ? logged.filter(x => (x.d.meals.colazione || []).length).length / logged.length : 1,
+    top:Object.values(foods).sort((a, b) => b.kcal - a.kcal).slice(0, 3), sweet, treats,
+    weekendExtra: we.length && wd.length ? mean(we) - mean(wd) : 0, today, tt:totals(today), trend:weightTrend(), streak:streak() };
+}
+function nextSlot(){
+  const h = new Date().getHours() + new Date().getMinutes() / 60, d = getDay(todayKey()).meals;
+  if (h < 10.5 && !(d.colazione || []).length) return 'Colazione';
+  if (h < 12) return 'Spuntino';
+  if (h < 15 && !(d.pranzo || []).length) return 'Pranzo';
+  if (h < 18.5) return 'Merenda';
+  if (!(d.cena || []).length) return 'Cena';
+  return 'Merenda';
+}
+function mealIdea(label){
+  const plan = buildPlan(todayKey()); const i = plan.findIndex(m => m.label === label); const m = plan[i];
+  if (!m) return { t:'', acts:[] };
+  const kc = m.items.reduce((a, e) => a + e.kcal, 0), pr = m.items.reduce((a, e) => a + e.p, 0);
+  return { t:`**${label}** da circa ${fmt(kc)} kcal e ${fmt(pr)} g di proteine: ${m.items.map(e => `${e.name.replace(/\s*\(.*?\)/, '').toLowerCase()} ${fmt(e.grams)} g`).join(', ')}.`,
+    acts:[{ l:`Aggiungi ${label.toLowerCase()} al diario`, a:'plan:' + i }] };
+}
+function trendAdvice(a){
+  const t = S.profile.target, tr = a.trend, out = { tips:[], acts:[] };
+  if (a.minor || !t) return out;
+  if (!tr) { out.tips.push(`Non ho abbastanza pesate per capire se il piano funziona. **Pesati una volta a settimana**, al mattino, sempre nello stesso giorno.`); out.acts.push({ l:'Registra il peso', a:'open:goal' }); return out; }
+  const pw = tr.perWeek, fmtR = v => `${v > 0 ? '+' : ''}${fmt1(v)} kg a settimana`;
+  if (a.goal === 'lose') {
+    if (pw > -.1 && tr.span >= 13) {
+      if (a.logged >= 5) { out.tips.push(`Il peso è fermo (${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni) anche se registri con costanza. Ti propongo di **abbassare l'obiettivo di 150 kcal** al giorno.`); out.acts.push({ l:'Abbassa di 150 kcal', a:'kcal:-150' }); }
+      else out.tips.push(`Il peso è fermo, ma hai registrato solo ${a.logged} giorni su 7. Prima di cambiare il piano, **segna tutto per una settimana**: spesso le calorie in più si nascondono in olio, bevande e assaggi.`);
+    } else if (pw < -1) { out.tips.push(`Stai perdendo ${fmtR(pw)}: è **troppo veloce** e rischi di perdere muscoli. Aggiungiamo 150 kcal al giorno.`); out.acts.push({ l:'Aggiungi 150 kcal', a:'kcal:150' }); }
+    else if (pw <= -.1) out.tips.push(`Il piano funziona: stai scendendo di ${fmt1(-pw)} kg a settimana. Non cambiare niente!`);
+  } else if (a.goal === 'gain' || a.goal === 'muscle') {
+    if (pw < .05 && tr.span >= 13) { out.tips.push(`Il peso non sale (${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni). Ti propongo di **aggiungere 150 kcal** al giorno, per esempio uno yogurt greco con muesli.`); out.acts.push({ l:'Aggiungi 150 kcal', a:'kcal:150' }); }
+    else if (pw > (a.goal === 'muscle' ? .5 : .75)) { out.tips.push(`Stai salendo di ${fmtR(pw)}: più veloce del necessario${a.goal === 'muscle' ? ', e l\'eccesso diventa grasso invece che muscolo' : ''}. Togliamo 150 kcal.`); out.acts.push({ l:'Togli 150 kcal', a:'kcal:-150' }); }
+    else if (pw >= .05) out.tips.push(`Il piano funziona: stai salendo di ${fmt1(pw)} kg a settimana. Continua così.`);
+  }
+  return out;
+}
+function habitTips(a){
+  const g = a.g, tips = [], acts = [];
+  if (a.logged < 4) tips.push(`Negli ultimi 7 giorni hai registrato bene solo **${a.logged} ${a.logged === 1 ? 'giorno' : 'giorni'}**. Senza dati completi non posso capire cosa non va: segna tutto per i prossimi 5 giorni, anche condimenti e bevande.`);
+  if (a.logged && a.avgP < g.protein * .8) tips.push(`Proteine: in media **${fmt(a.avgP)} g** al giorno, l'obiettivo è ${g.protein} g. Aggiungi una fonte a ogni pasto: yogurt greco, uova, legumi, pollo, pesce o ricotta.`);
+  if (a.logged && a.avgFv < 3) tips.push(`Frutta e verdura: **${fmt1(a.avgFv)} porzioni** al giorno, l'obiettivo è 5. Metti una verdura a pranzo e a cena e un frutto a merenda.`);
+  if (a.logged >= 3 && a.breakfast < .6) tips.push(`Salti spesso la colazione (${Math.round((1 - a.breakfast) * 100)}% dei giorni). ${a.minor ? 'Per la scuola serve energia:' : 'Una colazione con proteine riduce la fame del pomeriggio:'} latte o yogurt, pane o fiocchi d'avena e un frutto.`);
+  if (a.logged >= 3 && !a.minor) {
+    if (a.goal === 'lose' && a.avgK > g.kcal * 1.08) tips.push(`Calorie: in media **${fmt(a.avgK)} kcal**, ${fmt(a.avgK - g.kcal)} oltre l'obiettivo di ${fmt(g.kcal)}.${a.top[0] ? ` Il cibo che pesa di più nelle ultime due settimane è **${a.top[0].name.toLowerCase()}** (${fmt(a.top[0].kcal)} kcal in ${a.top[0].n} ${a.top[0].n === 1 ? 'volta' : 'volte'}): riduci la porzione o sostituiscilo qualche volta.` : ''}`);
+    if ((a.goal === 'gain' || a.goal === 'muscle') && a.avgK < g.kcal * .92) tips.push(`Calorie: in media **${fmt(a.avgK)} kcal**, ${fmt(g.kcal - a.avgK)} sotto l'obiettivo. Aggiungi uno spuntino: yogurt greco con muesli, oppure pane con burro di arachidi.`);
+  }
+  if (a.minor && a.logged >= 3 && a.avgK < g.kcal * .7) tips.push(`Stai mangiando meno di quello che serve a chi cresce. Non saltare i pasti e parlane con un genitore.`);
+  if (!a.minor && a.weekendExtra > 300) tips.push(`Nel fine settimana mangi in media **${fmt(a.weekendExtra)} kcal in più** degli altri giorni. Il sabato e la domenica contano: prova a organizzare prima almeno un pasto.`);
+  if (a.sweet >= 4) tips.push(`Bibite e succhi: **${a.sweet} volte** in due settimane. Sostituiscili con acqua, anche frizzante, o acqua e limone.`);
+  const h = new Date().getHours();
+  if ((a.today.water || 0) < g.water / 2 && h >= 13) { tips.push(`Acqua: oggi sei a **${a.today.water || 0} su ${g.water} bicchieri**. Bevine uno adesso.`); acts.push({ l:'Ho bevuto un bicchiere', a:'water' }); }
+  return { tips, acts };
+}
+const numbered = tips => tips.map((x, i) => `${i + 1}. ${x}`).join('\n\n');
+const coachIntents = [
+  ['safety', /(non (voglio )?mangi(o|are) (più|niente|nulla)|digiun|vomit|anoress|bulimi|lassativ|odio il mio corpo|mi faccio schifo|saltare tutti i pasti|mangiare niente)/],
+  ['plateau', /(non funzion|non dimagri|non perdo|non scend|stallo|fermo|ingrass|non cala|non va|non cambia niente)/],
+  ['gain', /(non (ingrasso|metto su|prendo peso|cresco)|troppo magr)/],
+  ['muscle', /(muscol|massa|palestra|forza|allenament|pesi|addominali)/],
+  ['hungry', /(fame|affamat|voglia di mangiare)/],
+  ['cheat', /(sgarr|esagerat|abbuff|troppo ieri|ho mangiato troppo|sfizio|strappo)/],
+  ['meal', /(cosa mangio|che mangio|colazione|pranzo|cena|spuntino|merenda|ricett|cucino)/],
+  ['week', /(settiman|come (sto|va|vado)|resoconto|riepilogo|andamento|progress)/],
+  ['water', /(acqua|bere|sete|bicchier)/],
+  ['motivation', /(motivaz|mollare|stanc|non ce la faccio|voglia|triste|scoraggi)/],
+  ['weight', /(peso|obiettivo|chili|kg|bilancia)/],
+  ['now', /(cosa faccio|che faccio|aiut|consigli|non so|cosa devo|ciao|salve|buongiorno|ehi)/],
+];
+function coachReply(text){
+  const q = (text || '').toLowerCase();
+  const intent = (coachIntents.find(([, re]) => re.test(q)) || ['fallback'])[0];
+  const a = analyze(), g = a.g, acts = [];
+  const lead = a.minor ? '' : '';
+  switch (intent) {
+    case 'safety':
+      return { t:`Quello che scrivi è importante e merita attenzione. **Parlane con una persona di cui ti fidi**: un genitore, il medico${a.minor ? ', il pediatra' : ''} o un insegnante.\n\nIn Italia puoi chiamare gratis il **Numero Verde SOS Disturbi Alimentari 800 180 969**.\n\nPiattino è un'app: può darti idee per mangiare bene, ma non sostituisce l'aiuto di una persona.` };
+    case 'plateau': {
+      if (a.minor) {
+        const h = habitTips(a);
+        return { t:`A ${a.age} anni il corpo cambia ogni mese, quindi il peso da solo non dice se stai andando bene. Guardiamo le abitudini:\n\n${h.tips.length ? numbered(h.tips.slice(0, 3)) : 'Le tue abitudini sono buone: pasti regolari, frutta, verdura e proteine. Continua così!'}\n\nSe qualcosa ti preoccupa, parlane con un genitore o con il pediatra.`, acts:h.acts };
+      }
+      const tr = trendAdvice(a), h = habitTips(a);
+      const tips = [...tr.tips, ...h.tips].slice(0, 4);
+      return { t:`Ho guardato gli ultimi 14 giorni. ${tips.length ? 'Ecco cosa ho trovato:\n\n' + numbered(tips) : 'Dai dati il piano sembra funzionare: calorie, proteine e abitudini sono in linea. I risultati si vedono sulle settimane, non sui giorni.'}${!S.profile.target ? '\n\nImposta un obiettivo di peso: così posso controllare se il piano funziona davvero.' : ''}`, acts:[...tr.acts, ...h.acts, ...(!S.profile.target ? [{ l:'Imposta l\'obiettivo', a:'open:goal' }] : [])] };
+    }
+    case 'gain': {
+      if (a.minor) return { t:`Ognuno cresce con i suoi tempi. Per crescere bene: **tre pasti e due spuntini**, proteine a ogni pasto e tanto movimento. Se ti preoccupa il tuo peso, parlane con un genitore o con il pediatra.` };
+      const tr = trendAdvice(a);
+      return { t:`Per mettere su peso serve mangiare un po' più di quello che consumi, con costanza.\n\n${numbered([`In media mangi **${fmt(a.avgK)} kcal**, il tuo obiettivo è ${fmt(g.kcal)}.`, ...tr.tips, 'Aggiungi spuntini ricchi: yogurt greco e muesli, pane e burro di arachidi, frutta secca, latte.', 'Bevi l\'acqua lontano dai pasti, così non ti riempi troppo.'])}`, acts:tr.acts };
+    }
+    case 'muscle': {
+      if (a.age < 14) return { t:`Alla tua età i muscoli crescono **giocando e muovendoti**:\n\n1. Sport o gioco all'aperto ogni giorno: corsa, nuoto, calcio, arrampicata.\n2. Esercizi a corpo libero: piegamenti, squat, plank, salti.\n3. Proteine a ogni pasto: latte, yogurt, uova, legumi, pesce o carne. In media ne mangi **${fmt(a.avgP)} g**, l'obiettivo è ${g.protein} g.\n4. Dormi 9-11 ore.\n\nNiente pesi pesanti e niente integratori: basta il cibo vero.` };
+      const bp = a.prev.filter(x => x.t.n >= 2).map(x => (x.d.meals.colazione || []).reduce((s, e) => s + (+e.p || 0), 0));
+      const avgBp = bp.length ? bp.reduce((s, v) => s + v, 0) / bp.length : 0;
+      const tr = trendAdvice(a);
+      const tips = [
+        `Proteine: in media **${fmt(a.avgP)} g** al giorno, obiettivo ${g.protein} g${a.avgP < g.protein * .9 ? '. Sei sotto: aggiungi 20-30 g a pranzo e a cena (100 g di pollo, 150 g di yogurt greco, 2 uova)' : ': ottimo'}.`,
+        avgBp < 15 && bp.length ? `A colazione mangi solo ${fmt(avgBp)} g di proteine: aggiungi yogurt greco, latte o uova, i muscoli le usano meglio se distribuite.` : null,
+        a.goal === 'muscle' && a.avgK && a.avgK < g.kcal * .92 ? `Calorie sotto l'obiettivo (${fmt(a.avgK)} su ${fmt(g.kcal)}): senza un piccolo surplus il muscolo cresce poco.` : null,
+        ...tr.tips,
+        a.age < 18 ? 'Allenati con un istruttore, aumenta i carichi un po\' alla volta e dormi almeno 8 ore. Niente integratori senza il medico.' : 'Allenamento di forza 3-4 volte a settimana, aumentando i carichi un po\' alla volta, e 7-9 ore di sonno.',
+      ].filter(Boolean);
+      return { t:`Per i muscoli contano tre cose: **allenamento, proteine e recupero**.\n\n${numbered(tips.slice(0, 4))}`, acts:tr.acts };
+    }
+    case 'hungry': {
+      const left = g.kcal - a.tt.kcal, slot = nextSlot(), idea = mealIdea(slot);
+      if (a.minor) return { t:`Se hai fame, **mangia**: il tuo corpo sta crescendo. Scegli qualcosa che sazia: frutta, yogurt, pane integrale, frutta secca o un bicchiere di latte.\n\n${idea.t}`, acts:idea.acts };
+      return { t:`${left > 200 ? `Oggi hai ancora circa **${fmt(left)} kcal** a disposizione: mangia pure.\n\n${idea.t}` : `Oggi sei quasi al tuo obiettivo (${fmt(a.tt.kcal)} su ${fmt(g.kcal)} kcal). Scegli cibi che saziano con poche calorie:\n\n1. Verdure crude: carote, finocchi, pomodori, cetrioli.\n2. Un frutto o uno yogurt greco.\n3. Un bicchiere d'acqua o una tisana: a volte la sete sembra fame.`}\n\nPer avere meno fame domani: proteine e verdure a ogni pasto e niente pasti saltati.`, acts:left > 200 ? idea.acts : [] };
+    }
+    case 'cheat':
+      return { t:`Tranquillo: **un pasto non rovina niente**. Conta la media della settimana${a.logged && !a.minor ? `, che per ora è ${fmt(a.avgK)} kcal al giorno` : ''}.\n\n1. Al prossimo pasto torna alla normalità: niente digiuni per compensare.\n2. Bevi acqua e, se puoi, fai una passeggiata.\n3. Registra comunque quello che hai mangiato: serve per capire, non per giudicarti.`, acts:[{ l:'Registra un pasto', a:'open:scan' }] };
+    case 'meal': {
+      const map = { colazione:'Colazione', pranzo:'Pranzo', cena:'Cena', spuntino:'Spuntino', merenda:'Merenda' };
+      const k = Object.keys(map).find(x => q.includes(x)); const slot = k ? map[k] : nextSlot();
+      const idea = mealIdea(slot), left = g.kcal - a.tt.kcal, pleft = g.protein - a.tt.p;
+      return { t:`${idea.t}${!a.minor && a.tt.n ? `\n\nOggi ti restano circa ${fmt(Math.max(0, left))} kcal e ${fmt(Math.max(0, pleft))} g di proteine.` : ''}\n\nNon ti piace? Nel Piano puoi toccare «Cambia menu».`, acts:[...idea.acts, { l:'Apri il piano', a:'open:plan' }] };
+    }
+    case 'week': {
+      if (!a.logged) return { t:`Questa settimana non ci sono ancora giorni registrati bene. Comincia da oggi: fotografa i tuoi pasti e tra qualche giorno ti faccio un resoconto completo.`, acts:[{ l:'Fotografa un piatto', a:'open:scan' }] };
+      const best = a.prev.filter(x => x.t.n >= 2).sort((x, y) => Math.abs(x.t.kcal - g.kcal) - Math.abs(y.t.kcal - g.kcal))[0];
+      const lines = [
+        `Giorni registrati: **${a.logged} su 7**, serie attuale ${a.streak} ${a.streak === 1 ? 'giorno' : 'giorni'}.`,
+        a.minor ? null : `Calorie medie: **${fmt(a.avgK)}** su ${fmt(g.kcal)} kcal.`,
+        `Proteine medie: **${fmt(a.avgP)} g** su ${g.protein} g.`,
+        `Frutta e verdura: **${fmt1(a.avgFv)}** porzioni al giorno su 5.`,
+        `Acqua: **${fmt1(a.avgW)}** bicchieri al giorno su ${g.water}.`,
+        best && !a.minor ? `Il giorno più in linea: ${esc(longDate(best.k))}.` : null,
+        a.trend && !a.minor ? `Peso: ${a.trend.perWeek > 0 ? '+' : ''}${fmt1(a.trend.perWeek)} kg a settimana.` : null,
+      ].filter(Boolean);
+      const h = habitTips(a);
+      return { t:`Ecco la tua settimana:\n\n${lines.map(l => '• ' + l).join('\n')}${h.tips.length ? `\n\nDa migliorare: ${h.tips[0]}` : '\n\nOttima settimana, continua così!'}`, acts:h.acts };
+    }
+    case 'water':
+      return { t:`Oggi hai bevuto **${a.today.water || 0} bicchieri su ${g.water}**. ${(a.today.water || 0) >= g.water ? 'Obiettivo raggiunto, bravo!' : 'Tieni una borraccia sempre vicino e bevi un bicchiere a ogni pasto.'}`, acts:(a.today.water || 0) < g.water ? [{ l:'Ho bevuto un bicchiere', a:'water' }] : [] };
+    case 'motivation':
+      return { t:`${pickQuote()}\n\n${a.streak ? `Hai già una serie di **${a.streak} ${a.streak === 1 ? 'giorno' : 'giorni'}**: non fermarti proprio adesso.` : 'Oggi è un ottimo giorno per ricominciare.'} Non serve fare tutto: scegli **una sola cosa** per oggi, per esempio un bicchiere d'acqua in più o una verdura a cena.` };
+    case 'weight': {
+      if (a.minor) return { t:`Mentre cresci non scegliamo un peso da raggiungere: conta come stai e cosa mangi. Puoi segnare il tuo peso in «Come cresci» insieme a un genitore.`, acts:[{ l:'Come cresci', a:'open:goal' }] };
+      const t = S.profile.target;
+      if (!t) return { t:`Non hai ancora un obiettivo di peso. Impostalo: ti dico quando ci arrivi e quante calorie ti servono al giorno.`, acts:[{ l:'Imposta l\'obiettivo', a:'open:goal' }] };
+      const left = Math.round((t.kg - S.profile.weight) * 10) / 10, tr = trendAdvice(a);
+      return { t:`Obiettivo: **${fmt1(t.kg)} kg**. Ora pesi ${fmt1(S.profile.weight)} kg: ${Math.abs(left) <= .2 ? 'ci sei arrivato, complimenti!' : `mancano **${fmt1(Math.abs(left))} kg**.`}${tr.tips.length ? '\n\n' + tr.tips.join('\n\n') : ''}`, acts:[...tr.acts, { l:'Aggiorna il peso', a:'open:goal' }] };
+    }
+    case 'now': case 'fallback': default: {
+      if (intent === 'fallback' && q.trim()) return { t:`Non sono sicuro di aver capito. Posso aiutarti con queste cose: tocca una delle domande qui sotto.` };
+      if (!a.logged && !a.tt.n) { const idea = mealIdea(nextSlot()); return { t:`Partiamo dalle basi: **registra quello che mangi oggi**. Tocca il pulsante verde e fotografa il piatto, oppure descrivilo a parole. Dopo qualche giorno ti dirò con precisione cosa cambiare.\n\n**Adesso:** ${idea.t}`, acts:[{ l:'Fotografa un piatto', a:'open:scan' }, ...idea.acts] }; }
+      const tr = trendAdvice(a), h = habitTips(a), tips = [...tr.tips.filter(x => !/funziona/.test(x)), ...h.tips].slice(0, 3);
+      const idea = mealIdea(nextSlot());
+      return { t:`${tips.length ? `Ecco cosa ti consiglio, in ordine di importanza:\n\n${numbered(tips)}` : 'Stai andando bene: calorie, proteine, frutta e verdura sono in linea. Continua così!'}\n\n**Adesso:** ${idea.t}`, acts:[...tr.acts, ...h.acts, ...idea.acts] };
+    }
+  }
+}
+const md = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+function openCoach(){
+  openSheet(`<div class="chat">${sheetHead('Coach', 'Chiudi')}
+    <p class="chat-sub">Consigli calcolati dai tuoi dati, direttamente sul telefono</p>
+    <div class="chat-log" id="chatLog" aria-live="polite"></div>
+    <div class="chips" id="chatChips">${CHIPS.map(c => `<button data-a="coach-ask" data-q="${esc(c)}">${esc(c)}</button>`).join('')}</div>
+    <form class="chat-input" id="chatForm"><textarea id="chatIn" rows="1" placeholder="Scrivi una domanda…" aria-label="Scrivi al coach"></textarea><button class="send" type="submit" aria-label="Invia">${I.up}</button></form>
+  </div>`, true);
+  renderChat();
+  const f = $('#chatForm'), inp = $('#chatIn');
+  f.addEventListener('submit', e => { e.preventDefault(); const v = inp.value.trim(); if (!v) return; inp.value = ''; coachAsk(v); });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); f.requestSubmit(); } });
+  const last = S.chat[S.chat.length - 1];
+  if (!last || last.day !== todayKey()) coachAsk('Cosa faccio ora?', true);
+}
+function renderChat(typing){
+  const log = $('#chatLog'); if (!log) return;
+  log.innerHTML = S.chat.slice(-40).map((m, i, arr) => `<div class="msg ${m.r}">${md(m.t)}${m.acts && m.acts.length && i === arr.length - 1 ? `<div class="acts">${m.acts.map(x => `<button data-a="coach-act" data-k="${esc(x.a)}">${esc(x.l)}</button>`).join('')}</div>` : ''}</div>`).join('') + (typing ? '<div class="typing" aria-label="Il coach sta scrivendo"><i></i><i></i><i></i></div>' : '');
+  log.scrollTop = log.scrollHeight;
+}
+async function coachAsk(q, silent){
+  if (!silent) S.chat.push({ r:'me', t:q, day:todayKey() });
+  renderChat(true);
+  await sleep(650 + Math.random() * 500);
+  let rep;
+  try { rep = coachReply(q); } catch (e) { console.error(e); rep = { t:'Non sono riuscito a leggere i tuoi dati. Riprova tra poco.' }; }
+  S.chat.push({ r:'bot', t:rep.t, acts:(rep.acts || []).slice(0, 4), day:todayKey() });
+  S.chat = S.chat.slice(-40); Store.put();
+  renderChat();
+}
+function coachAct(k){
+  if (k.startsWith('kcal:')) {
+    if (ageOf(S.profile) < 18) return;
+    const before = T().kcal;
+    S.profile.kcalAdj = clamp((+S.profile.kcalAdj || 0) + +k.slice(5), -500, 500); saveProfile();
+    const after = T().kcal;
+    S.chat.push({ r:'bot', t:after === before ? `Non posso scendere oltre: ${fmt(after)} kcal è già il minimo sicuro per te. Aumenta invece il movimento: 30 minuti di camminata al giorno.` : `Fatto: il tuo obiettivo passa da ${fmt(before)} a **${fmt(after)} kcal** al giorno. Riparliamone tra due settimane, dopo altre due pesate.`, day:todayKey() });
+    Store.put(); renderChat(); return;
+  }
+  if (k === 'water') { const d = ensureDay(todayKey()); d.water = Math.min(20, (d.water || 0) + 1); saveDay(todayKey()); S.chat.push({ r:'bot', t:`Segnato! Oggi sei a **${d.water} bicchieri**.`, day:todayKey() }); Store.put(); renderChat(); if (S.view === 'today') renderToday(); return; }
+  if (k.startsWith('plan:')) { const m = buildPlan(todayKey())[+k.slice(5)]; if (!m) return; const keep = S.date; S.date = todayKey(); addEntries(m.meal, m.items.map(e => ({ ...e, id:rid() })), true); S.date = keep; S.chat.push({ r:'bot', t:`Aggiunto al diario: ${m.label.toLowerCase()} da ${fmt(m.items.reduce((a, e) => a + e.kcal, 0))} kcal.`, day:todayKey() }); Store.put(); renderChat(); render(); return; }
+  if (k === 'open:goal') { closeSheet(true); openGoal(); return; }
+  if (k === 'open:plan') { closeSheet(); S.view = 'plan'; render(); window.scrollTo(0, 0); return; }
+  if (k === 'open:scan') { closeSheet(true); openScanner(); }
 }
 
 /* ---------- sheets ---------- */
 let sheetEl = null;
-function openSheet(html){
+function openSheet(html, tall){
   closeSheet(true);
   const w = document.createElement('div'); w.className = 'sheet-wrap';
-  w.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"><div class="grabber"></div>${html}</div>`;
+  w.innerHTML = `<div class="sheet${tall ? ' tall' : ''}" role="dialog" aria-modal="true"><div class="grabber"></div>${html}</div>`;
   w.addEventListener('click', e => { if (e.target === w) closeSheet(); });
   document.body.appendChild(w); document.body.classList.add('locked'); sheetEl = w;
   requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('show')));
@@ -1496,7 +1885,7 @@ const actions = {
   'reset-ask': () => { $('#resetBox').innerHTML = `<p class="note" style="margin:0 0 10px">Vuoi cancellare profilo, diario e cibi memorizzati? L'operazione non si può annullare.</p><div class="stack"><button class="btn danger" data-a="reset-yes" style="background:var(--red);color:#fff">Sì, cancella tutto</button><button class="btn tinted" data-a="tab" data-v="profile">Annulla</button></div>`; },
   'reset-yes': () => {
     Store.del('profile'); Object.keys(S.days).forEach(k => Store.del('day-' + k)); S.foods.forEach(f => Store.del('food-' + f.id));
-    S.profile = null; S.days = {}; S.foods = []; S.view = 'today'; S.date = todayKey();
+    S.profile = null; S.days = {}; S.foods = []; S.weights = []; S.chat = []; S.view = 'today'; S.date = todayKey();
     try { localStorage.removeItem(LKEY); } catch (e) {}
     render(); window.scrollTo(0, 0);
   },
@@ -1508,9 +1897,26 @@ const actions = {
   'scan-again': () => { SC.run = (SC.run || 0) + 1; Object.assign(SC, { img:null, desc:'', items:[] }); SC.state = canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); else actions['pick-photo'](); },
   'res-portion': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.grams = Math.max(5, Math.round(x.base * +el.dataset.f / 5) * 5); renderResult(); },
   export: () => exportData(),
+  goal: () => openGoal(),
+  coach: () => openCoach(),
+  'coach-ask': el => coachAsk(el.dataset.q),
+  'coach-act': el => coachAct(el.dataset.k),
+  'gw-step': el => { G.cur = clamp(Math.round((G.cur + +el.dataset.d) * 10) / 10, 20, 300); const i = $('#gwIn'); if (i) i.value = G.cur; },
+  'gk-step': el => { G.kg = clamp(Math.round((G.kg + +el.dataset.d) * 2) / 2, 20, 300); renderGoal(); },
+  'g-rate': el => { G.rate = +el.dataset.r; renderGoal(); },
+  'gw-save': () => { const i = $('#gwIn'); if (i) G.cur = clamp(Math.round(+i.value * 10) / 10 || G.cur, 20, 300); logWeight(G.cur); S.profile.weight = G.cur; saveProfile(); renderGoal(); toast(`Peso registrato: ${fmt1(G.cur)} kg`); },
+  'goal-save': () => {
+    const sm = goalSummary(); if (G.kg < sm.lo) return;
+    const prev = S.profile.target;
+    S.profile.target = { kg:G.kg, rate:G.rate, startKg: prev && prev.kg === G.kg ? prev.startKg : G.cur, startDate: prev && prev.kg === G.kg ? prev.startDate : todayKey() };
+    S.profile.goal = sm.goal; S.profile.weight = G.cur; delete S.profile.kcalAdj;
+    if (!S.weights.some(x => x.d === todayKey())) logWeight(G.cur);
+    saveProfile(); closeSheet(); render(); toast(sm.goal === 'maintain' ? 'Obiettivo: mantenere il peso' : `Obiettivo salvato: ${fmt1(G.kg)} kg`);
+  },
+  'goal-clear': () => { delete S.profile.target; delete S.profile.kcalAdj; saveProfile(); closeSheet(); render(); toast('Obiettivo di peso tolto'); },
   preload: () => preloadModel(),
   import: () => { const inp = $('#backupInput'); inp.value = ''; inp.click(); },
-  'import-yes': () => { const d = S.pendingImport; if (!d) return; S.profile = d.profile; S.days = d.days || {}; S.foods = d.foods || []; S.pendingImport = null; Store.saveNow(); S.view = 'today'; S.date = todayKey(); render(); window.scrollTo(0, 0); toast('Backup importato'); },
+  'import-yes': () => { const d = S.pendingImport; if (!d) return; S.profile = d.profile; S.days = d.days || {}; S.foods = d.foods || []; S.weights = d.weights || []; S.pendingImport = null; Store.saveNow(); S.view = 'today'; S.date = todayKey(); render(); window.scrollTo(0, 0); toast('Backup importato'); },
   'scan-describe': () => { stopCamera(); SC.state = 'describe'; renderScanner(); },
   'scan-desc-go': () => { const t = ($('#scanDesc')?.value || '').trim(); if (!t) { $('#scanDesc')?.focus(); return; } SC.desc = t.slice(0, 400); runScan(); },
   'scan-stop': () => { SC.run = (SC.run || 0) + 1; SC.img = null; SC.state = SC.desc ? 'describe' : canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); },
@@ -1553,7 +1959,7 @@ $('#backupInput').addEventListener('change', async e => {
 });
 async function exportData(){
   Store.saveNow();
-  const data = JSON.stringify({ app:'piattino', v:1, exported:new Date().toISOString(), profile:S.profile, days:S.days, foods:S.foods });
+  const data = JSON.stringify({ app:'piattino', v:1, exported:new Date().toISOString(), profile:S.profile, days:S.days, foods:S.foods, weights:S.weights });
   const name = `piattino-backup-${todayKey()}.json`;
   const file = new File([data], name, { type:'application/json' });
   try { if (navigator.canShare && navigator.canShare({ files:[file] })) { await navigator.share({ files:[file], title:'Backup Piattino' }); return; } }
@@ -1572,7 +1978,7 @@ actions['add-confirm'] = () => {
 
 /* ---------- boot ---------- */
 const st = Store.load();
-S.profile = st.profile; S.days = st.days; S.foods = st.foods;
+S.profile = st.profile; S.days = st.days; S.foods = st.foods; S.weights = st.weights; S.chat = st.chat;
 render();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});

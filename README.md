@@ -10,7 +10,9 @@ Funziona senza account e senza server: i dati restano sul telefono.
 - **Fotocamera** come quella dell'iPhone: mirino a tutto schermo, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
 - **Riconoscimento sul telefono** con due modelli di Google che lavorano insieme: MobileNet per frutta, verdura e cibi semplici, AIY Food V1 per 2.024 piatti (pizza, lasagne, carbonara, risotto, sushi…). Per ogni cibo mostra quanto è sicuro, le calorie e la porzione (piccola, media, grande). Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
 - **Percentuale di avanzamento** mentre scarica i modelli e analizza la foto.
-- **Obiettivi**: dimagrire, mantenere, fare muscoli (proteine 1,8 g/kg e spuntini proteici), aumentare di peso, mangiare sano.
+- **Obiettivi**: dimagrire, mantenere, fare muscoli, aumentare di peso, mangiare sano. «Forza e muscoli» c'è anche per 9-13 anni: gioco, sport e proteine, senza calorie in più.
+- **Obiettivo di peso** (adulti): scegli dove vuoi arrivare e quanto veloce; l'app calcola la data, le calorie al giorno e segue le pesate con un grafico. Non accetta obiettivi sotto il peso sano per la tua altezza. Sotto i 18 anni c'è «Come cresci», senza pesi da raggiungere.
+- **Coach «Cosa faccio ora?»**: una chat che legge diario, pesate, acqua e abitudini delle ultime due settimane e dà consigli con i tuoi numeri. Se il peso è fermo può correggere le calorie con un tocco. Funziona sul telefono, senza internet e senza intelligenza artificiale esterna.
 - **Piano**: menu mediterraneo di 5 pasti con porzioni calcolate sul profilo.
 - **Diario**: serie di giorni, grafico della settimana, cibi memorizzati con la foto, storico.
 - **Frasi motivazionali** diverse per bambini, ragazzi, adulti e over 65.
