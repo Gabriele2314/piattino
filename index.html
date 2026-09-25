@@ -130,11 +130,33 @@ body{overscroll-behavior-y:none}
 .spark svg{width:24px;height:24px}
 
 /* Water */
-.water{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
-.glass{width:34px;height:44px;border-radius:8px 8px 12px 12px;background:var(--fill);position:relative;overflow:hidden;transition:transform .2s}
-.glass::after{content:"";position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(180deg,#5AC8FA,#007AFF);transition:height .45s cubic-bezier(.2,.8,.2,1)}
-.glass.on::after{height:78%}
-.glass:active{transform:scale(.9)}
+.water-card{display:flex;align-items:center;gap:18px;padding:16px 16px 16px 20px}
+.bottle{flex:none;display:flex;flex-direction:column;align-items:center;transition:transform .2s}
+.bottle:active{transform:scale(.94)}
+.bottle.pop{animation:bottlePop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bottlePop{30%{transform:scale(1.08) rotate(-4deg)}60%{transform:scale(.97) rotate(2deg)}}
+.bottle .cap{width:26px;height:12px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#5AC8FA,#0A84FF);margin-bottom:-1px}
+.bottle .glassb{position:relative;width:64px;height:118px;border-radius:16px 16px 20px 20px;border:2.5px solid rgba(10,132,255,.45);background:color-mix(in srgb,#5AC8FA 10%,var(--card));overflow:hidden}
+.bottle .liquid{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#64D2FF,#0A84FF);transition:height .8s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 18px rgba(10,132,255,.45)}
+.bottle .liquid::before{content:"";position:absolute;left:0;right:0;top:-7px;height:8px;background:radial-gradient(9px 7px at 9px 8px,#64D2FF 97%,transparent 100%) 0 0/18px 8px repeat-x;animation:wave 1.4s linear infinite}
+@keyframes wave{to{background-position-x:18px}}
+.bottle .tick{position:absolute;right:0;width:12px;height:2px;border-radius:1px;background:rgba(10,132,255,.35)}
+.water-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.water-l b{font-family:var(--round);font-size:30px;font-weight:700;color:var(--blue);text-shadow:0 0 16px var(--glow-blue)}
+.water-l span{color:var(--label2);font-size:16px}
+.water-btns{display:flex;gap:8px;margin-top:8px}
+.water-btns button{flex:1;min-width:0;border-radius:14px;padding:9px 6px;background:color-mix(in srgb,var(--blue) 12%,var(--card));color:var(--blue);display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.water-btns button b{font-size:14px;white-space:nowrap}
+.water-btns button span{font-size:11px;opacity:.75}
+.water-btns button:active{transform:scale(.95)}
+.water-btns .undo{flex:none;width:40px;font-size:22px;font-weight:600;justify-content:center;background:var(--fill);color:var(--label2)}
+.water-btns .undo[disabled]{opacity:.35}
+.water-card.done .liquid{background:linear-gradient(180deg,#7CF0A0,#30D158);box-shadow:0 0 18px var(--glow-green)}
+.water-card.done .water-l b{color:var(--green);text-shadow:0 0 16px var(--glow-green)}
+.est{display:flex;gap:10px;align-items:flex-start;margin:10px 2px 0;font-size:14px;color:var(--label2);line-height:1.35}
+.est svg{width:20px;height:20px;flex:none;color:var(--blue);margin-top:1px}
+.portion button.auto{display:inline-flex;align-items:center;gap:4px}
+.portion button.auto svg{width:13px;height:13px}
 
 /* Meals */
 .meal{padding:4px 0}
@@ -291,6 +313,18 @@ body{overscroll-behavior-y:none}
 @keyframes shadow{50%{transform:scaleX(.85);opacity:.7}}
 .splash{min-height:70vh;display:grid;place-items:center;text-align:center}
 .welcome h1{font-size:40px;font-weight:800;letter-spacing:.2px;margin:48px 0 6px;text-align:center}
+.install .home-preview{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:40px}
+.install .home-preview img{width:76px;height:76px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.25),0 0 30px rgba(250,17,79,.25);animation:homeBob 3s ease-in-out infinite}
+.install .home-preview span{font-size:13px;font-weight:500}
+@keyframes homeBob{50%{transform:translateY(-6px) rotate(-3deg)}}
+.install-title{font-size:28px!important;margin:22px 0 8px!important;line-height:1.15;text-wrap:balance}
+.steps{list-style:none;margin:0;padding:4px 0}
+.steps li{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;position:relative;line-height:1.4}
+.steps li+li::before{content:"";position:absolute;top:0;left:52px;right:0;border-top:.5px solid var(--sep)}
+.steps .dot{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;flex:none;font-weight:700;font-size:14px}
+.step-ico{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:color-mix(in srgb,var(--blue) 14%,var(--card));color:var(--blue);vertical-align:-7px;margin-right:4px}
+.step-ico svg{width:17px;height:17px}
+.seg button svg{width:15px;height:15px;vertical-align:-3px}
 .gate{display:flex;flex-direction:column;gap:4px;margin-top:22px;position:relative}
 .gate-lock{width:56px;height:56px;border-radius:16px;margin:0 auto 14px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,#5E5CE6,#BF5AF2);box-shadow:0 8px 24px rgba(191,90,242,.4),0 0 24px rgba(191,90,242,.35)}
 .gate-lock svg{width:28px;height:28px;filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}
@@ -488,6 +522,13 @@ const I = {
   chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>',
   person:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>',
   lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3" fill="currentColor"/></svg>',
+  scale:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M7 20h10M5 8h14M5 8l-2.5 6a2.5 2.5 0 0 0 5 0zM19 8l-2.5 6a2.5 2.5 0 0 0 5 0z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M8 10H6.5A1.5 1.5 0 0 0 5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5H16"/></svg>',
+  addsq:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3.5"/><rect x="7.5" y="6.5" width="3.5" height="3.5" rx="1"/><rect x="13" y="6.5" width="3.5" height="3.5" rx="1"/><rect x="7.5" y="12" width="3.5" height="3.5" rx="1"/></svg>',
+  dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5.5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="18.5" r="1.8"/></svg>',
+  compass:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>',
+  globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/></svg>',
   up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
@@ -787,12 +828,30 @@ function renderToday(){
       <div class="flip-face back" id="qb"><span class="spark">${I.spark}</span><div><div class="q"></div><div class="h">Tocca per un'altra frase</div></div></div>
     </div>
   </div>
-  <h2 class="section-title">Acqua <small class="num">${day.water || 0} di ${g.water} bicchieri</small></h2>
-  <div class="card pad"><div class="water">${Array.from({length:g.water}, (_, i) => `<button class="glass ${i < (day.water||0) ? 'on' : ''}" data-a="water" data-i="${i}" aria-label="Bicchiere ${i+1}"></button>`).join('')}</div></div>
+  <h2 class="section-title">Acqua</h2>
+  <div id="waterBox">${waterCard(day, g)}</div>
   <h2 class="section-title">Pasti <small class="num">${t.n} ${t.n === 1 ? 'alimento' : 'alimenti'}</small></h2>
   <div class="stack">${MEALS.map(m => mealCard(m, day)).join('')}</div>
   <p class="foot">Tocca il pulsante verde al centro per fotografare un piatto: lo riconosco e lo aggiungo al diario.</p>`;
   animateRings();
+}
+const litri = n => (n * .25).toLocaleString('it-IT', { maximumFractionDigits: 2 });
+function waterCard(day, g){
+  const n = day.water || 0, pct = clamp(n / g.water, 0, 1), done = n >= g.water;
+  return `<div class="card water-card ${done ? 'done' : ''}">
+    <button class="bottle" data-a="water-add" data-n="1" aria-label="Aggiungi un bicchiere d'acqua">
+      <span class="cap"></span><span class="glassb"><span class="liquid" style="height:${Math.max(pct * 100, n ? 8 : 0)}%"></span>${[.25, .5, .75].map(t => `<i class="tick" style="bottom:${t * 100}%"></i>`).join('')}</span>
+    </button>
+    <div class="water-info">
+      <div class="water-l num"><b>${litri(n)} L</b><span> di ${litri(g.water)} L</span></div>
+      <div class="small muted num">${done ? 'Obiettivo raggiunto, ottimo lavoro!' : `${n} ${n === 1 ? 'bicchiere' : 'bicchieri'} · ne mancano ${g.water - n}`}</div>
+      <div class="water-btns">
+        <button data-a="water-add" data-n="1"><b>+ Bicchiere</b><span>250 ml</span></button>
+        <button data-a="water-add" data-n="2"><b>+ Bottiglietta</b><span>500 ml</span></button>
+        <button class="undo" data-a="water-add" data-n="-1" aria-label="Togli un bicchiere" ${n ? '' : 'disabled'}>−</button>
+      </div>
+    </div>
+  </div>`;
 }
 function mealCard(m, day){
   const list = day.meals[m.k] || [];
@@ -938,12 +997,7 @@ function renderProfile(){
   <h2 class="section-title">Riconoscimento delle foto</h2>
   <div class="card pad" id="dlCard"><div class="row"><div class="grow"><div class="meal-name" id="dlTitle">Controllo…</div><div class="small muted" id="dlSub">Due modelli di Google che girano sul telefono: ${MODEL.mb} MB, da scaricare una volta sola.</div></div><button class="chip-btn accent" data-a="preload" id="dlBtn" hidden>Scarica</button></div><div class="dl-bar" id="dlBarBox" hidden><i id="dlBar"></i></div></div>
   <div class="stack" style="margin-top:12px" id="backupBox"><button class="btn tinted" data-a="export">Esporta backup</button><button class="btn tinted" data-a="import">Importa backup</button></div>
-  ${isStandalone() ? '' : `<h2 class="section-title">Aggiungi alla schermata Home</h2>
-  <ul class="card rules">
-    <li><span class="dot" style="background:var(--blue)">1</span><span>Apri questa pagina in Safari sull'iPhone.</span></li>
-    <li><span class="dot" style="background:var(--blue)">2</span><span>Tocca il pulsante Condividi, il quadrato con la freccia in su.</span></li>
-    <li><span class="dot" style="background:var(--blue)">3</span><span>Scegli «Aggiungi alla schermata Home» e conferma con «Aggiungi».</span></li>
-  </ul>`}
+  ${isStandalone() ? '' : `<h2 class="section-title">Aggiungi alla schermata Home</h2>${installTabs()}<div id="installSteps">${installSteps(S.installTab || (S.installTab = guessBrowser()))}</div>`}
   <h2 class="section-title">Informazioni</h2>
   <p class="note">Piattino è pensato per chi ha almeno 9 anni. Per bambini e ragazzi non propone diete dimagranti, ma pasti equilibrati per crescere. Il riconoscimento delle foto avviene sul telefono e conosce i cibi più comuni: controlla sempre il risultato. I valori sono stime: per esigenze di salute rivolgiti al medico, al pediatra o a un dietista.</p>
   <div style="margin-top:18px" id="resetBox"><button class="btn danger" data-a="reset-ask">Cancella tutti i dati</button></div>`;
@@ -980,6 +1034,56 @@ function goalOptions(age, cur){
   if (!opts.some(o => o[0] === cur)) cur = 'healthy';
   return opts.map(([v, l, d], i) => `<input type="radio" name="goal" id="gl-${v}" value="${v}" ${v === cur ? 'checked' : ''}><label for="gl-${v}" class="${opts.length % 2 && i === opts.length - 1 ? 'wide' : ''}"><b>${l}</b><span>${d}</span></label>`).join('');
 }
+/* ---------- guida: aggiungi l'app alla schermata Home ---------- */
+const UA = navigator.userAgent;
+const IS_ANDROID = /Android/i.test(UA);
+const guessBrowser = () => IS_ANDROID ? 'android' : /CriOS/.test(UA) ? 'chrome' : 'safari';
+const installSkipped = () => { try { return sessionStorage.getItem('piattino-install') === 'skip'; } catch (e) { return !!S.installSkip; } };
+const ico = k => `<span class="step-ico">${I[k]}</span>`;
+function installSteps(kind){
+  const steps = {
+    safari: [
+      `${ico('share')} Tocca <b>Condividi</b>, il quadrato con la freccia in su. Di solito è nella barra in basso: se non lo vedi, tocca prima <b>•••</b>.`,
+      `${ico('addsq')} Scorri il menu e tocca <b>Aggiungi alla schermata Home</b>. Se non c'è, tocca <b>Mostra altro</b> in fondo alla lista.`,
+      `${ico('check')} Lascia attivo <b>Apri come app web</b>, se compare, e tocca <b>Aggiungi</b> in alto a destra.`,
+      `${ico('home')} Chiudi Safari e apri Piattino dalla nuova icona sulla schermata Home.`,
+    ],
+    chrome: [
+      `${ico('share')} Tocca <b>Condividi</b> in alto a destra, nella barra dell'indirizzo. Se non lo vedi, tocca <b>•••</b> e poi <b>Condividi</b>.`,
+      `${ico('addsq')} Scorri e tocca <b>Aggiungi alla schermata Home</b>.`,
+      `${ico('check')} Tocca <b>Aggiungi</b> in alto a destra.`,
+      `${ico('home')} Chiudi Chrome e apri Piattino dalla nuova icona sulla schermata Home.`,
+    ],
+    android: [
+      `${ico('dots')} Tocca i tre puntini <b>⋮</b> in alto a destra.`,
+      `${ico('addsq')} Tocca <b>Installa app</b> oppure <b>Aggiungi a schermata Home</b>.`,
+      `${ico('check')} Conferma con <b>Installa</b>.`,
+      `${ico('home')} Apri Piattino dalla nuova icona.`,
+    ],
+  }[kind];
+  return `<ol class="card steps">${steps.map((t, i) => `<li><span class="dot" style="background:var(--blue)">${i + 1}</span><span class="grow">${t}</span></li>`).join('')}</ol>
+    ${kind === 'chrome' ? '<p class="foot">In Chrome serve iOS 16.4 o più recente. Se non trovi l\'opzione, apri questo indirizzo in Safari.</p>' : ''}`;
+}
+function installTabs(){
+  const tabs = IS_ANDROID ? [['android', 'Android']] : [['safari', 'Safari'], ['chrome', 'Chrome']];
+  if (tabs.length < 2) return '';
+  return `<div class="seg" style="margin:4px 0 12px">${tabs.map(([k, l]) => `<button class="${S.installTab === k ? 'on' : ''}" data-a="install-tab" data-k="${k}">${I[k === 'safari' ? 'compass' : 'globe']} ${l}</button>`).join('')}</div>`;
+}
+function renderInstall(){
+  S.installTab = S.installTab || guessBrowser();
+  app.innerHTML = `<div class="welcome install">
+    <div class="home-preview"><img src="icons/apple-touch-icon.png" alt=""><span>Piattino</span></div>
+    <h1 class="install-title">Prima mettila sulla schermata Home</h1>
+    <p class="tag">Così Piattino si apre a tutto schermo come un'app vera, anche senza internet. Ci vuole un minuto.</p>
+    <div style="margin-top:20px">${installTabs()}<div id="installSteps">${installSteps(S.installTab)}</div></div>
+    <p class="note" style="margin-top:12px">Configura Piattino <b>dall'icona sulla schermata Home</b>: l'app lì ha una memoria sua, e i dati inseriti qui nel browser non passerebbero.</p>
+    <div class="stack" style="margin-top:16px">
+      <button class="btn primary" data-a="install-done">L'ho aggiunta</button>
+      <button class="btn tinted" data-a="install-skip">Continua nel browser</button>
+    </div>
+  </div>`;
+}
+
 /* ---------- parola d'ordine: solo alla prima configurazione ----------
    Nel codice c'è solo l'impronta PBKDF2 della parola, non la parola. */
 const GATE = { salt:'9J+dAwidEnfMNwyjFhRK4Q==', iter:150000, hash:'B0COZEAtcTpRRQr7S0WMrA6oJTgxRwErKWUN4u5vbXE=' };
@@ -1026,6 +1130,7 @@ function renderGate(){
   });
 }
 function renderWelcome(){
+  if (!isStandalone() && !installSkipped()) return renderInstall();
   if (!S.gateOk && !gateOpen()) return renderGate();
   app.innerHTML = `<div class="welcome">
     <div class="cube-stage" style="margin-top:36px"><div class="cube"><div class="f1">🍎</div><div class="f2">🥦</div><div class="f3">🥕</div><div class="f4">🍋</div><div class="f5">🍇</div><div class="f6">🥑</div></div><div class="cube-shadow"></div></div>
@@ -1576,7 +1681,7 @@ function renderCamera(){
       <video id="camVideo" playsinline muted autoplay style="--z:${SC.zoom || 1}"></video>
       <div class="cam-wait" id="camWait" ${SC.stream ? 'hidden' : ''}>Avvio la fotocamera…</div>
       <div class="cam-guide"><i></i><i></i><i></i><i></i></div>
-      <div class="cam-hint">Inquadra il piatto dall'alto</div>
+      <div class="cam-hint">Inquadra tutto il piatto dall'alto</div>
       <div class="cam-zoom">${[1, 2].map(z => `<button class="${(SC.zoom || 1) === z ? 'on' : ''}" data-a="cam-zoom" data-z="${z}" aria-label="Zoom ${z}x">${z}×</button>`).join('')}</div>
       <div class="cam-flash" id="camFlash"></div>
     </div>
@@ -1711,7 +1816,7 @@ function ensureModel(onFrac = () => {}){
   return modelP;
 }
 function topK(arr, k){ return Array.from(arr, (p, i) => [i, p]).sort((a, b) => b[1] - a[1]).slice(0, k); }
-const itemFromFood = (f, grams, conf, on) => ({ id:rid(), name:f.name, emoji:f.emoji, grams, base:grams, k:f.kcal/100, pp:f.p/100, cc:f.c/100, ff:f.f/100, fvv:f.fv ? 1/130 : 0, conf, on });
+const itemFromFood = (f, grams, conf, on) => ({ id:rid(), key:f.key, name:f.name, emoji:f.emoji, grams, base:grams, k:f.kcal/100, pp:f.p/100, cc:f.c/100, ff:f.f/100, fvv:f.fv ? 1/130 : 0, conf, on });
 const itemFromCat = (c, label, conf) => ({ id:rid(), name:`${c[0]} · ${label}`, emoji:c[1], grams:c[6], base:c[6], k:c[2]/100, pp:c[3]/100, cc:c[4]/100, ff:c[5]/100, fvv:c[7] ? 1/130 : 0, conf, on:false });
 async function recognizePhoto(canvas, onFrac){
   const { mobile, food } = await ensureModel(onFrac);
@@ -1751,6 +1856,47 @@ async function recognizePhoto(canvas, onFrac){
     return it;
   });
   return { items, dish };
+}
+
+/* porzione automatica: quanta parte del piatto è coperta dal cibo.
+   Il piatto (chiaro, poco saturo) fa da riferimento, quindi la stima non dipende da quanto sei vicino. */
+const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco']);
+function estimatePortion(canvas){
+  try {
+    const N = 72, c = document.createElement('canvas'); c.width = c.height = N;
+    const g = c.getContext('2d', { willReadFrequently:true }); g.drawImage(canvas, 0, 0, N, N);
+    const d = g.getImageData(0, 0, N, N).data;
+    const plate = new Uint8Array(N * N);
+    let minX = N, minY = N, maxX = -1, maxY = -1, pc = 0;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const i = (y * N + x) * 4, r = d[i], gg = d[i + 1], b = d[i + 2];
+      const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), l = (mx + mn) / 510, sat = mx ? (mx - mn) / mx : 0;
+      if (sat < .16 && l > .66) { plate[y * N + x] = 1; pc++; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+    }
+    const w = maxX - minX + 1, h = maxY - minY + 1;
+    // serve un piatto chiaro abbastanza grande e abbastanza rotondo
+    if (pc < N * N * .08 || w < N * .4 || h < N * .4 || w / h > 1.8 || h / w > 1.8) return { method:'standard', scale:1 };
+    const cx = minX + w / 2, cy = minY + h / 2, rx = w / 2, ry = h / 2;
+    let inside = 0, food = 0;
+    for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) {
+      const dx = (x + .5 - cx) / rx, dy = (y + .5 - cy) / ry;
+      if (dx * dx + dy * dy > .92) continue;                        // solo dentro il piatto, senza il bordo
+      inside++; if (!plate[y * N + x]) food++;
+    }
+    if (inside < 50) return { method:'standard', scale:1 };
+    const cover = food / inside;
+    if (cover < .04) return { method:'standard', scale:1 };
+    // una porzione "media" copre circa il 45% del piatto
+    return { method:'plate', cover, scale: clamp(cover / .45, .5, 1.8) };
+  } catch (e) { return { method:'standard', scale:1 }; }
+}
+function applyEstimate(items, est){
+  items.forEach(x => {
+    if (est.method !== 'plate' || (x.key && (PIECE[x.key] || NO_SCALE.has(x.key)))) return;
+    x.auto = Math.max(10, Math.round(x.base * est.scale / 10) * 10);
+    x.grams = x.auto;
+  });
+  SC.est = est;
 }
 
 /* description in words: «2 uova, 50 g di pane e un'insalata» */
@@ -1830,7 +1976,7 @@ async function handlePhoto(file){
 async function runScan(){
   const run = SC.run = (SC.run || 0) + 1;
   const fromText = !!SC.desc;
-  Object.assign(SC, { items:[], tip:'', sub:'', pctShown:0, pctTarget:0, creep:0 });
+  Object.assign(SC, { items:[], tip:'', sub:'', pctShown:0, pctTarget:0, creep:0, est:null });
   SC.state = 'scanning'; renderScanner();
   const t0 = Date.now();
   let items = [], dish = 0, failed = false;
@@ -1844,6 +1990,8 @@ async function runScan(){
       const MB = MODEL.mb;
       const r = await recognizePhoto(SC.square, f => setPct(8 + f * 72, f < 1 ? `Scarico il riconoscimento dei cibi: ${fmt1(f * MB)} di ${MB} MB (solo la prima volta)` : 'Riconoscimento pronto'));
       items = r.items; dish = r.dish;
+      setPct(97, 'Calcolo i grammi dal piatto');
+      applyEstimate(items, estimatePortion(SC.square));
     }
   } catch (e) { failed = true; console.error(e); }
   SC.creep = 0;
@@ -1884,12 +2032,13 @@ function renderResult(){
   const tot = on.reduce((a, e) => ({ kcal:a.kcal + e.kcal, p:a.p + e.p, c:a.c + e.c, f:a.f + e.f }), { kcal:0, p:0, c:0, f:0 });
   const unsure = SC.items.some(x => x.conf != null) && !SC.items.some(x => x.on) && !SC.touched;
   box.innerHTML = `<div class="grabber"></div><div class="result-in">
+    ${SC.est ? `<p class="est">${I.scale}<span>${SC.est.method === 'plate' ? `Grammi calcolati in automatico: il cibo copre circa il <b>${Math.round(SC.est.cover * 100)}%</b> del piatto.` : 'Non vedo bene il piatto, quindi uso una porzione standard. Per il calcolo automatico fotografa tutto il piatto dall\'alto.'}</span></p>` : ''}
     ${unsure ? `<p class="note" style="margin:10px 0 0">Non sono sicuro di cosa ci sia nella foto. Tocca il cerchio accanto al cibo giusto, oppure cercalo nell'elenco.</p>` : ''}
     <div class="group" style="margin-top:10px">${SC.items.map(x => { const e = itemEntry(x); return `<div class="res-item ${x.on ? '' : 'off'}">
       <button class="check" data-a="res-toggle" data-id="${x.id}" aria-label="${x.on ? 'Escludi' : 'Includi'} ${esc(x.name)}">${I.check}</button>
       <span class="thumb">${esc(x.emoji)}</span>
       <div class="grow"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</div><div class="small muted num">${x.conf != null ? `<b class="conf">${Math.round(x.conf * 100)}%</b> · ` : ''}<b style="color:var(--label)">${fmt(e.kcal)} kcal</b> · P ${fmt(e.p)} · C ${fmt(e.c)} · G ${fmt(e.f)}</div>
-        <div class="portion-row"><div class="portion" role="group" aria-label="Porzione">${PORTIONS.map(([l, fct]) => `<button class="${Math.abs(x.grams - Math.round(x.base * fct / 5) * 5) < 3 ? 'on' : ''}" data-a="res-portion" data-id="${x.id}" data-f="${fct}">${l}</button>`).join('')}</div>
+        <div class="portion-row"><div class="portion" role="group" aria-label="Porzione">${x.auto ? `<button class="auto ${x.grams === x.auto ? 'on' : ''}" data-a="res-portion" data-id="${x.id}" data-g="${x.auto}">${I.scale} Dalla foto</button>` : ''}${PORTIONS.map(([l, fct]) => `<button class="${(!x.auto || x.grams !== x.auto) && Math.abs(x.grams - Math.round(x.base * fct / 5) * 5) < 3 ? 'on' : ''}" data-a="res-portion" data-id="${x.id}" data-f="${fct}">${l}</button>`).join('')}</div>
         <div class="mini-step"><button data-a="res-step" data-id="${x.id}" data-d="-1" aria-label="Meno grammi">−</button><span>${fmt(x.grams)} g</span><button data-a="res-step" data-id="${x.id}" data-d="1" aria-label="Più grammi">+</button></div></div></div>
     </div>`; }).join('')}</div>
     <div class="nutri num">${nutriHtml(tot)}</div>
@@ -1901,7 +2050,7 @@ function renderResult(){
       <button class="btn tinted" data-a="scan-manual">Non è giusto? Cerca nell'elenco</button>
       <button class="btn tinted" data-a="scan-again">Scansiona un altro piatto</button>
     </div>
-    <p class="foot">${SC.items.some(x => x.conf != null) ? 'La percentuale indica quanto è sicuro il riconoscimento. Tocca il cerchio per scegliere i cibi giusti e correggi le porzioni: scegli Piccola, Media o Grande, oppure regola i grammi con − e +.' : 'Porzioni stimate dalla descrizione: correggile con Piccola, Media, Grande o con − e +.'}</p>
+    <p class="foot">${SC.items.some(x => x.conf != null) ? 'La percentuale indica quanto è sicuro il riconoscimento. Tocca il cerchio per scegliere i cibi giusti e correggi le grammi: se la stima dalla foto non ti convince scegli Piccola, Media o Grande, oppure regola con − e +.' : 'Porzioni stimate dalla descrizione: correggile con Piccola, Media, Grande o con − e +.'}</p>
   </div>`;
   $('#memo').addEventListener('change', e => SC.memo = e.target.checked);
 }
@@ -1911,7 +2060,14 @@ const actions = {
   tab: el => { S.view = el.dataset.v; closeSheet(); render(); window.scrollTo(0, 0); },
   day: el => { const d = +el.dataset.d; S.date = d === 0 ? todayKey() : addDays(S.date, d); if (S.date > todayKey()) S.date = todayKey(); render(); },
   goto: el => { S.date = el.dataset.k; S.view = 'today'; render(); window.scrollTo(0, 0); },
-  water: el => { const d = ensureDay(S.date); const i = +el.dataset.i; d.water = (d.water || 0) === i + 1 ? i : i + 1; saveDay(S.date); renderToday(); if (d.water === T().water) toast('Obiettivo acqua raggiunto!'); },
+  'water-add': el => {
+    const d = ensureDay(S.date), g = T(), before = d.water || 0, n = +el.dataset.n;
+    d.water = clamp(before + n, 0, 30); saveDay(S.date);
+    const box = $('#waterBox'); if (box) box.innerHTML = waterCard(d, g);
+    const b = $('#waterBox .bottle'); if (b && n > 0) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+    if (before < g.water && d.water >= g.water) toast('Obiettivo acqua raggiunto!');
+    else if (n > 0) toast(`+${n * 250} ml · ${litri(d.water)} L oggi`);
+  },
   quote: () => {
     const next = pickQuote(); S.currentQuote = next;
     const inner = $('.flip-inner'); const hidden = S.quoteDeg % 360 === 0 ? $('#qb') : $('#qa');
@@ -1954,9 +2110,12 @@ const actions = {
   'cam-zoom': el => { SC.zoom = +el.dataset.z; const v = $('#camVideo'); if (v) v.style.setProperty('--z', SC.zoom); document.querySelectorAll('.cam-zoom button').forEach(b => b.classList.toggle('on', +b.dataset.z === SC.zoom)); },
   'cam-flip': () => { SC.facing = SC.facing === 'user' ? 'environment' : 'user'; stopCamera(); const w = $('#camWait'); if (w) w.hidden = false; startCamera(); },
   'scan-again': () => { SC.run = (SC.run || 0) + 1; Object.assign(SC, { img:null, desc:'', items:[] }); SC.state = canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); else actions['pick-photo'](); },
-  'res-portion': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.grams = Math.max(5, Math.round(x.base * +el.dataset.f / 5) * 5); renderResult(); },
+  'res-portion': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.grams = el.dataset.g ? +el.dataset.g : Math.max(5, Math.round(x.base * +el.dataset.f / 5) * 5); renderResult(); },
   export: () => exportData(),
   goal: () => openGoal(),
+  'install-tab': el => { S.installTab = el.dataset.k; document.querySelectorAll('[data-a=install-tab]').forEach(b => b.classList.toggle('on', b.dataset.k === S.installTab)); const box = $('#installSteps'); if (box) box.innerHTML = installSteps(S.installTab); },
+  'install-done': () => { app.innerHTML = `<div class="welcome install"><div class="home-preview"><img src="icons/apple-touch-icon.png" alt=""><span>Piattino</span></div><h1 class="install-title">Perfetto!</h1><p class="tag">Ora chiudi questa pagina e apri Piattino toccando la sua icona sulla schermata Home. Lì ti chiederà la parola d'ordine e potrai configurarla.</p><div style="margin-top:22px"><button class="btn tinted" data-a="install-skip">Non la trovo, continua nel browser</button></div></div>`; window.scrollTo(0, 0); },
+  'install-skip': () => { S.installSkip = true; try { sessionStorage.setItem('piattino-install', 'skip'); } catch (e) {} renderWelcome(); window.scrollTo(0, 0); },
   coach: () => openCoach(),
   'coach-ask': el => coachAsk(el.dataset.q),
   'coach-act': el => coachAct(el.dataset.k),
