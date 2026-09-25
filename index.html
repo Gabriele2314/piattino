@@ -1087,7 +1087,8 @@ async function recognizePhoto(canvas){
     else if (names.some(n => DISH_HINTS.includes(n))) dish += pr.probability;
   });
   const ranked = Object.entries(score).filter(([, p]) => p >= .04).sort((a, b) => b[1] - a[1]).slice(0, 4);
-  return { items: ranked.map(([k, p], i) => itemFromFood(FOOD[k], FOOD[k].portion, p, i === 0)), dish };
+  // sotto il 25% non scegliamo al posto tuo: proponiamo le alternative
+  return { items: ranked.map(([k, p], i) => itemFromFood(FOOD[k], FOOD[k].portion, p, i === 0 && p >= .25)), dish };
 }
 
 /* description in words: «2 uova, 50 g di pane e un'insalata» */
@@ -1176,9 +1177,11 @@ async function runScan(){
   showResults(items);
 }
 function showResults(items){
-  SC.items = items; SC.state = 'result';
+  SC.items = items; SC.state = 'result'; SC.touched = false;
   const main = scanner.querySelector('.scan-main'); main.classList.remove('scanning'); main.classList.add('done');
-  $('#scanStatus').textContent = 'Ecco cosa ho trovato'; $('#scanSub').textContent = items.map(x => x.name).join(', ');
+  const unsure = !items.some(x => x.on);
+  $('#scanStatus').textContent = unsure ? 'Forse è uno di questi' : 'Ecco cosa ho trovato';
+  $('#scanSub').textContent = unsure ? 'Non sono sicuro: tocca il cerchio accanto al cibo giusto.' : items.map(x => x.name).join(', ');
   const tags = $('#tags'); const pos = [[8,14],[48,40],[12,66],[52,8],[30,82],[60,62],[4,40],[56,86]];
   tags.innerHTML = items.map((x, j) => `<span class="tag3d" style="left:${pos[j][0]}%;top:${pos[j][1]}%">${esc(x.emoji)} ${esc(x.name.replace(/\s*\(.*?\)/, ''))}</span>`).join('');
   tags.querySelectorAll('.tag3d').forEach((el, j) => setTimeout(() => el.classList.add('in'), 120 + j*180));
@@ -1190,7 +1193,9 @@ function renderResult(){
   const box = $('#scanResult'); if (!box) return;
   const on = SC.items.filter(x => x.on).map(itemEntry);
   const tot = on.reduce((a, e) => ({ kcal:a.kcal + e.kcal, p:a.p + e.p, c:a.c + e.c, f:a.f + e.f }), { kcal:0, p:0, c:0, f:0 });
+  const unsure = SC.items.some(x => x.conf != null) && !SC.items.some(x => x.on) && !SC.touched;
   box.innerHTML = `<div class="grabber"></div><div class="result-in">
+    ${unsure ? `<p class="note" style="margin:10px 0 0">Non sono sicuro di cosa ci sia nella foto. Tocca il cerchio accanto al cibo giusto, oppure cercalo nell'elenco.</p>` : ''}
     <div class="group" style="margin-top:10px">${SC.items.map(x => { const e = itemEntry(x); return `<div class="res-item ${x.on ? '' : 'off'}">
       <button class="check" data-a="res-toggle" data-id="${x.id}" aria-label="${x.on ? 'Escludi' : 'Includi'} ${esc(x.name)}">${I.check}</button>
       <span class="thumb">${esc(x.emoji)}</span>
@@ -1264,7 +1269,7 @@ const actions = {
   'scan-stop': () => { SC.run = (SC.run || 0) + 1; SC.state = SC.desc ? 'describe' : 'idle'; SC.img = null; renderScanner(); if (SC.state === 'idle') startCamera(); },
   'pick-photo': () => { stopCamera(); const inp = $('#photoInput'); inp.value = ''; inp.click(); },
   'scan-manual': () => { const thumb = SC.thumb; closeScanner(); openAdd(SC.meal); A.pendingThumb = thumb; },
-  'res-toggle': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (x) { x.on = !x.on; renderResult(); } },
+  'res-toggle': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (x) { x.on = !x.on; SC.touched = true; renderResult(); } },
   'res-step': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; const step = Math.max(5, Math.round(x.base * .1 / 5) * 5); x.grams = clamp(x.grams + step * +el.dataset.d, step, 3000); renderResult(); },
   'res-meal': el => { SC.meal = el.dataset.m; renderResult(); },
   'res-add': () => {
