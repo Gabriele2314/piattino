@@ -20,9 +20,11 @@ Funziona senza account e senza server: i dati restano sul telefono.
 - **Frasi motivazionali** diverse per bambini, ragazzi, adulti e over 65.
 - **Backup**: esporta e importa i dati in un file JSON.
 
-## Parola d'ordine
+## Aspetto
 
-La prima configurazione chiede una parola d'ordine (chiedila a Gabriele). Dopo non viene più chiesta. Nel codice c'è solo la sua impronta PBKDF2, non la parola. È un lucchetto per l'installazione, non una protezione dei dati: i dati restano comunque solo sul telefono.
+L'interfaccia segue il design system «iOS HIG», ricavato dalle Human Interface Guidelines di Apple. In `index.html` i token del sistema (colori, spaziature, raggi, caratteri) sono variabili CSS con i nomi originali, per quattro temi: chiaro, scuro e le due versioni con Aumenta contrasto. Testo secondario leggibile (4,5:1), aree di tocco da 44 pt, tab bar flottante in Liquid Glass con il pulsante della fotocamera a parte, errori con glifo e testo. Lo scanner usa sempre i colori del tema scuro.
+
+Il movimento segue lo stile di Apple: molle simulate (come `.smooth`, `.snappy` e `.bouncy` di SwiftUI) al posto di durate fisse, solo transform e opacità perché resti fluido anche a 120 Hz, animazioni legate a quello che fai (lo scanner si apre dal pulsante della fotocamera e ci rientra, l'indicatore della tab bar scivola, i giorni arrivano dal lato verso cui ti sposti, i numeri contano fino al nuovo valore) e testi che entrano parola per parola da sfocati a nitidi. Gli sheet si chiudono anche trascinandoli verso il basso. Con Riduci movimento restano solo dissolvenze brevi.
 
 ## Per chi ha meno di 18 anni
 
