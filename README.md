@@ -6,9 +6,9 @@ Funziona senza account e senza server: i dati restano sul telefono.
 
 ## Cosa fa
 
-- **Oggi**: il pulsante «Aggiungi pasto» subito in alto, anelli per calorie, proteine e frutta e verdura, barre di carboidrati e grassi, bicchieri d'acqua e i quattro pasti.
-- **Fotocamera** a tutto schermo: mirino, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
-- **Riconoscimento sul telefono** con due modelli di Google che lavorano insieme: MobileNet per frutta, verdura e cibi semplici, AIY Food V1 per 2.024 piatti (pizza, lasagne, carbonara, risotto, sushi…). Per ogni cibo mostra quanto è sicuro, le calorie e la porzione (piccola, media, grande). Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
+- **Oggi**: il pulsante «Aggiungi pasto» subito in alto (da lì si fotografa il piatto o lo si cerca nell'elenco: una strada sola), anelli per calorie, proteine e frutta e verdura, barre di carboidrati e grassi, bicchieri d'acqua e i quattro pasti.
+- **Fotocamera** a tutto schermo, dentro «Aggiungi pasto»: mirino, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
+- **Riconoscimento sul telefono** con due modelli di Google che lavorano insieme: MobileNet per frutta, verdura e cibi semplici, AIY Food V1 per 2.024 piatti (pizza, lasagne, carbonara, risotto, sushi…). I piatti si decidono per categoria (le probabilità delle 2.024 ricette si sommano: zuppe, riso, pasta, carne, dolci…), il colore distingue le varianti (riso allo zafferano, in bianco o al pomodoro; pasta al pomodoro, al pesto o in bianco) e il modello generico vale solo per i cibi «da soli», come un frutto. Mostra il piatto più probabile con quanto è sicuro, le calorie e la porzione (piccola, media, grande), e sotto le alternative da scegliere con un tocco. Pasto e pulsante «Aggiungi» restano sempre in vista in fondo al pannello. Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
 - **Grammi automatici**: dalla foto l'app misura quanta parte del piatto è coperta dal cibo e calcola i grammi (il piatto chiaro fa da riferimento, quindi non conta quanto sei vicino). Se il piatto non si vede bene usa una porzione standard.
 - **Acqua** con una bottiglia che si riempie, i litri bevuti e i pulsanti «+ Bicchiere 250 ml», «+ Bottiglia 500 ml» e «−».
 - **Percentuale di avanzamento** mentre scarica i modelli e analizza la foto.
@@ -22,7 +22,9 @@ Funziona senza account e senza server: i dati restano sul telefono.
 
 ## Aspetto
 
-L'interfaccia è ottimizzata per iPhone e segue il design system del progetto. In `index.html` i token del sistema (colori, spaziature, raggi, caratteri) sono variabili CSS con i nomi originali, per quattro temi: chiaro, scuro e le due versioni con Aumenta contrasto. Testo secondario leggibile (4,5:1), aree di tocco da 44 pt, tab bar flottante in Liquid Glass con il pulsante della fotocamera a parte, errori con glifo e testo. Lo scanner usa sempre i colori del tema scuro.
+All'apertura compare per un attimo la firma «Creata da Gabriele».
+
+L'interfaccia è ottimizzata per iPhone e segue il design system del progetto. In `index.html` i token del sistema (colori, spaziature, raggi, caratteri) sono variabili CSS con i nomi originali, per quattro temi: chiaro, scuro e le due versioni con Aumenta contrasto. Testo secondario leggibile (4,5:1), aree di tocco da 44 pt, tab bar flottante in Liquid Glass, sfumature leggere negli sfondi, errori con glifo e testo. Lo scanner usa sempre i colori del tema scuro.
 
 Anche il movimento è ottimizzato per iPhone: molle simulate al posto di durate fisse, solo transform e opacità perché resti fluido anche a 120 Hz, animazioni legate a quello che fai (lo scanner si apre dal pulsante della fotocamera e ci rientra, l'indicatore della tab bar scivola, i giorni arrivano dal lato verso cui ti sposti, i numeri contano fino al nuovo valore) e testi che entrano parola per parola da sfocati a nitidi. Gli sheet si chiudono anche trascinandoli verso il basso. Con Riduci movimento restano solo dissolvenze brevi.
 
