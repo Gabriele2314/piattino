@@ -6,7 +6,7 @@ Funziona senza account e senza server: i dati restano sul telefono.
 
 ## Cosa fa
 
-- **Oggi**: anelli per calorie, proteine e frutta e verdura, barre di carboidrati e grassi, bicchieri d'acqua e i quattro pasti.
+- **Oggi**: il pulsante «Aggiungi pasto» subito in alto, anelli per calorie, proteine e frutta e verdura, barre di carboidrati e grassi, bicchieri d'acqua e i quattro pasti.
 - **Fotocamera** a tutto schermo: mirino, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
 - **Riconoscimento sul telefono** con due modelli di Google che lavorano insieme: MobileNet per frutta, verdura e cibi semplici, AIY Food V1 per 2.024 piatti (pizza, lasagne, carbonara, risotto, sushi…). Per ogni cibo mostra quanto è sicuro, le calorie e la porzione (piccola, media, grande). Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
 - **Grammi automatici**: dalla foto l'app misura quanta parte del piatto è coperta dal cibo e calcola i grammi (il piatto chiaro fa da riferimento, quindi non conta quanto sei vicino). Se il piatto non si vede bene usa una porzione standard.
