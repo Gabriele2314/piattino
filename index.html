@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
-/* Token del design system «iOS HIG» (tokens.json), generati senza modifiche.
+/* Token del design system (tokens.json), generati senza modifiche.
    Temi: chiaro, scuro, Aumenta contrasto chiaro e scuro. Lo scanner è sempre scuro; il suo pannello dei risultati segue il tema. */
 :root{
   --font-sans:-apple-system, "SF Pro", "SF Pro Text", system-ui, "Helvetica Neue", sans-serif; --font-serif:"New York", ui-serif, Georgia, serif; --font-mono:"SF Mono", ui-monospace, Menlo, monospace;
@@ -88,7 +88,7 @@
     --system-gray-2:#636366; --system-gray-3:#48484a; --system-gray-4:#3a3a3c; --system-gray-5:#2c2c2e; --system-gray-6:#1c1c1e;
   }
 }
-/* Movimento: molle come quelle di iOS (SwiftUI .smooth, .snappy, .bouncy), simulate e campionate con linear().
+/* Movimento ottimizzato per iPhone: molle (morbida, scattante, con rimbalzo) simulate e campionate con linear().
    Si animano solo transform e opacità, così ogni fotogramma arriva in tempo anche a 120 Hz. */
 :root{
   --spring-smooth:cubic-bezier(.22,1,.36,1); --dur-smooth:.6s;
@@ -446,7 +446,7 @@ button,.tab{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .prog-bar{width:100%}
 .prog-bar i{width:0;transition:width .25s linear}
 
-/* Fotocamera (stile iPhone) */
+/* Fotocamera */
 .cam{position:absolute;inset:0;background:var(--bg);display:grid;grid-template-rows:auto 1fr auto;color:var(--label);z-index:3}
 .cam-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 10px}
 .cam-top .pill{font:600 13px/18px var(--font-sans);background:var(--system-gray-5);padding:6px 12px;border-radius:var(--radius-capsule)}

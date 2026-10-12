@@ -1,13 +1,13 @@
 # Piattino
 
-Una web app in stile iPhone per organizzare la dieta e tenere il diario di quello che mangi, pensata per tutte le età dai 9 anni in su.
+Una web app ottimizzata per iPhone per organizzare la dieta e tenere il diario di quello che mangi, pensata per tutte le età dai 9 anni in su.
 
 Funziona senza account e senza server: i dati restano sul telefono.
 
 ## Cosa fa
 
 - **Oggi**: anelli per calorie, proteine e frutta e verdura, barre di carboidrati e grassi, bicchieri d'acqua e i quattro pasti.
-- **Fotocamera** come quella dell'iPhone: mirino a tutto schermo, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
+- **Fotocamera** a tutto schermo: mirino, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
 - **Riconoscimento sul telefono** con due modelli di Google che lavorano insieme: MobileNet per frutta, verdura e cibi semplici, AIY Food V1 per 2.024 piatti (pizza, lasagne, carbonara, risotto, sushi…). Per ogni cibo mostra quanto è sicuro, le calorie e la porzione (piccola, media, grande). Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
 - **Grammi automatici**: dalla foto l'app misura quanta parte del piatto è coperta dal cibo e calcola i grammi (il piatto chiaro fa da riferimento, quindi non conta quanto sei vicino). Se il piatto non si vede bene usa una porzione standard.
 - **Acqua** con una bottiglia che si riempie, i litri bevuti e i pulsanti «+ Bicchiere 250 ml», «+ Bottiglia 500 ml» e «−».
@@ -22,9 +22,9 @@ Funziona senza account e senza server: i dati restano sul telefono.
 
 ## Aspetto
 
-L'interfaccia segue il design system «iOS HIG», ricavato dalle Human Interface Guidelines di Apple. In `index.html` i token del sistema (colori, spaziature, raggi, caratteri) sono variabili CSS con i nomi originali, per quattro temi: chiaro, scuro e le due versioni con Aumenta contrasto. Testo secondario leggibile (4,5:1), aree di tocco da 44 pt, tab bar flottante in Liquid Glass con il pulsante della fotocamera a parte, errori con glifo e testo. Lo scanner usa sempre i colori del tema scuro.
+L'interfaccia è ottimizzata per iPhone e segue il design system del progetto. In `index.html` i token del sistema (colori, spaziature, raggi, caratteri) sono variabili CSS con i nomi originali, per quattro temi: chiaro, scuro e le due versioni con Aumenta contrasto. Testo secondario leggibile (4,5:1), aree di tocco da 44 pt, tab bar flottante in Liquid Glass con il pulsante della fotocamera a parte, errori con glifo e testo. Lo scanner usa sempre i colori del tema scuro.
 
-Il movimento segue lo stile di Apple: molle simulate (come `.smooth`, `.snappy` e `.bouncy` di SwiftUI) al posto di durate fisse, solo transform e opacità perché resti fluido anche a 120 Hz, animazioni legate a quello che fai (lo scanner si apre dal pulsante della fotocamera e ci rientra, l'indicatore della tab bar scivola, i giorni arrivano dal lato verso cui ti sposti, i numeri contano fino al nuovo valore) e testi che entrano parola per parola da sfocati a nitidi. Gli sheet si chiudono anche trascinandoli verso il basso. Con Riduci movimento restano solo dissolvenze brevi.
+Anche il movimento è ottimizzato per iPhone: molle simulate al posto di durate fisse, solo transform e opacità perché resti fluido anche a 120 Hz, animazioni legate a quello che fai (lo scanner si apre dal pulsante della fotocamera e ci rientra, l'indicatore della tab bar scivola, i giorni arrivano dal lato verso cui ti sposti, i numeri contano fino al nuovo valore) e testi che entrano parola per parola da sfocati a nitidi. Gli sheet si chiudono anche trascinandoli verso il basso. Con Riduci movimento restano solo dissolvenze brevi.
 
 ## Per chi ha meno di 18 anni
 
