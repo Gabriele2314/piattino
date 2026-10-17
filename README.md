@@ -8,7 +8,9 @@ Funziona senza account e senza server: i dati restano sul telefono.
 
 - **Oggi**: il pulsante «Aggiungi pasto» subito in alto (da lì si fotografa il piatto o lo si cerca nell'elenco: una strada sola), anelli per calorie, proteine e frutta e verdura, barre di carboidrati e grassi, bicchieri d'acqua e i quattro pasti.
 - **Fotocamera** a tutto schermo, dentro «Aggiungi pasto»: mirino, otturatore, zoom 1×/2×, fotocamera frontale, libreria.
-- **Riconoscimento sul telefono** con due modelli di Google che lavorano insieme: MobileNet per frutta, verdura e cibi semplici, AIY Food V1 per 2.024 piatti (pizza, lasagne, carbonara, risotto, sushi…). I piatti si decidono per categoria (le probabilità delle 2.024 ricette si sommano: zuppe, riso, pasta, carne, dolci…), il colore distingue le varianti (riso allo zafferano, in bianco o al pomodoro; pasta al pomodoro, al pesto o in bianco) e il modello generico vale solo per i cibi «da soli», come un frutto. Mostra il piatto più probabile con quanto è sicuro, le calorie e la porzione (piccola, media, grande), e sotto le alternative da scegliere con un tocco. Pasto e pulsante «Aggiungi» restano sempre in vista in fondo al pannello. Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
+- **Riconoscimento sul telefono con PiattinoScan**, il riconoscimento dei cibi addestrato apposta per Piattino: conosce i 101 piatti di Food-101 e i cibi di tutti i giorni che lì mancano (frutta, verdura, polenta, minestrone, risotto allo zafferano, riso in bianco, pasta al pomodoro o al pesto, arancini, focaccia, piadina, cotoletta, parmigiana…). Gira sul telefono, senza internet dopo il primo download. Se non si carica, l'app usa i due modelli di Google di prima (MobileNet e AIY Food V1).
+- **Impara dalle tue correzioni**: se dopo una foto scegli un cibo diverso da quello proposto, o lo cerchi nell'elenco, l'app ricorda l'«impronta» di quella foto (solo sul telefono) e la volta dopo riconosce quel piatto, con la nota «Ricordo questo piatto da una tua correzione precedente». Se fotografi un bicchiere d'acqua, va nel contatore dell'acqua.
+- **Risultati**: il piatto più probabile con quanto è sicuro, le calorie e la porzione (piccola, media, grande), e sotto le alternative da scegliere con un tocco. Pasto e pulsante «Aggiungi» restano sempre in vista in fondo al pannello. Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
 - **Grammi automatici**: dalla foto l'app misura quanta parte del piatto è coperta dal cibo e calcola i grammi (il piatto chiaro fa da riferimento, quindi non conta quanto sei vicino). Se il piatto non si vede bene usa una porzione standard.
 - **Acqua** con una bottiglia che si riempie, i litri bevuti e i pulsanti «+ Bicchiere 250 ml», «+ Bottiglia 500 ml» e «−».
 - **Percentuale di avanzamento** mentre scarica i modelli e analizza la foto.
@@ -41,7 +43,7 @@ Al primo avvio nel browser l'app mostra la guida, con i passaggi per Safari e pe
 3. Scegli **Aggiungi alla schermata Home** e poi **Aggiungi**.
 4. Apri Piattino dall'icona e configuralo da lì: l'app sulla Home ha una memoria separata dal browser.
 
-Alla prima scansione l'app scarica i modelli di riconoscimento (circa 24 MB, con la percentuale). Puoi scaricarli prima da Profilo → Riconoscimento delle foto. Dopo funziona anche offline.
+Alla prima scansione l'app scarica PiattinoScan (circa 4,5 MB, con la percentuale). Puoi scaricarli prima da Profilo → Riconoscimento delle foto. Dopo funziona anche offline.
 
 ## Struttura
 
@@ -50,8 +52,9 @@ Alla prima scansione l'app scarica i modelli di riconoscimento (circa 24 MB, con
 | `index.html` | Tutta l'app: stile, interfaccia e logica |
 | `sw.js` | Service worker per l'uso offline |
 | `manifest.webmanifest` | Nome, icone e colori dell'app installata |
-| `model/` | MobileNet v2 1.0 224 (grafo TensorFlow.js, Google, Apache 2.0) e i nomi delle 1.000 classi ImageNet |
-| `model-food/` | AIY Vision Food V1 (Google, Apache 2.0), convertito da TF Hub a TensorFlow.js con pesi float16, e le 2.024 etichette |
+| `model-scan/` | PiattinoScan: `model.json` (struttura della rete, classi, taratura della memoria delle correzioni) e `weights.bin` (pesi in 8 bit). È una EfficientNet-B0 (timm, Apache 2.0) rifinita su Food-101 e su foto a licenza libera di Wikimedia Commons; i crediti sono in `model-scan/CREDITI.md` |
+| `model/` | Riserva: MobileNet v2 1.0 224 (grafo TensorFlow.js, Google, Apache 2.0) e i nomi delle 1.000 classi ImageNet |
+| `model-food/` | Riserva: AIY Vision Food V1 (Google, Apache 2.0), convertito da TF Hub a TensorFlow.js con pesi float16, e le 2.024 etichette |
 | `vendor/` | TensorFlow.js 4.22.0 (Apache 2.0) |
 | `icons/` | Icone dell'app |
 

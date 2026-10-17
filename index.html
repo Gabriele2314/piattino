@@ -700,10 +700,15 @@ const FOODS = [
 ['risozaff','Risotto allo zafferano','🍚',150,3.5,24,4.5,300,0],['risotto','Risotto','🍚',150,4,23,4.5,300,0],['risobianco','Riso in bianco (cotto)','🍚',130,2.7,28,0.3,250,0],
 ['risopom','Riso al pomodoro','🍚',135,3,25,2.5,300,0],['pastapesto','Pasta al pesto (piatto)','🍝',190,6,26,7,300,0],['pastabianco','Pasta in bianco (piatto)','🍝',165,5.5,30,2.5,300,0],
 ['polenta','Polenta','🌽',85,2,18,0.5,250,0],['salsiccia','Salsiccia (cotta)','🌭',300,17,1,25,120,0],
+['melone','Melone','🍈',34,0.8,8,0.2,200,1],['ciliegie','Ciliegie','🍒',63,1.1,16,0.2,150,1],['melanzane','Melanzane (cotte)','🍆',35,0.8,8.7,0.2,150,1],
+['fagiolini','Fagiolini (cotti)','🫛',35,1.9,7.9,0.3,150,1],['pastafagioli','Pasta e fagioli','🍲',110,5,17,2.5,300,0],['tortellini','Tortellini (piatto)','🥟',200,8.5,26,7,200,0],
+['arancini','Arancini','🍙',220,6,27,10,170,0],['polpette','Polpette al sugo','🧆',200,14,7,13,150,0],['cotoletta','Cotoletta alla milanese','🍖',260,20,12,15,150,0],
+['parmigiana','Parmigiana di melanzane','🍆',150,6,7,11,250,0],['formaggio','Formaggio stagionato','🧀',380,26,1,30,50,0],['salame','Salame','🍖',425,26,1,35,40,0],
+['focaccia','Focaccia','🫓',330,7,45,13,100,0],['piadina','Piadina','🫓',330,7.5,50,11,110,0],['crostata','Crostata di marmellata','🥧',400,5,60,15,80,0],
 ].map(([key,name,emoji,kcal,p,c,f,portion,fv]) => ({key,name,emoji,kcal,p,c,f,portion,fv}));
 const FOOD = Object.fromEntries(FOODS.map(f => [f.key, f]));
 // peso di un pezzo, per frasi come «2 uova» o «una mela»
-const PIECE = { uova:60, mela:150, banana:120, arancia:150, kiwi:80, pera:150, pesca:150, fette:10, biscotti:10, cornetto:60, burger:200, hotdog:150, bagel:90, yogurt:125, greco:150, pizza:300, limone:50, caffe:30, ghiacciolo:70, pane:50, paneint:50 };
+const PIECE = { uova:60, mela:150, banana:120, arancia:150, kiwi:80, pera:150, pesca:150, fette:10, biscotti:10, cornetto:60, burger:200, hotdog:150, bagel:90, yogurt:125, greco:150, pizza:300, limone:50, caffe:30, ghiacciolo:70, pane:50, paneint:50, arancini:170, piadina:110, polpette:40, cotoletta:150, focaccia:100 };
 const fvFor = (isFv, g) => isFv ? Math.max(1, Math.round(g / 130)) : 0;
 
 /* A "source" is anything that can become a diary entry: values per gram */
@@ -1127,7 +1132,7 @@ function renderDiary(){
 
 /* ---- profile ---- */
 async function modelCached(){
-  try { return !!(await caches.match(MODELS.food.url)) && !!(await caches.match(MODELS.mobile.url)); } catch (e) { return false; }
+  try { return !!(await caches.match(SCAN_URL + 'weights.bin')) || (!!(await caches.match(MODELS.food.url)) && !!(await caches.match(MODELS.mobile.url))); } catch (e) { return false; }
 }
 async function refreshDlCard(){
   const t = $('#dlTitle'); if (!t) return;
@@ -1164,7 +1169,7 @@ function renderProfile(){
   <h2 class="section-title">Dati</h2>
   <div class="card pad"><div class="meal-name">Salvati su questo dispositivo</div><div class="small muted" style="margin-top:4px">Profilo, diario e foto restano solo qui: nessun account, nessun server. Esporta un backup ogni tanto, oppure per passare a un altro telefono.</div></div>
   <h2 class="section-title">Riconoscimento delle foto</h2>
-  <div class="card pad" id="dlCard"><div class="row"><div class="grow"><div class="meal-name" id="dlTitle">Controllo…</div><div class="small muted" id="dlSub">Due modelli di Google che girano sul telefono: ${MODEL.mb} MB, da scaricare una volta sola.</div></div><button class="chip-btn accent" data-a="preload" id="dlBtn" hidden>Scarica</button></div><div class="dl-bar" id="dlBarBox" hidden><i id="dlBar"></i></div></div>
+  <div class="card pad" id="dlCard"><div class="row"><div class="grow"><div class="meal-name" id="dlTitle">Controllo…</div><div class="small muted" id="dlSub">PiattinoScan, il riconoscimento dei cibi creato per Piattino, gira sul telefono: ${fmt1(MODEL.mb)} MB da scaricare una volta sola. Impara anche dalle tue correzioni.</div></div><button class="chip-btn accent" data-a="preload" id="dlBtn" hidden>Scarica</button></div><div class="dl-bar" id="dlBarBox" hidden><i id="dlBar"></i></div></div>
   <div class="stack" style="margin-top:12px" id="backupBox"><button class="btn tinted" data-a="export">Esporta backup</button><button class="btn tinted" data-a="import">Importa backup</button></div>
   ${isStandalone() ? '' : `<h2 class="section-title">Aggiungi alla schermata Home</h2>${installTabs()}<div id="installSteps">${installSteps(S.installTab)}</div>`}
   <h2 class="section-title">Informazioni</h2>
@@ -1674,7 +1679,7 @@ const sheetHead = (title, left = 'Annulla', right = '') => `<div class="sheet-he
 /* ---- add food sheet ---- */
 const A = { meal:'pranzo', tab:'db', q:'', src:null, grams:100 };
 function openAdd(meal, src){
-  A.pendingThumb = null; A.fromOutside = false; A.meal = meal || autoMeal(); A.tab = S.foods.length && !src ? A.tab : 'db'; A.q = ''; A.src = src || null; A.grams = src ? src.grams : 100;
+  A.pendingThumb = null; A.pendingEmb = null; A.memSk = null; A.fromOutside = false; A.meal = meal || autoMeal(); A.tab = S.foods.length && !src ? A.tab : 'db'; A.q = ''; A.src = src || null; A.grams = src ? src.grams : 100;
   openSheet(`<div id="addRoot" style="display:flex;flex-direction:column;min-height:0;flex:1"></div>`);
   renderAdd();
 }
@@ -1904,7 +1909,8 @@ const MODELS = {
   mobile: { url:'model/model.json', mb:14 },
   food: { url:'model-food/model.json', labels:'model-food/labels.json', mb:10 },
 };
-const MODEL = { mb: MODELS.mobile.mb + MODELS.food.mb };
+// MB da scaricare: PiattinoScan; se non si carica, i due modelli di Google
+const MODEL = { mb: 4.5, google: MODELS.mobile.mb + MODELS.food.mb };
 // Il modello generico (MobileNet, ImageNet) è affidabile solo per i cibi «da soli»: un frutto, una verdura, un panino, un gelato.
 const SIMPLE = {
   'banana':'banana','granny smith':'mela','strawberry':'fragole','orange':'arancia','lemon':'limone','fig':'fichi','pineapple':'ananas','ananas':'ananas',
@@ -2023,14 +2029,180 @@ const IT = {
 const GENERIC = { rice:new Set(['risotto','white rice','pilaf','coconut rice','rice and gravy']), pasta:new Set(['spaghetti','pasta salad','macaroni salad']) };
 const VARIANTS = { rice:['risozaff','risotto','risobianco','risopom'], pasta:['pastapom','pastabianco','pastapesto','carbonara'] };
 
+/* PiattinoScan: il riconoscimento addestrato per Piattino (EfficientNet-B0 su Food-101 e sui cibi di Piattino).
+   Se non si carica, l'app usa i due modelli di Google qui sopra. */
+const SCAN_URL = 'model-scan/';
+const SCAN = {
+  // pesi in 8 bit con una scala per canale → tensori float32
+  fromBuffers(spec, buf){
+    const W = {};
+    for (const [name, t] of Object.entries(spec.tensors)) {
+      const n = t.shape.reduce((a, b) => a * b, 1);
+      let data;
+      if (t.dtype === 'f32') data = new Float32Array(buf, t.o, n);
+      else {
+        const q = new Int8Array(buf, t.o, n), sc = new Float32Array(buf, t.so, t.ch);
+        data = new Float32Array(n);
+        for (let i = 0; i < n; i++) data[i] = q[i] * sc[i % t.ch];
+      }
+      W[name] = tf.tensor(data, t.shape);
+    }
+    return { spec, W, id: spec.classes.length + '-' + spec.bytes };
+  },
+  async load(base, onFrac){
+    const spec = await fetch(base + 'model.json').then(r => { if (!r.ok) throw new Error('model.json ' + r.status); return r.json(); });
+    const res = await fetch(base + 'weights.bin'); if (!res.ok) throw new Error('weights.bin ' + res.status);
+    const reader = res.body && res.body.getReader ? res.body.getReader() : null;
+    let buf;
+    if (reader) {
+      const all = new Uint8Array(spec.bytes); let got = 0;
+      for (;;) { const { done, value } = await reader.read(); if (done) break; all.set(value, got); got += value.length; onFrac(got / spec.bytes); }
+      buf = all.buffer;
+    } else { buf = await res.arrayBuffer(); onFrac(1); }
+    return SCAN.fromBuffers(spec, buf);
+  },
+  // due inquadrature, tutta la foto e la zona centrale; il browser rimpicciolisce con qualità alta, come in addestramento
+  inputs(m, src){
+    const { size, mean, std } = m.spec, W = src.width, H = src.height;
+    const view = (sx, sy, sw, sh) => { const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, sx, sy, sw, sh, 0, 0, size, size); return c; };
+    const views = [view(0, 0, W, H), view(W * .12, H * .12, W * .76, H * .76)];
+    return tf.tidy(() => tf.stack(views.map(c => tf.browser.fromPixels(c))).toFloat().div(255).sub(mean).div(std));
+  },
+  // x: [n, size, size, 3] → { logits [n, classi], emb [n, embed] }
+  forward(m, x){
+    const W = m.W; let emb;
+    const seq = (ops, h) => {
+      for (const op of ops) {
+        if (op.t === 'conv') {
+          const a = { x: h, filter: W[op.w], strides: op.s, pad: op.p, bias: W[op.b] };
+          h = op.dw ? tf.fused.depthwiseConv2d(a) : tf.fused.conv2d(a);
+          if (op.act === 'silu') h = tf.mul(h, tf.sigmoid(h));
+        } else if (op.t === 'se') {
+          let s = tf.mean(h, [1, 2]);
+          s = tf.add(tf.matMul(s, W[op.rw]), W[op.rb]); s = tf.mul(s, tf.sigmoid(s));
+          s = tf.sigmoid(tf.add(tf.matMul(s, W[op.ew]), W[op.eb]));
+          h = tf.mul(h, tf.reshape(s, [s.shape[0], 1, 1, s.shape[1]]));
+        } else if (op.t === 'block') { const y = seq(op.ops, h); h = op.skip ? tf.add(h, y) : y; }
+        else if (op.t === 'pool') { h = tf.mean(h, [1, 2]); emb = h; }
+        else if (op.t === 'dense') h = tf.add(tf.matMul(h, W[op.w]), W[op.b]);
+      }
+      return h;
+    };
+    const logits = seq(m.spec.ops, x);
+    return { logits, emb };
+  },
+  // impronta della foto per la memoria delle correzioni: centrata sulla media dei cibi e di lunghezza 1
+  embed(m, e){
+    const mu = m.spec.emb_mean, v = new Float32Array(e.length); let n = 0;
+    for (let i = 0; i < e.length; i++) { v[i] = e[i] - (mu ? mu[i] : 0); n += v[i] * v[i]; }
+    n = Math.sqrt(n) || 1; for (let i = 0; i < v.length; i++) v[i] /= n;
+    return v;
+  },
+};
+// classi di PiattinoScan → voci dell'app: id di un cibo dell'elenco, [categoria, nome] o [nome, emoji, kcal, P, C, G (per 100 g), porzione, frutta/verdura].
+// I cibi extra hanno già l'id del cibo dell'elenco.
+const SCAN_MAP = {
+  apple_pie:['dessert','Torta di mele'], baby_back_ribs:['meat','Costine di maiale'], baklava:['dessert','Baklava'], beef_carpaccio:['Carpaccio di manzo','🥩',130,21,1,5,100,0],
+  beef_tartare:['Tartare di manzo','🥩',180,20,2,10,150,0], beet_salad:['salad','Insalata di barbabietole'], beignets:['dessert','Bomboloni'], bibimbap:['rice','Bibimbap'],
+  bread_pudding:['dessert','Budino di pane'], breakfast_burrito:'burrito', bruschetta:['Bruschetta','🍅',200,5,30,7,100,0], caesar_salad:['Insalata Caesar','🥗',150,7,7,11,250,1],
+  cannoli:['Cannoli','🍰',370,7,40,20,100,0], caprese_salad:['Insalata caprese','🍅',180,10,3,14,200,1], carrot_cake:['dessert','Torta di carote'], ceviche:['fish','Ceviche'],
+  cheese_plate:['cheese','Tagliere di formaggi'], cheesecake:['Cheesecake','🍰',320,6,26,22,120,0], chicken_curry:['curry','Pollo al curry'], chicken_quesadilla:['sandwich','Quesadilla'],
+  chicken_wings:['chicken','Alette di pollo'], chocolate_cake:['dessert','Torta al cioccolato'], chocolate_mousse:['dessert','Mousse al cioccolato'], churros:['dessert','Churros'],
+  clam_chowder:['soup','Zuppa di vongole'], club_sandwich:['sandwich','Club sandwich'], crab_cakes:['fried','Polpette di granchio'], creme_brulee:['dessert','Crème brûlée'],
+  croque_madame:['sandwich','Toast con uovo'], cup_cakes:['dessert','Cupcake'], deviled_eggs:['egg','Uova ripiene'], donuts:['Ciambelle','🍩',420,5,50,22,70,0],
+  dumplings:['dumpling','Ravioli al vapore'], edamame:['Edamame','🫛',120,11,9,5,100,1], eggs_benedict:['egg','Uova alla Benedict'], escargots:['seafood','Lumache'],
+  falafel:['Falafel','🧆',330,13,32,18,100,0], filet_mignon:['Filetto di manzo','🥩',200,28,0,9,150,0], fish_and_chips:['fried','Pesce e patatine'], foie_gras:['meat','Foie gras'],
+  french_fries:'patatine', french_onion_soup:['soup','Zuppa di cipolle'], french_toast:['pancake','French toast'], fried_calamari:['Calamari fritti','🦑',230,15,15,12,150,0],
+  fried_rice:['rice','Riso saltato'], frozen_yogurt:'gelato', garlic_bread:['bread',"Pane all'aglio"], gnocchi:['Gnocchi al sugo','🥔',150,3.5,28,3,250,0],
+  greek_salad:['Insalata greca','🥗',110,4,5,8,250,1], grilled_cheese_sandwich:['sandwich','Toast al formaggio'], grilled_salmon:'salmone', guacamole:'guacamole',
+  gyoza:['dumpling','Gyoza'], hamburger:'burger', hot_and_sour_soup:['soup','Zuppa agropiccante'], hot_dog:'hotdog', huevos_rancheros:['egg','Uova alla messicana'],
+  hummus:'hummus', ice_cream:'gelato', lasagna:'lasagne', lobster_bisque:['soup','Crema di astice'], lobster_roll_sandwich:['sandwich',"Panino all'astice"],
+  macaroni_and_cheese:['pasta','Pasta al formaggio'], macarons:['dessert','Macaron'], miso_soup:['soup','Zuppa di miso'], mussels:['Cozze','🦪',85,12,4,2.2,250,0],
+  nachos:['fried','Nachos'], omelette:['Frittata','🍳',180,12,1,14,150,0], onion_rings:['fried','Anelli di cipolla'], oysters:['seafood','Ostriche'], pad_thai:['noodle','Pad thai'],
+  paella:['rice','Paella'], pancakes:['pancake','Pancake'], panna_cotta:['dessert','Panna cotta'], peking_duck:['chicken','Anatra laccata'], pho:['noodle','Pho'], pizza:'pizza',
+  pork_chop:['meat','Braciola di maiale'], poutine:['potato','Poutine'], prime_rib:['meat','Costata di manzo'], pulled_pork_sandwich:['sandwich','Panino con maiale sfilacciato'],
+  ramen:['noodle','Ramen'], ravioli:['Ravioli al sugo','🥟',190,8,25,6,250,0], red_velvet_cake:['dessert','Torta red velvet'], risotto:'risotto', samosa:['fried','Samosa'],
+  sashimi:['Sashimi','🍣',140,22,0,5,150,0], scallops:['seafood','Capesante'], seaweed_salad:['salad','Insalata di alghe'], shrimp_and_grits:['seafood','Gamberi con polenta'],
+  spaghetti_bolognese:['Spaghetti al ragù','🍝',170,8,22,5.5,300,0], spaghetti_carbonara:'carbonara', spring_rolls:['fried','Involtini primavera'], steak:['Bistecca','🥩',220,27,0,12,180,0],
+  strawberry_shortcake:['dessert','Torta con panna e fragole'], sushi:['Sushi','🍣',150,6,28,1.5,200,0], tacos:['sandwich','Tacos'], takoyaki:['fried','Takoyaki'],
+  tiramisu:['Tiramisù','🍰',300,6,30,18,120,0], tuna_tartare:['fish','Tartare di tonno'], waffles:['pancake','Waffle'],
+  stufato:'stufato', acqua:['Acqua','💧',0,0,0,0,250,0],
+};
+const catItem = (c, conf) => ({ id:rid(), name:c[0], emoji:c[1], grams:c[6], base:c[6], k:c[2]/100, pp:c[3]/100, cc:c[4]/100, ff:c[5]/100, fvv:c[7] ? 1/130 : 0, conf, on:false });
+const itemFromSaved = (f, conf) => { const g = Math.max(1, f.grams || 100); return { id:rid(), name:f.name, emoji:f.emoji || '🍽️', grams:g, base:g, k:f.kcal/g, pp:f.p/g, cc:f.c/g, ff:f.f/g, fvv:(f.fv || 0)/g, conf, on:false }; };
+// sk: nome di una classe di PiattinoScan, «db:<cibo dell'elenco>» o «my:<cibo memorizzato>»
+function scanTarget(sk){
+  if (sk.startsWith('my:')) return { id:sk, sk, make: conf => { const f = S.foods.find(x => x.id === sk.slice(3)); return f ? itemFromSaved(f, conf) : null; } };
+  const v = sk.startsWith('db:') ? sk.slice(3) : (SCAN_MAP[sk] !== undefined ? SCAN_MAP[sk] : sk);
+  if (typeof v === 'string' && FOOD[v]) return { id:'db:' + v, sk:'db:' + v, make: conf => itemFromFood(FOOD[v], FOOD[v].portion, conf, false) };
+  if (Array.isArray(v) && v.length === 2) return { id:'c:' + sk, sk, make: conf => catItem([v[1], ...(CATS[v[0]] || CATS.dish).slice(1)], conf) };
+  if (Array.isArray(v)) return { id:'x:' + sk, sk, make: conf => Object.assign(catItem(v, conf), sk === 'acqua' ? { key:'acqua', water:true } : {}) };
+  return { id:'c:' + sk, sk, make: conf => catItem(CATS.dish, conf) };
+}
+/* memoria delle correzioni, solo su questo telefono: impronta della foto (8 bit) e cibo scelto */
+const SCANMEM = {
+  KEY:'piattino-scanmem', MAX:160, PER:8, list:null, cache:new Map(),
+  load(){ if (!this.list) { try { this.list = JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch (e) { this.list = []; } } return this.list; },
+  save(){ try { localStorage.setItem(this.KEY, JSON.stringify(this.list)); } catch (e) {} },
+  clear(){ this.list = []; this.cache.clear(); try { localStorage.removeItem(this.KEY); } catch (e) {} },
+  enc(v){ let m = 0; for (const x of v) m = Math.max(m, Math.abs(x)); const s = m / 127 || 1, q = new Int8Array(v.length); for (let i = 0; i < v.length; i++) q[i] = Math.round(v[i] / s); let b = ''; new Uint8Array(q.buffer).forEach(c => b += String.fromCharCode(c)); return btoa(b); },
+  dec(b){ if (!this.cache.has(b)) { const s = atob(b), q = new Int8Array(s.length); for (let i = 0; i < s.length; i++) q[i] = (s.charCodeAt(i) << 24) >> 24; this.cache.set(b, q); } return this.cache.get(b); },
+  add(emb, sk){
+    if (!emb || !sk || !SCANM) return;
+    const L = this.load(); L.push({ sk, m:SCANM.id, e:this.enc(emb), t:Date.now() });
+    // al massimo PER impronte per cibo e MAX in tutto: si tolgono le più vecchie
+    const same = L.filter(r => r.sk === sk); if (same.length > this.PER) L.splice(L.indexOf(same[0]), 1);
+    if (L.length > this.MAX) L.splice(0, L.length - this.MAX);
+    this.save();
+  },
+  match(emb){
+    if (!emb || !SCANM) return null;
+    let best = null;
+    for (const r of this.load()) {
+      if (r.m !== SCANM.id) continue;             // impronte di un'altra versione del modello: non confrontabili
+      const q = this.dec(r.e); let dot = 0, nq = 0;
+      for (let i = 0; i < q.length; i++) { dot += q[i] * emb[i]; nq += q[i] * q[i]; }
+      const sim = dot / (Math.sqrt(nq) || 1);
+      if (!best || sim > best.sim) best = { sk:r.sk, sim };
+    }
+    return best;
+  },
+};
+let SCANM = null;
+// probabilità delle classi (+ memoria delle correzioni) → voci da mostrare
+function decideScan(p, emb){
+  const agg = {};
+  SCANM.spec.classes.forEach((c, i) => { if (p[i] < .005) return; const t = scanTarget(c); (agg[t.id] = agg[t.id] || { t, p:0 }).p += p[i]; });
+  const ranked = Object.values(agg).sort((a, b) => b.p - a.p);
+  const mem = SCANMEM.match(emb), hi = SCANM.spec.mem_hi || .8, lo = SCANM.spec.mem_lo || .7;
+  const items = [], seen = new Set();
+  const make = (t, conf) => { if (seen.has(t.id)) return null; const it = t.make(Math.min(1, conf)); if (!it) return null; seen.add(t.id); it.sk = t.sk; it.grp = 1; return it; };
+  if (mem && mem.sim >= hi) { const it = make(scanTarget(mem.sk), mem.sim); if (it) { it.on = true; it.mem = true; items.push(it); } }
+  const minAlt = ranked[0] && ranked[0].p >= .3 ? .04 : .015;   // se non è sicuro, mostra più alternative
+  ranked.forEach((r, j) => {
+    if (items.length >= 4 || (j > 0 && r.p < minAlt)) return;
+    const it = make(r.t, r.p); if (!it) return;
+    it.on = j === 0 && r.p >= .3 && !items.some(x => x.on); items.push(it);
+  });
+  if (mem && mem.sim >= lo && mem.sim < hi) { const it = make(scanTarget(mem.sk), mem.sim); if (it) { it.on = false; it.mem = true; items.splice(1, 0, it); items.length = Math.min(items.length, 4); } }
+  SC.scanTop = ranked[0] ? { sk:ranked[0].t.sk, p:ranked[0].p } : null;
+  return { items, dish: ranked[0] ? ranked[0].p : 0 };
+}
+
 let modelP = null, FOOD_LABELS = null, IMAGENET = null;
 function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(el); }); }
 function ensureModel(onFrac = () => {}){
   if (!modelP) modelP = (async () => {
-    const share = { mobile: MODELS.mobile.mb / MODEL.mb, food: MODELS.food.mb / MODEL.mb };
-    let fm = 0, ff = 0; const report = () => onFrac(.04 + .94 * (fm * share.mobile + ff * share.food));
     if (!window.tf) await loadScript('vendor/tf.min.js');
     onFrac(.04); await tf.ready();
+    try {
+      const m = await SCAN.load(SCAN_URL, f => onFrac(.04 + .94 * f));
+      tf.tidy(() => { SCAN.forward(m, tf.zeros([2, m.spec.size, m.spec.size, 3])); });   // prepara la GPU (due inquadrature, come nel riconoscimento)
+      SCANM = m; onFrac(1);
+      return { scan: m };
+    } catch (e) { console.warn('PiattinoScan non disponibile, uso i modelli di Google', e); MODEL.mb = MODEL.google; }
+    const share = { mobile: MODELS.mobile.mb / MODEL.mb, food: MODELS.food.mb / MODEL.mb };
+    let fm = 0, ff = 0; const report = () => onFrac(.04 + .94 * (fm * share.mobile + ff * share.food));
     [FOOD_LABELS, IMAGENET] = await Promise.all([fetch(MODELS.food.labels).then(r => r.json()), fetch('model/imagenet.json').then(r => r.json())]);
     const [mobile, food] = await Promise.all([
       tf.loadGraphModel(MODELS.mobile.url, { onProgress: f => { fm = f; report(); } }),
@@ -2134,9 +2306,16 @@ function decide(dm, df, col){
   return { items, dish };
 }
 async function recognizePhoto(canvas, onFrac){
-  const { mobile, food } = await ensureModel(onFrac);
+  const { mobile, food, scan } = await ensureModel(onFrac);
   SC.creep = 97; setPct(82, 'Riconosco il cibo');
   await sleep(30);   // lascia disegnare la percentuale prima del calcolo
+  if (scan) {
+    const [pp, pe] = tf.tidy(() => { const { logits, emb } = SCAN.forward(scan, SCAN.inputs(scan, canvas)); return [tf.softmax(logits).mean(0), emb.mean(0)]; });
+    const [p, e] = await Promise.all([pp.data(), pe.data()]); pp.dispose(); pe.dispose();
+    SC.emb = SCAN.embed(scan, e);
+    setPct(94, 'Stimo porzioni e calorie');
+    return decideScan(p, SC.emb);
+  }
   // due inquadrature, tutta la foto e la zona centrale: la media è più stabile di una sola
   const [pm, pf] = tf.tidy(() => {
     const px = tf.browser.fromPixels(canvas).toFloat().div(255).expandDims(0);
@@ -2152,7 +2331,7 @@ async function recognizePhoto(canvas, onFrac){
 
 /* porzione automatica: quanta parte del piatto è coperta dal cibo.
    Il piatto (chiaro, poco saturo) fa da riferimento, quindi la stima non dipende da quanto sei vicino. */
-const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco']);
+const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco','cioccolata','acqua']);
 function estimatePortion(canvas){
   try {
     const N = 72, c = document.createElement('canvas'); c.width = c.height = N;
@@ -2205,6 +2384,9 @@ const KW = {
   lasagne:['lasagne','lasagna'], carbonara:['carbonara'], insalata:['insalata'], pane:['pane','pagnotta','panino al latte'], paneint:['pane integrale'],
   fagioli:['fagioli'], ceci:['ceci'], lenticchie:['lenticchie'], tonno:['tonno'], salmone:['salmone'], merluzzo:['merluzzo','pesce'], gamberi:['gamberi','gamberetti'],
   mozzarella:['mozzarella'], parmigiano:['parmigiano','grana'], ricotta:['ricotta'], gelato:['gelato'], mela:['mela','mele'], pizza:['pizza','pizzetta'],
+  arancini:['arancini','arancino','arancina','arancine'], polpette:['polpette','polpetta'], cotoletta:['cotoletta','cotolette','milanese'], tortellini:['tortellini','cappelletti'],
+  pastafagioli:['pasta e fagioli','pasta fagioli'], parmigiana:['parmigiana'], formaggio:['formaggio','pecorino','stracchino','fontina'], salame:['salame','salami'],
+  melanzane:['melanzane','melanzana'], fagiolini:['fagiolini'], ciliegie:['ciliegie','ciliegia'], melone:['melone'], crostata:['crostata'], focaccia:['focaccia'], piadina:['piadina','piada'],
 };
 const NUMW = { 'un':1, 'uno':1, 'una':1, "un'":1, 'due':2, 'tre':3, 'quattro':4, 'cinque':5, 'sei':6, 'mezzo':.5, 'mezza':.5 };
 function parseDescription(text){
@@ -2271,7 +2453,7 @@ async function handlePhoto(file){
 async function runScan(){
   const run = SC.run = (SC.run || 0) + 1;
   const fromText = !!SC.desc;
-  Object.assign(SC, { items:[], tip:'', sub:'', pctShown:0, pctTarget:0, creep:0, est:null });
+  Object.assign(SC, { items:[], tip:'', sub:'', pctShown:0, pctTarget:0, creep:0, est:null, emb:null, scanTop:null });
   SC.state = 'scanning'; renderScanner();
   const t0 = Date.now();
   let items = [], dish = 0, failed = false;
@@ -2330,6 +2512,7 @@ function renderResult(){
   box.innerHTML = `<div class="grabber"></div><div class="result-in">
     ${SC.est && SC.items.some(x => x.auto) ? `<p class="est">${I.scale}<span>Grammi calcolati in automatico: il cibo copre circa il <b>${Math.round(SC.est.cover * 100)}%</b> del piatto.</span></p>`
       : SC.est && SC.est.method === 'standard' && SC.items.some(x => !(x.key && (PIECE[x.key] || NO_SCALE.has(x.key)))) ? `<p class="est">${I.scale}<span>Non vedo bene il bordo del piatto, quindi uso una porzione standard. Per il calcolo automatico fotografa tutto il piatto dall'alto.</span></p>` : ''}
+    ${SC.items.some(x => x.mem) ? `<p class="est">${I.spark}<span>Ricordo questo piatto da una tua correzione precedente.</span></p>` : ''}
     ${unsure ? `<p class="note" style="margin:10px 0 0">Non sono sicuro di cosa ci sia nella foto. Tocca il cerchio accanto al cibo giusto, oppure cercalo nell'elenco.</p>` : ''}
     <div class="group" style="margin-top:10px">${SC.items.map((x, j) => { const e = itemEntry(x); return `${j === 1 && x.grp ? '<div class="alt-cap">Non è questo? Tocca quello giusto</div>' : ''}<div class="res-item ${x.on ? '' : 'off'}">
       <button class="check" data-a="res-toggle" data-id="${x.id}" aria-label="${x.on ? 'Escludi' : 'Includi'} ${esc(x.name)}">${I.check}</button>
@@ -2383,8 +2566,8 @@ const actions = {
   'add-open': el => openAdd(el.dataset.m),
   'add-photo': el => { const meal = A.meal, r = el.getBoundingClientRect(); closeSheet(true); openScanner(meal, r); },
   'add-tab': el => { A.tab = el.dataset.t; renderAdd(); },
-  'add-pick-db': el => { A.src = srcFromDb(FOOD[el.dataset.k]); A.grams = A.src.grams; renderAdd(); },
-  'add-pick-my': el => { const f = S.foods.find(x => x.id === el.dataset.id); if (!f) return; A.src = srcFromSaved(f); A.grams = A.src.grams; renderAdd(); },
+  'add-pick-db': el => { A.src = srcFromDb(FOOD[el.dataset.k]); A.memSk = 'db:' + el.dataset.k; A.grams = A.src.grams; renderAdd(); },
+  'add-pick-my': el => { const f = S.foods.find(x => x.id === el.dataset.id); if (!f) return; A.src = srcFromSaved(f); A.memSk = 'my:' + f.id; A.grams = A.src.grams; renderAdd(); },
   'g-step': el => { A.grams = clamp(Math.round((A.grams + +el.dataset.d) / 5) * 5, 5, 5000); $('#gramsIn').value = A.grams; $('#nutriBox').innerHTML = nutriHtml(entryFrom(A.src, A.grams)); },
   'add-meal': el => { A.meal = el.dataset.m; renderAdd(); },
   'add-confirm': () => { if (!(A.grams > 0)) return; addEntries(A.meal, [entryFrom(A.src, A.grams)]); closeSheet(); },
@@ -2405,7 +2588,7 @@ const actions = {
   'edit-profile': () => { openSheet(`${sheetHead('Profilo')}<div class="sheet-body">${profileForm(S.profile)}</div>`); bindProfileForm(sheetEl); },
   'reset-ask': () => { $('#resetBox').innerHTML = `<p class="note" style="margin:0 0 10px">Vuoi cancellare profilo, diario e cibi memorizzati? L'operazione non si può annullare.</p><div class="stack"><button class="btn danger fill" data-a="reset-yes">Sì, cancella tutto</button><button class="btn tinted" data-a="tab" data-v="profile">Annulla</button></div>`; },
   'reset-yes': () => {
-    Store.del('profile'); Object.keys(S.days).forEach(k => Store.del('day-' + k)); S.foods.forEach(f => Store.del('food-' + f.id));
+    Store.del('profile'); Object.keys(S.days).forEach(k => Store.del('day-' + k)); S.foods.forEach(f => Store.del('food-' + f.id)); SCANMEM.clear();
     S.profile = null; S.days = {}; S.foods = []; S.weights = []; S.chat = []; S.view = 'today'; S.date = todayKey();
     try { localStorage.removeItem(LKEY); } catch (e) {}
     render(); window.scrollTo(0, 0);
@@ -2445,17 +2628,24 @@ const actions = {
   'scan-desc-go': () => { const t = ($('#scanDesc')?.value || '').trim(); if (!t) { $('#scanDesc')?.focus(); return; } SC.desc = t.slice(0, 400); runScan(); },
   'scan-stop': () => { SC.run = (SC.run || 0) + 1; SC.img = null; SC.state = SC.desc ? 'describe' : canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); },
   'pick-photo': () => { stopCamera(); const inp = $('#photoInput'); inp.value = ''; inp.click(); },
-  'scan-manual': () => { const thumb = SC.thumb; closeScanner(); openAdd(SC.meal); A.pendingThumb = thumb; },
+  'scan-manual': () => { const thumb = SC.thumb, emb = SC.emb; closeScanner(); openAdd(SC.meal); A.pendingThumb = thumb; A.pendingEmb = emb; },
   'res-toggle': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.on = !x.on; if (x.on && x.grp) SC.items.forEach(i => { if (i !== x && i.grp) i.on = false; }); SC.touched = true; renderResult(); },
   'res-step': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; const step = Math.max(5, Math.round(x.base * .1 / 5) * 5); x.grams = clamp(x.grams + step * +el.dataset.d, step, 3000); renderResult(); },
   'res-meal': el => { SC.meal = el.dataset.m; renderResult(); },
   'res-add': () => {
-    const entries = SC.items.filter(x => x.on).map(itemEntry); if (!entries.length) return;
+    const chosen = SC.items.filter(x => x.on); if (!chosen.length) return;
+    // PiattinoScan impara: un solo cibo scelto, diverso da quello proposto o proposto con poca sicurezza
+    const pick = chosen.length === 1 ? chosen[0] : null;
+    if (SC.emb && pick && pick.sk && SC.scanTop && (pick.sk !== SC.scanTop.sk || SC.scanTop.p < .6)) SCANMEM.add(SC.emb, pick.sk);
+    // l'acqua va nel contatore dei bicchieri, non nel diario
+    const glasses = chosen.filter(x => x.water).reduce((a, x) => a + Math.max(1, Math.round(x.grams / 250)), 0);
+    const entries = chosen.filter(x => !x.water).map(itemEntry);
     if (SC.memo) entries.forEach(saveFoodMemo);
     const dateBefore = S.date; if (S.view !== 'today') { S.view = 'today'; }
-    addEntries(SC.meal, entries, true);
+    if (glasses) { const d = ensureDay(S.date); d.water = clamp((d.water || 0) + glasses, 0, 30); saveDay(S.date); }
+    if (entries.length) addEntries(SC.meal, entries, true);
     closeScanner(); S.date = dateBefore; render(); window.scrollTo(0, 0);
-    toast(`${SC.memo ? 'Aggiunto e memorizzato' : 'Aggiunto'} · ${fmt(entries.reduce((a, e) => a + e.kcal, 0))} kcal`);
+    toast(entries.length ? `${SC.memo ? 'Aggiunto e memorizzato' : 'Aggiunto'} · ${fmt(entries.reduce((a, e) => a + e.kcal, 0))} kcal${glasses ? ` · +${glasses * 250} ml d'acqua` : ''}` : `+${glasses * 250} ml d'acqua`);
     SC.quote = null;
   },
 };
@@ -2497,11 +2687,13 @@ async function exportData(){
   toast('Backup esportato');
 }
 
-/* attach the scan photo to an item chosen from the list after a failed recognition */
+/* attach the scan photo to an item chosen from the list after a failed recognition,
+   and let PiattinoScan remember the correction */
 const origAdd = actions['add-confirm'];
 actions['add-confirm'] = () => {
   if (A.pendingThumb && A.src && !A.src.thumb) A.src = { ...A.src, thumb: A.pendingThumb };
-  A.pendingThumb = null; origAdd();
+  if (A.pendingEmb && A.src && A.memSk && A.grams > 0) SCANMEM.add(A.pendingEmb, A.memSk);
+  A.pendingThumb = null; A.pendingEmb = null; origAdd();
 };
 
 /* ---------- boot ---------- */
