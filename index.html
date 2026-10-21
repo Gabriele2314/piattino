@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Piattino</title>
-<meta name="description" content="Organizza la dieta, fotografa quello che mangi e trova ogni giorno una spinta in più. Dai 9 anni in su.">
+<meta name="description" content="Fotografa il piatto e scopri subito calorie e nutrienti — riconoscimento sul telefono, niente account, niente cloud. Per tutte le età, dai 9 anni in su.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -127,7 +127,7 @@ button,.tab{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 html{background:var(--bg-grouped)}
 body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(--system-pink) 13%,transparent),transparent 70%),radial-gradient(90% 100% at 100% 0%,color-mix(in srgb,var(--system-cyan) 14%,transparent),transparent 70%),radial-gradient(70% 80% at 50% 0%,color-mix(in srgb,var(--system-green) 8%,transparent),transparent 70%),var(--bg-grouped);background-repeat:no-repeat;background-size:100% 520px,100% 520px,100% 520px,auto}
 /* Liquid Glass: solo per lo strato dei controlli che galleggia sui contenuti */
-.ios-glass{background:var(--bg-secondary);background:color-mix(in srgb,var(--bg-secondary) 58%,transparent);backdrop-filter:blur(20px) saturate(1.7);-webkit-backdrop-filter:blur(20px) saturate(1.7);border:1px solid var(--separator)}
+.ios-glass{background:var(--bg-secondary);background:color-mix(in srgb,var(--bg-secondary) 48%,transparent);backdrop-filter:blur(20px) saturate(1.7);-webkit-backdrop-filter:blur(20px) saturate(1.7);border:1px solid var(--separator)}
 
 /* Intestazione: titolo grande */
 .nav{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:14px}
@@ -597,13 +597,55 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
   .scanner,.scanner.show{transform:none;border-radius:0}
   :is(.btn,.chip-btn,.avatar,.add-btn,.close-btn,.stepper button,.water-btns button,.goal-card,.food-tile,.coach-fab,.quote,.send,.chips button,.msg .acts button,.portion button,.mini-step button,.cam-flip,.cam-lib,.tab,.seg button,.seg label,.goal-grid label):active{transform:none}
 }
+#ptr{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translate(-50%,-64px) scale(.85);opacity:0;height:36px;border-radius:var(--radius-capsule);padding:0 14px 0 10px;display:flex;align-items:center;gap:8px;z-index:500;pointer-events:none;background:color-mix(in srgb,var(--bg-grouped-secondary) 85%,transparent);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);border:1px solid color-mix(in srgb,var(--separator-opaque) 50%,transparent);box-shadow:0 4px 20px rgba(0,0,0,.1),0 1px 4px rgba(0,0,0,.06);font:500 13px/1 var(--font-sans);color:var(--label-secondary);white-space:nowrap}
+#ptr .ptr-arrow{width:18px;height:18px;flex:none;transition:transform .3s var(--spring-smooth)}
+#ptr.ready .ptr-arrow{transform:rotate(180deg)}
+#ptr .ptr-label{overflow:hidden;max-width:0;opacity:0;transition:max-width .3s var(--spring-smooth),opacity .2s}
+#ptr.ready .ptr-label,#ptr.spinning .ptr-label,#ptr.done .ptr-label{max-width:140px;opacity:1}
+#ptr .ptr-spin{width:18px;height:18px;position:relative;flex:none;display:none}
+#ptr.spinning .ptr-arrow,#ptr.done .ptr-arrow{display:none}
+#ptr.spinning .ptr-spin{display:block}
+#ptr .ptr-check{display:none;width:18px;height:18px;flex:none}
+#ptr.done .ptr-spin{display:none}
+#ptr.done .ptr-check{display:block}
+#ptr.done{color:var(--system-green)}
+@keyframes ptr-spoke{0%,60%{opacity:.2}61%{opacity:1}100%{opacity:.2}}
+#ptr .ptr-spin i{position:absolute;width:2.5px;height:5.5px;border-radius:1.5px;background:currentColor;left:calc(50% - 1.25px);top:1px;transform-origin:1.25px 8px;animation:ptr-spoke 1s linear infinite}
+#ptr .ptr-spin i:nth-child(1){transform:rotate(0deg);animation-delay:-.917s}
+#ptr .ptr-spin i:nth-child(2){transform:rotate(30deg);animation-delay:-.833s}
+#ptr .ptr-spin i:nth-child(3){transform:rotate(60deg);animation-delay:-.75s}
+#ptr .ptr-spin i:nth-child(4){transform:rotate(90deg);animation-delay:-.667s}
+#ptr .ptr-spin i:nth-child(5){transform:rotate(120deg);animation-delay:-.583s}
+#ptr .ptr-spin i:nth-child(6){transform:rotate(150deg);animation-delay:-.5s}
+#ptr .ptr-spin i:nth-child(7){transform:rotate(180deg);animation-delay:-.417s}
+#ptr .ptr-spin i:nth-child(8){transform:rotate(210deg);animation-delay:-.333s}
+#ptr .ptr-spin i:nth-child(9){transform:rotate(240deg);animation-delay:-.25s}
+#ptr .ptr-spin i:nth-child(10){transform:rotate(270deg);animation-delay:-.167s}
+#ptr .ptr-spin i:nth-child(11){transform:rotate(300deg);animation-delay:-.083s}
+#ptr .ptr-spin i:nth-child(12){transform:rotate(330deg);animation-delay:0s}
+.sheet.from-btn{transform-origin:var(--sheet-ox,50%) var(--sheet-oy,100%);transform:scale(.08);opacity:0;border-radius:var(--radius-island)}
+.sheet-wrap.show .sheet.from-btn{transform:none;opacity:1;border-radius:var(--radius-lg) var(--radius-lg) 0 0;transition:transform var(--dur-smooth) var(--spring-smooth),border-radius var(--dur-smooth) var(--spring-smooth),opacity .12s}
+.shutter-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.shutter-3d{width:64px;min-height:36px;border-radius:var(--radius-capsule);background:linear-gradient(135deg,var(--system-indigo),var(--system-cyan));color:#fff;font:700 12px/36px var(--font-sans);letter-spacing:.5px;border:none;cursor:pointer;flex:none;padding:0}
+.orbit-ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,255,255,.5);animation:orbit-pulse 1.2s ease-in-out infinite}
+@keyframes orbit-pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.12);opacity:1}}
+.cam-3d-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:5}
+.cam-3d-arc{width:80px;height:80px;border-radius:50%;border:3px solid rgba(255,255,255,.8);border-bottom-color:transparent;animation:spin3d 1s linear infinite}
+@keyframes spin3d{to{transform:rotate(360deg)}}
+.cam-3d-label{color:#fff;font:600 13px/18px var(--font-sans);margin-top:10px;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.cam-3d-count{color:#fff;font:700 28px/1 var(--font-sans);margin-top:6px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.wizard-step{animation:wizardIn .45s var(--spring-bouncy) both}
+@keyframes wizardIn{from{opacity:0;transform:translateY(28px) scale(.97);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+.wizard-back{font:400 15px/20px var(--font-sans);color:var(--link);background:none;border:none;padding:8px 0;cursor:pointer;display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.wizard-prog{height:3px;background:var(--system-gray-5);border-radius:2px;margin-bottom:20px;overflow:hidden}
+.wizard-prog-fill{height:100%;background:var(--fill-prominent);border-radius:2px;transition:width .4s var(--spring-snappy)}
 </style>
 </head>
 <body>
 <div id="app" class="wrap"><div class="splash" aria-busy="true"></div></div>
 <div class="launch" id="launch"><img class="app-icon" src="icons/apple-touch-icon.png" alt=""><div class="launch-name">Piattino</div><div class="launch-by">Creata da <b>Gabriele</b></div></div>
 <script>try{if(sessionStorage.getItem('piattino-launch')==='1')document.getElementById('launch').remove()}catch(e){}</script>
-<button class="coach-fab ios-glass" id="coachFab" data-a="coach" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.2 6.3 6.3 2.2-6.3 2.2L12 19.5l-2.2-6.3L3.5 11l6.3-2.2z"/></svg>Cosa faccio ora?</button>
+<button class="coach-fab ios-glass" id="coachFab" data-a="coach" hidden aria-label="Coach — cosa faccio ora?"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.2 6.3 6.3 2.2-6.3 2.2L12 19.5l-2.2-6.3L3.5 11l6.3-2.2z"/></svg>Coach</button>
 <nav class="tabbar" id="tabbar" hidden></nav>
 <div class="scanner" id="scanner" aria-hidden="true"></div>
 <div class="toast ios-glass" id="toast" role="status" aria-live="polite"></div>
@@ -630,6 +672,54 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const APP_VERSION = '2.1';
+
+function haptic(type){
+  try {
+    if (!navigator.vibrate) return;
+    const patterns = { medium:[20], heavy:[40], success:[10,50,30], light:[8] };
+    navigator.vibrate(patterns[type] || patterns.light);
+  } catch {}
+}
+
+function applyTimeTheme(){
+  const h = new Date().getHours();
+  const themes = [
+    { h:0,  c1:'var(--system-indigo)', c2:'var(--system-purple)', c3:'var(--system-blue)', bright:.6 },
+    { h:6,  c1:'var(--system-orange)', c2:'var(--system-yellow)', c3:'var(--system-pink)', bright:1.2 },
+    { h:10, c1:'var(--system-pink)',   c2:'var(--system-cyan)',   c3:'var(--system-green)', bright:1.0 },
+    { h:13, c1:'var(--system-yellow)', c2:'var(--system-orange)', c3:'var(--system-green)', bright:1.0 },
+    { h:18, c1:'var(--system-purple)', c2:'var(--system-pink)',   c3:'var(--system-orange)', bright:.8 },
+    { h:22, c1:'var(--system-indigo)', c2:'var(--system-purple)', c3:'var(--system-blue)', bright:.6 },
+  ];
+  const t = themes.reduce((best, t) => h >= t.h ? t : best, themes[0]);
+  document.body.style.background = `radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,${t.c1} 13%,transparent),transparent 70%),radial-gradient(90% 100% at 100% 0%,color-mix(in srgb,${t.c2} 14%,transparent),transparent 70%),radial-gradient(70% 80% at 50% 0%,color-mix(in srgb,${t.c3} 8%,transparent),transparent 70%),var(--bg-grouped)`;
+  document.body.style.backgroundRepeat = 'no-repeat';
+  document.body.style.backgroundSize = '100% 520px,100% 520px,100% 520px,auto';
+}
+setInterval(applyTimeTheme, 60000);
+
+function checkWhatsNew(){
+  try {
+    const seen = localStorage.getItem('piattino-seen-v');
+    if (seen === APP_VERSION) return;
+    localStorage.setItem('piattino-seen-v', APP_VERSION);
+    if (!seen) return;
+    setTimeout(() => {
+      openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
+        <p class="note" style="margin:0 0 16px">Ecco le ultime novità di questa versione:</p>
+        <ol class="card steps">
+          <li><span class="dot">🔍</span><span class="grow"><b>Ricerca migliorata</b> — trovi i cibi anche con accenti diversi (es. "caffe" trova "Caffè"), e ci sono molti nuovi cibi: caffelatte, cappuccino, pasta al ragù, birra, vino e altro.</span></li>
+          <li><span class="dot">📷</span><span class="grow"><b>Piattino3D Scan</b> — scatta con il nuovo pulsante 3D per girare attorno al piatto e ottenere un'analisi più precisa.</span></li>
+          <li><span class="dot">🕐</span><span class="grow"><b>Colori per orario</b> — il saluto e i colori cambiano con l'ora del giorno.</span></li>
+          <li><span class="dot">📲</span><span class="grow"><b>Aggiorna scorrendo</b> — trascina verso il basso dalla cima della pagina per aggiornare.</span></li>
+        </ol>
+        <button class="btn primary" data-a="sheet-close" style="margin-top:8px">Ottimo!</button>
+      </div>`);
+    }, 1200);
+  } catch {}
+}
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -709,8 +799,30 @@ const FOODS = [
 ['arancini','Arancini','🍙',220,6,27,10,170,0],['polpette','Polpette al sugo','🧆',200,14,7,13,150,0],['cotoletta','Cotoletta alla milanese','🍖',260,20,12,15,150,0],
 ['parmigiana','Parmigiana di melanzane','🍆',150,6,7,11,250,0],['formaggio','Formaggio stagionato','🧀',380,26,1,30,50,0],['salame','Salame','🍖',425,26,1,35,40,0],
 ['focaccia','Focaccia','🫓',330,7,45,13,100,0],['piadina','Piadina','🫓',330,7.5,50,11,110,0],['crostata','Crostata di marmellata','🥧',400,5,60,15,80,0],
+['pastaragu','Pasta al ragù (piatto)','🍝',133,7,16,4,300,0],['pastaforno','Pasta al forno','🍝',150,7,18,5.5,300,0],['pastatonno','Pasta con tonno (piatto)','🍝',140,8,18,3,300,0],
+['caffelatte','Caffè latte','☕',60,3,5,2.5,200,0],['cappuccino','Cappuccino','☕',60,3.5,5,2.5,180,0],['lattemacchiato','Latte macchiato','☕',55,3.2,5,2.3,200,0],
+['te','Tè','🫖',1,0,0.2,0,200,0],['camomilla','Camomilla','🫖',2,0,0.4,0,200,0],['tefreddo','Tè freddo','🧋',20,0,5,0,330,0],
+['birra','Birra','🍺',43,0.5,3.5,0,330,0],['vino','Vino rosso','🍷',85,0.1,2.7,0,125,0],['vinobianco','Vino bianco','🥂',82,0.1,2.5,0,125,0],['spritz','Spritz','🍹',48,0,4,0,200,0],
+['frullato','Frullato di frutta','🥤',70,1,16,0.5,250,1],['centrifugato','Centrifugato di verdura','🥤',40,1.5,8,0.3,250,1],
 ].map(([key,name,emoji,kcal,p,c,f,portion,fv]) => ({key,name,emoji,kcal,p,c,f,portion,fv}));
 const FOOD = Object.fromEntries(FOODS.map(f => [f.key, f]));
+function normalizeSearch(s){ return s.toLowerCase().replace(/[àáâã]/g,'a').replace(/[èéêë]/g,'e').replace(/[ìíîï]/g,'i').replace(/[òóôõ]/g,'o').replace(/[ùúûü]/g,'u'); }
+const FOOD_TAGS = {
+  pastaragu:['pasta al ragu','bolognese','ragu','pasta alla bolognese'],
+  pastaforno:['pasta al forno','lasagna'],
+  pastatonno:['pasta con tonno','pasta tonno'],
+  caffelatte:['caffelatte','caffellatte','latte caldo'],
+  lattemacchiato:['latte macchiato','macchiato'],
+  te:['te','tisana','infuso'],
+  tefreddo:['te freddo','ice tea','the freddo','the'],
+  camomilla:['camomilla','camomille'],
+  frullato:['frullato','smoothie','frappe'],
+  birra:['birra','beer'],
+  vino:['vino rosso'],
+  vinobianco:['vino bianco'],
+  spritz:['spritz','aperol'],
+  centrifugato:['centrifugato','succo verde'],
+};
 // peso di un pezzo, per frasi come «2 uova» o «una mela»
 const PIECE = { uova:60, mela:150, banana:120, arancia:150, kiwi:80, pera:150, pesca:150, fette:10, biscotti:10, cornetto:60, burger:200, hotdog:150, bagel:90, yogurt:125, greco:150, pizza:300, limone:50, caffe:30, ghiacciolo:70, pane:50, paneint:50, arancini:170, piadina:110, polpette:40, cotoletta:150, focaccia:100 };
 const fvFor = (isFv, g) => isFv ? Math.max(1, Math.round(g / 130)) : 0;
@@ -757,10 +869,10 @@ const PLAN_MUSCLE = {
 const QUOTES = {
   kid: ['Ogni frutto è un superpotere colorato!','Il tuo corpo cresce forte con i cibi giusti.','Assaggiare una verdura nuova è da veri esploratori.','L\'acqua è il carburante dei campioni.','Una buona colazione accende tutta la giornata.','Mangia l\'arcobaleno: più colori nel piatto, più energia!','Ascoltare la tua pancia è una cosa da grandi.','Anche i supereroi fanno merenda con la frutta.'],
   teen: ['Il cibo è energia per sport, studio e amici.','Nessun cibo è perfetto: conta l\'equilibrio.','La costanza batte la perfezione, ogni giorno.','Il tuo corpo sta costruendo il tuo futuro: dagli buoni mattoni.','Un pasto non decide la giornata. La scelta dopo sì.','Idratato e nutrito: così rendi al massimo.','Sei tu che scegli, e oggi stai scegliendo bene.'],
-  adult: ['I piccoli passi di ogni giorno fanno i grandi risultati.','Non serve la perfezione, serve la costanza.','Oggi è un buon giorno per prenderti cura di te.','Ogni pasto è una nuova occasione.','La salute è l\'investimento che rende di più.','Progresso, non perfezione.','Hai già fatto la parte difficile: hai cominciato.','Il tuo futuro ti ringrazierà per la scelta di oggi.'],
+  adult: ['I piccoli passi di ogni giorno costruiscono risultati veri.','Non serve la perfezione: serve tornare in pista il giorno dopo.','Ogni piatto è una scelta, e oggi stai scegliendo bene.','Mangiare bene non è una dieta: è rispettarsi.','La costanza è il segreto che non si vende in bottiglia.','Iniziare è la parte difficile. Hai già fatto quella.','Il tuo corpo sente ogni scelta, anche quella giusta.','Un pasto non fa la differenza. L\'abitudine sì.'],
   senior: ['Mangiare con gusto è il primo passo del benessere.','Idratazione e proteine: i tuoi alleati di ogni giorno.','Il sapore dei cibi semplici è una ricchezza.','Un po\' di movimento e un buon piatto: la ricetta perfetta.','Ogni giorno è l\'occasione giusta per stare bene.','Le buone abitudini non hanno età.'],
 };
-const CHEERS = ['Registrato! Ottimo lavoro.','Fatto! Un passo in più.','Aggiunto. Continua così!','Perfetto, il diario è aggiornato.','La costanza paga!'];
+const CHEERS = ['Registrato! Ottimo lavoro.','Fatto! Un passo in più.','Aggiunto. Continua così!','Perfetto, il diario è aggiornato.','La costanza paga!','Bravo, stai costruendo un\'abitudine.','Segnato! Il diario parla di te.'];
 const RULES = {
   kid: ['Fai sempre colazione: è il pieno di energia per la scuola.','Cinque porzioni al giorno tra frutta e verdura, di tanti colori.','Bevi acqua invece delle bibite zuccherate.','Mangia seduto a tavola, con calma e senza schermi.','Muoviti e gioca all\'aperto ogni giorno.'],
   teen: ['Tre pasti e due spuntini tengono stabile l\'energia.','Proteine a ogni pasto aiutano muscoli e concentrazione.','Porta una borraccia: l\'acqua aiuta studio e sport.','Nessun cibo è vietato: conta l\'equilibrio della settimana.','Dormi bene: il sonno regola anche la fame.'],
@@ -981,8 +1093,18 @@ function renderToday(){
   const young = g.tier === 'kid';
   const q = S.currentQuote || (S.currentQuote = pickQuote());
   const name = (S.profile.name || '').trim();
+  function timeGreeting(){
+    const h = new Date().getHours();
+    if (h < 5) return 'Buona notte';
+    if (h < 12) return 'Buongiorno';
+    if (h < 14) return 'Buon pranzo';
+    if (h < 18) return 'Buon pomeriggio';
+    if (h < 22) return 'Buonasera';
+    return 'Buona notte';
+  }
+  const greeting = isToday ? (name ? `${timeGreeting()}, ${name}` : timeGreeting()) : 'Giorno passato';
   app.innerHTML = `
-  ${header(isToday ? longDate(k) : 'Diario', isToday ? (name ? 'Ciao, ' + name : 'Oggi') : 'Giorno passato')}
+  ${header(isToday ? longDate(k) : 'Diario', greeting)}
   <div class="datebar">
     <button class="chip-btn" data-a="day" data-d="-1" aria-label="Giorno precedente">${I.left}</button>
     <span class="label">${isToday ? 'Oggi' : esc(longDate(k))}</span>
@@ -1007,7 +1129,7 @@ function renderToday(){
   <div id="waterBox">${waterCard(day, g)}</div>
   <h2 class="section-title">Pasti <small class="num">${t.n} ${t.n === 1 ? 'alimento' : 'alimenti'}</small></h2>
   <div class="stack">${MEALS.map(m => mealCard(m, day)).join('')}</div>
-  <p class="foot">Tocca «Aggiungi pasto» per fotografare un piatto, che riconosco da solo, o per cercarlo nell'elenco.</p>`;
+  <p class="foot">Tocca «Aggiungi pasto»: PiattinoScan riconosce il piatto dalla foto, oppure cerca nell'elenco.</p>`;
   animateRings(); fillsFrom(app); countUp(app);
 }
 const litri = n => (n * .25).toLocaleString('it-IT', { maximumFractionDigits: 2 });
@@ -1016,6 +1138,7 @@ function waterCard(day, g){
   return `<div class="card water-card ${done ? 'done' : ''}">
     <button class="bottle" data-a="water-add" data-n="1" aria-label="Aggiungi un bicchiere d'acqua">
       <span class="cap"></span><span class="glassb"><span class="liquid" data-fill="water" data-p="${Math.max(pct, n ? .08 : 0)}"></span>${[.25, .5, .75].map(t => `<i class="tick" style="bottom:${t * 100}%"></i>`).join('')}</span>
+      <span style="font:400 11px/13px var(--font-sans);color:var(--label-muted);margin-top:5px">+250 ml</span>
     </button>
     <div class="water-info">
       <div class="water-l num"><b><span data-num="water" data-v="${n * .25}" data-f="L">${litri(n)}</span> L</b><span> di ${litri(g.water)} L</span></div>
@@ -1173,7 +1296,7 @@ function renderProfile(){
   <h2 class="section-title">Dati</h2>
   <div class="card pad"><div class="meal-name">Salvati su questo dispositivo</div><div class="small muted" style="margin-top:4px">Profilo, diario e foto restano solo qui: nessun account, nessun server. Esporta un backup ogni tanto, oppure per passare a un altro telefono.</div></div>
   <h2 class="section-title">Riconoscimento delle foto</h2>
-  <div class="card pad" id="dlCard"><div class="row"><div class="grow"><div class="meal-name" id="dlTitle">Controllo…</div><div class="small muted" id="dlSub">PiattinoScan, il riconoscimento dei cibi creato per Piattino, gira sul telefono: ${fmt1(MODEL.mb)} MB da scaricare una volta sola. Impara anche dalle tue correzioni.</div></div><button class="chip-btn accent" data-a="preload" id="dlBtn" hidden>Scarica</button></div><div class="dl-bar" id="dlBarBox" hidden><i id="dlBar"></i></div></div>
+  <div class="card pad" id="dlCard"><div class="row"><div class="grow"><div class="meal-name" id="dlTitle">Controllo…</div><div class="small muted" id="dlSub">Piattino3D Scan, il riconoscimento dei cibi creato per Piattino, gira sul telefono: ${fmt1(MODEL.mb)} MB da scaricare una volta sola. Impara anche dalle tue correzioni.</div></div><button class="chip-btn accent" data-a="preload" id="dlBtn" hidden>Scarica</button></div><div class="dl-bar" id="dlBarBox" hidden><i id="dlBar"></i></div></div>
   <div class="stack" style="margin-top:12px" id="backupBox"><button class="btn tinted" data-a="export">Esporta backup</button><button class="btn tinted" data-a="import">Importa backup</button></div>
   ${isStandalone() ? '' : `<h2 class="section-title">Aggiungi alla schermata Home</h2>${installTabs()}<div id="installSteps">${installSteps(S.installTab)}</div>`}
   <h2 class="section-title">Informazioni</h2>
@@ -1208,7 +1331,7 @@ function maxBirth(years){ const d = new Date(); d.setFullYear(d.getFullYear() - 
 function goalOptions(age, cur){
   const opts = age && age < 14 ? [['healthy','Mangiare sano','Pasti vari per crescere'],['sport','Energia per lo sport','Per chi si muove tanto'],['muscle','Forza e muscoli','Giochi, sport e proteine']]
     : age && age < 18 ? [['healthy','Mangiare sano','Pasti vari per crescere'],['sport','Energia per lo sport','Per chi si muove tanto'],['muscle','Muscoli e forza','Più proteine, niente diete']]
-    : [['lose','Dimagrire','Calorie −15%'],['maintain','Mantenere','Peso stabile'],['muscle','Fare muscoli','Proteine 1,8 g/kg'],['gain','Aumentare di peso','Calorie +10%'],['healthy','Mangiare sano','Senza obiettivi di peso']];
+    : [['lose','Dimagrire','Deficit graduale e controllato'],['maintain','Mantenere','Peso stabile nel tempo'],['muscle','Fare muscoli','Più proteine, allenamento'],['gain','Aumentare di peso','Piano calorico positivo'],['healthy','Mangiare sano','Equilibrio senza ossessioni']];
   if (!opts.some(o => o[0] === cur)) cur = 'healthy';
   return opts.map(([v, l, d], i) => `<input type="radio" name="goal" id="gl-${v}" value="${v}" ${v === cur ? 'checked' : ''}><label for="gl-${v}" class="${opts.length % 2 && i === opts.length - 1 ? 'wide' : ''}"><b>${l}</b><span>${d}</span></label>`).join('');
 }
@@ -1221,10 +1344,10 @@ const ico = k => `<span class="step-ico">${I[k]}</span>`;
 function installSteps(kind){
   const steps = {
     safari: [
-      `${ico('share')} Tocca <b>Condividi</b>, il quadrato con la freccia in su. Di solito è nella barra in basso: se non lo vedi, tocca prima <b>•••</b>.`,
-      `${ico('addsq')} Scorri il menu e tocca <b>Aggiungi alla schermata Home</b>. Se non c'è, tocca <b>Mostra altro</b> in fondo alla lista.`,
+      `${ico('share')} Apri Safari → tocca il pulsante <b>Condividi</b> ⬜↑ nella barra in basso (se non lo vedi, scorri la pagina verso il basso o tocca <b>•••</b>).`,
+      `${ico('addsq')} Nel menu che si apre, scorri verso il basso e tocca <b>Aggiungi alla schermata Home</b>. Se non compare, tocca prima <b>Mostra altro</b> in fondo alla lista.`,
       `${ico('check')} Lascia attivo <b>Apri come app web</b>, se compare, e tocca <b>Aggiungi</b> in alto a destra.`,
-      `${ico('home')} Chiudi Safari e apri Piattino dalla nuova icona sulla schermata Home.`,
+      `${ico('home')} Chiudi Safari. Apri Piattino dall'icona che è apparsa sulla schermata Home — da lì l'app funziona anche offline.`,
     ],
     chrome: [
       `${ico('share')} Tocca <b>Condividi</b> in alto a destra, nella barra dell'indirizzo. Se non lo vedi, tocca <b>•••</b> e poi <b>Condividi</b>.`,
@@ -1251,27 +1374,32 @@ function renderInstall(){
   S.installTab = S.installTab || guessBrowser();
   app.innerHTML = `<div class="welcome install ${reduceMotion() ? '' : 'intro'}">
     <div class="home-preview"><img src="icons/apple-touch-icon.png" alt=""><span>Piattino</span></div>
-    <h1 class="install-title">${words('Prima mettila sulla schermata Home')}</h1>
-    <p class="tag">${words('Così Piattino si apre a tutto schermo come un\'app vera, anche senza internet. Ci vuole un minuto.', 6)}</p>
+    <h1 class="install-title">${words('Un minuto per averla sempre pronta')}</h1>
+    <p class="tag">${words('Sulla schermata Home si apre istantaneamente e funziona anche senza internet.', 6)}</p>
+    <div class="install-bar-preview ios-glass" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-md);margin:16px 0 0;font:400 13px/18px var(--font-sans)">
+      <span style="flex:1;background:var(--system-gray-5);border-radius:6px;padding:6px 10px;color:var(--label-muted)">piattino.app</span>
+      <span style="color:var(--fill-prominent);font-size:22px">⬜↑</span>
+    </div>
     <div style="margin-top:20px">${installTabs()}<div id="installSteps">${installSteps(S.installTab)}</div></div>
-    <p class="note" style="margin-top:12px">Configura Piattino <b>dall'icona sulla schermata Home</b>: l'app lì ha una memoria sua, e i dati inseriti qui nel browser non passerebbero.</p>
+    <p class="note" style="margin-top:12px">Apri Piattino <b>dall'icona sulla schermata Home</b>: lì ha una memoria separata e funziona anche offline. I dati inseriti nel browser non si spostano nell'app.</p>
     <div class="stack" style="margin-top:16px">
-      <button class="btn primary" data-a="install-done">L'ho aggiunta</button>
-      <button class="btn tinted" data-a="install-skip">Continua nel browser</button>
+      <button class="btn primary" data-a="install-done">Fatto, apro Piattino</button>
+      <button class="btn tinted" data-a="install-skip">Per ora usa nel browser</button>
     </div>
   </div>`;
 }
 
 function renderWelcome(){
   if (!isStandalone() && !installSkipped()) return renderInstall();
+  WZ = { step:0, data:{name:'',birth:'',sex:'F',height:'',weight:'',activity:1,goal:'healthy'} };
   app.innerHTML = `<div class="welcome ${reduceMotion() ? '' : 'intro'}">
     <img class="app-icon" src="icons/apple-touch-icon.png" alt="" style="margin-top:40px">
     <h1>${words('Piattino')}</h1>
-    <p class="tag">${words('Fotografa quello che mangi, segui il tuo piano e trova ogni giorno una spinta in più. Per tutte le età, dai 9 anni in su.', 1)}</p>
-    ${profileForm(null)}
-    <p class="foot" style="text-align:center">I tuoi dati restano privati su questo dispositivo.</p>
+    <p class="tag" style="margin-bottom:20px">${words('Fotografa il piatto, scopri cosa hai mangiato e ricevi consigli su misura. Niente account, tutto sul tuo telefono.', 1)}</p>
+    <div id="wizardRoot"></div>
+    <p class="foot" style="text-align:center;margin-top:16px">Niente account. I tuoi dati restano solo su questo dispositivo.</p>
   </div>`;
-  bindProfileForm(app);
+  wizardStepEl();
 }
 function bindProfileForm(root){
   const form = $('#pform', root); if (!form) return;
@@ -1303,8 +1431,74 @@ function bindProfileForm(root){
     if (first || +prev.weight !== p.weight) logWeight(p.weight);
     saveProfile(); S.currentQuote = null;
     closeSheet(); S.view = 'today'; render(); window.scrollTo(0, 0);
-    toast(first ? 'Ti diamo il benvenuto su Piattino!' : 'Profilo aggiornato');
+    toast(first ? (p.name ? `Benvenuto, ${p.name}!` : 'Benvenuto su Piattino!') : 'Profilo aggiornato');
     if (age >= 18 && ['lose','gain','muscle'].includes(p.goal) && !S.profile.target) setTimeout(openGoal, 700);
+  });
+}
+
+const WIZARD_STEPS = ['name','birth','sex','body','activity','goal'];
+let WZ = { step:0, data:{name:'',birth:'',sex:'F',height:'',weight:'',activity:1,goal:'healthy'} };
+
+function wizardStepEl(){
+  const root = $('#wizardRoot'); if (!root) return;
+  const step = WIZARD_STEPS[WZ.step], total = WIZARD_STEPS.length;
+  const labels = {name:'Come ti chiami?',birth:'Quando sei nato?',sex:'Sesso biologico',body:'La tua corporatura',activity:'Quanto ti muovi?',goal:'Il tuo obiettivo'};
+  const stepHtml = {
+    name: `<div class="group"><div class="field"><label for="wz-name">Nome</label><input id="wz-name" name="name" autocomplete="given-name" placeholder="Il tuo nome" value="${esc(WZ.data.name)}" maxlength="30"></div></div>`,
+    birth: `<div class="group"><div class="field"><label for="wz-birth">Data di nascita</label><input id="wz-birth" name="birth" type="date" min="${maxBirth(110)}" max="${maxBirth(9)}" value="${esc(WZ.data.birth)}"></div></div><p class="note" style="margin-top:8px">Serve per calcolare il fabbisogno giusto per la tua età.</p>`,
+    sex: `<div class="seg" style="margin:0"><input type="radio" name="wz-sex" id="wz-F" value="F" ${WZ.data.sex!=='M'?'checked':''}><label for="wz-F">Femmina</label><input type="radio" name="wz-sex" id="wz-M" value="M" ${WZ.data.sex==='M'?'checked':''}><label for="wz-M">Maschio</label></div>`,
+    body: `<div class="group"><div class="field"><label for="wz-h">Altezza</label><input id="wz-h" name="height" type="number" inputmode="numeric" min="100" max="230" placeholder="170" value="${esc(WZ.data.height)}"><span class="unit">cm</span></div><div class="field"><label for="wz-w">Peso attuale</label><input id="wz-w" name="weight" type="number" inputmode="decimal" min="20" max="300" step="0.1" placeholder="65" value="${esc(WZ.data.weight)}"><span class="unit">kg</span></div></div>`,
+    activity: `<div class="seg">${['Poco','Un po\'','Abbastanza','Tanto'].map((l,i)=>`<input type="radio" name="wz-act" id="wa-${i}" value="${i}" ${+WZ.data.activity===i?'checked':''}><label for="wa-${i}">${l}</label>`).join('')}</div><p class="note" style="margin-top:8px">Considera sport, lavoro e movimento quotidiano.</p>`,
+    goal: `<div class="goal-grid" id="wzGoalSeg">${goalOptions(WZ.data.birth ? ageOf({birth:WZ.data.birth}) : 0, WZ.data.goal)}</div>`,
+  }[step];
+  const isFirst = WZ.step === 0, isLast = WZ.step === total - 1;
+  root.innerHTML = `<div class="wizard-step">
+    <div class="wizard-prog"><div class="wizard-prog-fill" style="width:${(WZ.step/total*100).toFixed(1)}%"></div></div>
+    ${isFirst ? '' : `<button class="wizard-back" id="wzBack">${I.left} Indietro</button>`}
+    <div class="form-label" style="margin-top:0;margin-bottom:16px">${labels[step]}</div>
+    ${stepHtml}
+    <div class="err" id="wzerr" role="alert" style="margin-top:8px"></div>
+    <button class="btn primary" id="wzNext" style="margin-top:20px">${isLast ? 'Inizia' : 'Avanti'}</button>
+  </div>`;
+  requestAnimationFrame(() => root.querySelector('input') && root.querySelector('input').focus());
+  $('#wzBack') && $('#wzBack').addEventListener('click', () => { haptic(); WZ.step--; wizardStepEl(); });
+  $('#wzNext').addEventListener('click', () => {
+    haptic();
+    const err = $('#wzerr');
+    if (step === 'name') { const v = ($('#wz-name')||{}).value && $('#wz-name').value.trim() || ''; WZ.data.name = v; }
+    if (step === 'birth') {
+      const v = ($('#wz-birth')||{}).value||'';
+      if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) { err.textContent='Inserisci la tua data di nascita.'; return; }
+      const age = ageOf({birth:v});
+      if (age < 9) { err.textContent='Piattino è pensato per chi ha almeno 9 anni.'; return; }
+      if (age > 110) { err.textContent='Controlla la data di nascita.'; return; }
+      WZ.data.birth = v;
+    }
+    if (step === 'sex') { WZ.data.sex = (root.querySelector('input[name=wz-sex]:checked')||{}).value||'F'; }
+    if (step === 'body') {
+      const h = +($('#wz-h')||{}).value, w = +String(($('#wz-w')||{}).value||'').replace(',','.');
+      if (!(h>=100&&h<=230)) { err.textContent='Inserisci un\'altezza tra 100 e 230 cm.'; return; }
+      if (!(w>=20&&w<=300)) { err.textContent='Inserisci un peso tra 20 e 300 kg.'; return; }
+      WZ.data.height = h; WZ.data.weight = w;
+    }
+    if (step === 'activity') { WZ.data.activity = +(root.querySelector('input[name=wz-act]:checked')||{value:1}).value||1; }
+    if (step === 'goal') {
+      WZ.data.goal = (root.querySelector('input[name=goal]:checked')||{}).value||'healthy';
+      const age = ageOf({birth:WZ.data.birth});
+      if (age < 18 && !['healthy','sport','muscle'].includes(WZ.data.goal)) WZ.data.goal = 'healthy';
+      const p = { ...WZ.data }; p.age = age;
+      const first = !S.profile; const prev = S.profile || {};
+      S.profile = { ...prev, ...p };
+      if (age < 18) { delete S.profile.target; delete S.profile.kcalAdj; }
+      if (first || +prev.weight !== p.weight) logWeight(p.weight);
+      saveProfile(); S.currentQuote = null;
+      haptic('success');
+      S.view = 'today'; render(); window.scrollTo(0,0);
+      toast(first ? (p.name ? `Benvenuto, ${p.name}!` : 'Benvenuto su Piattino!') : 'Profilo aggiornato');
+      if (age >= 18 && ['lose','gain','muscle'].includes(p.goal) && !S.profile.target) setTimeout(openGoal, 700);
+      return;
+    }
+    if (!isLast) { WZ.step++; wizardStepEl(); }
   });
 }
 
@@ -1589,7 +1783,7 @@ function coachReply(text){
 const md = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
 function openCoach(){
   openSheet(`<div class="chat">${sheetHead('Coach', 'Chiudi')}
-    <p class="chat-sub">Consigli calcolati dai tuoi dati, direttamente sul telefono</p>
+    <p class="chat-sub">Il tuo alleato personale: consigli su misura, solo sul tuo telefono</p>
     <div class="chat-log" id="chatLog" aria-live="polite"></div>
     <div class="chips" id="chatChips">${CHIPS.map(c => `<button data-a="coach-ask" data-q="${esc(c)}">${esc(c)}</button>`).join('')}</div>
     <form class="chat-input" id="chatForm"><textarea id="chatIn" rows="1" placeholder="Scrivi una domanda…" aria-label="Scrivi al coach"></textarea><button class="send" type="submit" aria-label="Invia">${I.up}</button></form>
@@ -1636,16 +1830,29 @@ function coachAct(k){
 
 /* ---------- sheets ---------- */
 let sheetEl = null;
-function openSheet(html, tall){
+function openSheet(html, tall, originEl){
   closeSheet(true);
   const w = document.createElement('div'); w.className = 'sheet-wrap';
-  w.innerHTML = `<div class="sheet${tall ? ' tall' : ''}" role="dialog" aria-modal="true"><div class="grabber"></div>${html}</div>`;
+  const sh = document.createElement('div');
+  sh.className = 'sheet' + (tall ? ' tall' : '');
+  sh.setAttribute('role','dialog'); sh.setAttribute('aria-modal','true');
+  sh.innerHTML = '<div class="grabber"></div>' + html;
+  w.appendChild(sh);
+  if (originEl && !reduceMotion()) {
+    const r = originEl.getBoundingClientRect(), wh = window.innerHeight;
+    const ox = ((r.left + r.right) / 2 / window.innerWidth * 100).toFixed(1) + '%';
+    const oy = ((r.top + r.bottom) / 2 / wh * 100).toFixed(1) + '%';
+    sh.style.setProperty('--sheet-ox', ox);
+    sh.style.setProperty('--sheet-oy', oy);
+    sh.classList.add('from-btn');
+  }
   w.addEventListener('click', e => { if (e.target === w) closeSheet(); });
   document.body.appendChild(w); document.body.classList.add('locked'); sheetEl = w; dragToDismiss(w);
   requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('show')));
   return w;
 }
 function closeSheet(instant){
+  haptic();
   if (!sheetEl) return; const w = sheetEl; sheetEl = null;
   if (!$('#scanner').classList.contains('show')) document.body.classList.remove('locked');
   if (instant) return w.remove();
@@ -1681,9 +1888,9 @@ const sheetHead = (title, left = 'Annulla', right = '') => `<div class="sheet-he
 
 /* ---- add food sheet ---- */
 const A = { meal:'pranzo', tab:'db', q:'', src:null, grams:100 };
-function openAdd(meal, src){
+function openAdd(meal, src, originEl){
   A.pendingThumb = null; A.pendingEmb = null; A.memSk = null; A.fromOutside = false; A.meal = meal || autoMeal(); A.tab = S.foods.length && !src ? A.tab : 'db'; A.q = ''; A.src = src || null; A.grams = src ? src.grams : 100;
-  openSheet(`<div id="addRoot" style="display:flex;flex-direction:column;min-height:0;flex:1"></div>`);
+  openSheet(`<div id="addRoot" style="display:flex;flex-direction:column;min-height:0;flex:1"></div>`, false, originEl);
   renderAdd();
 }
 function renderAdd(){
@@ -1718,12 +1925,14 @@ function renderAddList(){
   const box = $('#addList'); if (!box) return;
   const q = A.q.trim().toLowerCase();
   if (A.tab === 'my') {
-    const list = S.foods.filter(f => !q || f.name.toLowerCase().includes(q));
+    const nq = normalizeSearch(q);
+    const list = S.foods.filter(f => !q || normalizeSearch(f.name).includes(nq));
     box.innerHTML = list.length ? list.map(f => `<button class="list-item" data-a="add-pick-my" data-id="${esc(f.id)}">${thumbHtml(f)}<div class="grow"><div>${esc(f.name)}</div><div class="small muted num">${fmt(f.kcal)} kcal · ${fmt(f.grams)} g</div></div>${I.right.replace('<svg', '<svg class="chev"')}</button>`).join('')
       : `<div class="pad muted">${S.foods.length ? 'Nessun risultato.' : 'Scansiona un piatto e memorizzalo: lo ritroverai qui.'}</div>`;
     return;
   }
-  const list = FOODS.filter(f => !q || f.name.toLowerCase().includes(q));
+  const nq = normalizeSearch(q);
+  const list = FOODS.filter(f => !q || normalizeSearch(f.name).includes(nq) || (FOOD_TAGS[f.key]||[]).some(t => normalizeSearch(t).includes(nq)));
   box.innerHTML = list.length ? list.map(f => `<button class="list-item" data-a="add-pick-db" data-k="${f.key}"><span class="thumb">${f.emoji}</span><div class="grow"><div>${esc(f.name)}</div><div class="small muted num">${fmt(f.kcal*f.portion/100)} kcal · ${f.portion} g</div></div>${I.right.replace('<svg', '<svg class="chev"')}</button>`).join('')
     : `<div class="pad muted">Nessun alimento trovato. Prova «A mano» per inserirlo tu.</div>`;
 }
@@ -1757,7 +1966,7 @@ function addEntries(meal, entries, silent){
   const k = S.date, d = ensureDay(k);
   d.meals[meal] = [...(d.meals[meal] || []), ...entries];
   saveDay(k);
-  if (!silent) toast(`${CHEERS[Math.floor(Math.random()*CHEERS.length)]} ${fmt(entries.reduce((a, e) => a + e.kcal, 0))} kcal`);
+  if (!silent) { haptic('success'); toast(`${CHEERS[Math.floor(Math.random()*CHEERS.length)]} ${fmt(entries.reduce((a, e) => a + e.kcal, 0))} kcal`); }
   if (S.view === 'today') renderToday();
 }
 
@@ -1827,6 +2036,7 @@ function attachCamera(){
   const w = $('#camWait'); if (w) w.hidden = true;
 }
 async function snapCamera(){
+  haptic('medium');
   const v = $('#camVideo'); if (!v || !v.videoWidth) return;
   const f = $('#camFlash'); if (f) { f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
   // ritaglia esattamente ciò che vedi nel mirino (object-fit: cover + zoom)
@@ -1856,7 +2066,10 @@ function renderCamera(){
       <div class="cam-modes"><button data-a="scan-describe">DESCRIVI</button><button class="on" aria-current="true">FOTO</button></div>
       <div class="cam-controls">
         <button class="cam-lib" data-a="pick-photo" aria-label="Scegli dalla libreria">${last ? `<img src="${esc(last)}" alt="">` : I.photos}</button>
-        <button class="shutter" data-a="cam-shot" aria-label="Scatta"><span></span></button>
+        <div class="shutter-wrap">
+          <button class="shutter" data-a="cam-shot" aria-label="Scatta una foto"><span></span></button>
+          <button class="shutter-3d" data-a="cam-3d" aria-label="Piattino3D Scan — scansione multi-frame">3D</button>
+        </div>
         <button class="cam-flip" data-a="cam-flip" aria-label="Cambia fotocamera">${I.flip}</button>
       </div>
     </div>
@@ -1867,10 +2080,10 @@ function renderScanner(){
   if (SC.state === 'camera') return renderCamera();
   const st = SC.state;
   const cls = st === 'scanning' ? 'scanning' : (st === 'idle' || st === 'describe') ? 'idle-mode' : 'done';
-  const status = { idle: 'Fotografa il tuo piatto', describe:'Descrivi il tuo piatto', scanning:`<span class="dots">${SC.desc ? 'Leggo la descrizione' : 'Analizzo la foto'}</span>`, error:'Non ci sono riuscito', result:'Ecco cosa ho trovato' }[st];
+  const status = { idle: 'Fotografa il tuo piatto', describe:'Descrivi il tuo piatto', scanning:`<span class="dots">${SC.desc ? 'Leggo la descrizione' : 'Analizzo i frame'}</span>`, error:'Non ci sono riuscito', result:'Ecco cosa ho trovato' }[st];
   const sub = st === 'idle' ? 'Il riconoscimento avviene sul tuo telefono: le foto non escono dal dispositivo.' : st === 'error' ? esc(SC.err) : st === 'scanning' ? esc(SC.sub || 'Riconosco forme, colori e ingredienti') : st === 'describe' ? 'Scrivi cosa hai mangiato, anche con le quantità: «2 uova, 50 g di pane e un\'insalata».' : '';
   scanner.innerHTML = `
-  <div class="scan-top"><button class="close-btn" data-a="scan-close" aria-label="Chiudi">${I.x}</button><span class="scan-title">Scansiona il piatto</span><span></span></div>
+  <div class="scan-top"><button class="close-btn" data-a="scan-close" aria-label="Chiudi">${I.x}</button><span class="scan-title">Piattino3D Scan</span><span></span></div>
   <div class="scan-main ${cls}">
     <div class="stage"><div class="rig">
       <div class="plate">${SC.img ? `<img src="${SC.img}" alt="La tua foto">` : `<div class="idle">🍽️</div>`}</div>
@@ -2334,7 +2547,7 @@ async function recognizePhoto(canvas, onFrac){
 
 /* porzione automatica: quanta parte del piatto è coperta dal cibo.
    Il piatto (chiaro, poco saturo) fa da riferimento, quindi la stima non dipende da quanto sei vicino. */
-const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco','cioccolata','acqua']);
+const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco','cioccolata','acqua','caffelatte','cappuccino','lattemacchiato','te','camomilla','tefreddo','birra','vino','vinobianco','spritz','frullato','centrifugato']);
 function estimatePortion(canvas){
   try {
     const N = 72, c = document.createElement('canvas'); c.width = c.height = N;
@@ -2375,6 +2588,19 @@ function applyEstimate(items, est){
   });
   SC.est = est;
 }
+function plateCircularity(canvas){
+  const N = 64, c2 = document.createElement('canvas'); c2.width = c2.height = N;
+  const g = c2.getContext('2d', { willReadFrequently:true }); g.drawImage(canvas, 0, 0, N, N);
+  const d = g.getImageData(0, 0, N, N).data;
+  let cx = 0, cy = 0, n = 0;
+  for (let i = 0; i < N*N; i++) { const s = d[i*4]/255 + d[i*4+1]/255 + d[i*4+2]/255; if (s > 2.2) { cx += i%N; cy += Math.floor(i/N); n++; } }
+  if (!n) return 0;
+  cx /= n; cy /= n;
+  let varX = 0, varY = 0;
+  for (let i = 0; i < N*N; i++) { const s = d[i*4]/255 + d[i*4+1]/255 + d[i*4+2]/255; if (s > 2.2) { varX += (i%N-cx)**2; varY += (Math.floor(i/N)-cy)**2; } }
+  const ratio = Math.min(varX, varY) / Math.max(varX, varY + 0.001);
+  return ratio;
+}
 
 /* description in words: «2 uova, 50 g di pane e un'insalata» */
 const KW = {
@@ -2390,6 +2616,12 @@ const KW = {
   arancini:['arancini','arancino','arancina','arancine'], polpette:['polpette','polpetta'], cotoletta:['cotoletta','cotolette','milanese'], tortellini:['tortellini','cappelletti'],
   pastafagioli:['pasta e fagioli','pasta fagioli'], parmigiana:['parmigiana'], formaggio:['formaggio','pecorino','stracchino','fontina'], salame:['salame','salami'],
   melanzane:['melanzane','melanzana'], fagiolini:['fagiolini'], ciliegie:['ciliegie','ciliegia'], melone:['melone'], crostata:['crostata'], focaccia:['focaccia'], piadina:['piadina','piada'],
+  pastaragu:['pasta al ragù','pasta al ragu','bolognese','ragù','ragu','pasta alla bolognese'],
+  pastaforno:['pasta al forno'], pastatonno:['pasta con tonno','pasta tonno'],
+  caffelatte:['caffelatte','caffellatte','caffè latte'], cappuccino:['cappuccino'], lattemacchiato:['latte macchiato','macchiato'],
+  te:['tè','te','tisana','infuso'], camomilla:['camomilla'], tefreddo:['tè freddo','te freddo','the freddo'],
+  birra:['birra'], vino:['vino','vino rosso'], vinobianco:['vino bianco'], spritz:['spritz','aperol spritz'],
+  frullato:['frullato','smoothie'], centrifugato:['centrifugato'],
 };
 const NUMW = { 'un':1, 'uno':1, 'una':1, "un'":1, 'due':2, 'tre':3, 'quattro':4, 'cinque':5, 'sei':6, 'mezzo':.5, 'mezza':.5 };
 function parseDescription(text){
@@ -2443,8 +2675,9 @@ function tickPct(){
 }
 const waitPct = v => new Promise(res => { const t0 = Date.now(); (function chk(){ if ((SC.pctShown || 0) >= v - .5 || Date.now() - t0 > 1500 || SC.state !== 'scanning') res(); else setTimeout(chk, 40); })(); });
 
-async function handlePhoto(file){
+async function handlePhoto(file, frames3d){
   if (!file) return;
+  if (frames3d) SC.frames3d = frames3d;
   stopCamera();
   if (SC.img) { try { URL.revokeObjectURL(SC.img); } catch (e) {} }
   let prep;
@@ -2543,10 +2776,11 @@ function renderResult(){
 
 /* ---------- events ---------- */
 const actions = {
-  tab: el => { const moved = S.view !== el.dataset.v; S.view = el.dataset.v; closeSheet(); render(); window.scrollTo(0, 0); if (moved) enterView(); },
+  tab: el => { haptic(); const moved = S.view !== el.dataset.v; S.view = el.dataset.v; closeSheet(); render(); window.scrollTo(0, 0); if (moved) enterView(); },
   day: el => { const d = +el.dataset.d, from = S.date; S.date = d === 0 ? todayKey() : addDays(S.date, d); if (S.date > todayKey()) S.date = todayKey(); render(); if (S.date !== from) enterView(S.date < from ? 'from-left' : 'from-right'); },
   goto: el => { S.date = el.dataset.k; S.view = 'today'; render(); window.scrollTo(0, 0); enterView(); },
   'water-add': el => {
+    haptic();
     const d = ensureDay(S.date), g = T(), before = d.water || 0, n = +el.dataset.n;
     d.water = clamp(before + n, 0, 30); saveDay(S.date);
     const box = $('#waterBox'); if (box) { box.innerHTML = waterCard(d, g); fillsFrom(box); countUp(box); }
@@ -2566,11 +2800,11 @@ const actions = {
       q.classList.remove('words-out'); q.innerHTML = words(next); void q.offsetWidth; q.classList.add('words-in');
     }, 200 + n * 12);
   },
-  'add-open': el => openAdd(el.dataset.m),
+  'add-open': el => openAdd(el.dataset.m, null, el),
   'add-photo': el => { const meal = A.meal, r = el.getBoundingClientRect(); closeSheet(true); openScanner(meal, r); },
   'add-tab': el => { A.tab = el.dataset.t; renderAdd(); },
-  'add-pick-db': el => { A.src = srcFromDb(FOOD[el.dataset.k]); A.memSk = 'db:' + el.dataset.k; A.grams = A.src.grams; renderAdd(); },
-  'add-pick-my': el => { const f = S.foods.find(x => x.id === el.dataset.id); if (!f) return; A.src = srcFromSaved(f); A.memSk = 'my:' + f.id; A.grams = A.src.grams; renderAdd(); },
+  'add-pick-db': el => { haptic(); A.src = srcFromDb(FOOD[el.dataset.k]); A.memSk = 'db:' + el.dataset.k; A.grams = A.src.grams; renderAdd(); },
+  'add-pick-my': el => { haptic(); const f = S.foods.find(x => x.id === el.dataset.id); if (!f) return; A.src = srcFromSaved(f); A.memSk = 'my:' + f.id; A.grams = A.src.grams; renderAdd(); },
   'g-step': el => { A.grams = clamp(Math.round((A.grams + +el.dataset.d) / 5) * 5, 5, 5000); $('#gramsIn').value = A.grams; $('#nutriBox').innerHTML = nutriHtml(entryFrom(A.src, A.grams)); },
   'add-meal': el => { A.meal = el.dataset.m; renderAdd(); },
   'add-confirm': () => { if (!(A.grams > 0)) return; addEntries(A.meal, [entryFrom(A.src, A.grams)]); closeSheet(); },
@@ -2579,7 +2813,7 @@ const actions = {
   'entry-del': el => { const d = ensureDay(S.date); d.meals[el.dataset.m] = d.meals[el.dataset.m].filter(e => e.id !== el.dataset.id); saveDay(S.date); closeSheet(); renderToday(); toast('Eliminato dal diario'); },
   'entry-memo': el => { const e = getDay(S.date).meals[el.dataset.m].find(x => x.id === el.dataset.id); if (e) { saveFoodMemo(e); toast('Memorizzato nei miei cibi'); } closeSheet(); },
   food: el => openSavedFood(el.dataset.id),
-  'food-add': el => { const f = S.foods.find(x => x.id === el.dataset.id); if (!f) return; closeSheet(true); S.date = todayKey(); openAdd(autoMeal(), srcFromSaved(f)); A.fromOutside = true; },
+  'food-add': el => { const f = S.foods.find(x => x.id === el.dataset.id); if (!f) return; closeSheet(true); S.date = todayKey(); openAdd(autoMeal(), srcFromSaved(f), el); A.fromOutside = true; },
   'food-del': el => { S.foods = S.foods.filter(f => f.id !== el.dataset.id); Store.del('food-' + el.dataset.id); closeSheet(); renderDiary(); toast('Rimosso dai miei cibi'); },
   'plan-add': el => {
     const day = getDay(S.date); const meals = day.plan && day.plan.meals ? day.plan.meals : buildPlan(S.date);
@@ -2588,7 +2822,7 @@ const actions = {
   },
   'plan-shuffle': () => { S.planShift++; renderPlan(); },
   'plan-reset': () => { const d = ensureDay(S.date); delete d.plan; saveDay(S.date); renderPlan(); },
-  'edit-profile': () => { openSheet(`${sheetHead('Profilo')}<div class="sheet-body">${profileForm(S.profile)}</div>`); bindProfileForm(sheetEl); },
+  'edit-profile': el => { openSheet(`${sheetHead('Profilo')}<div class="sheet-body">${profileForm(S.profile)}</div>`, false, el); bindProfileForm(sheetEl); },
   'reset-ask': () => { $('#resetBox').innerHTML = `<p class="note" style="margin:0 0 10px">Vuoi cancellare profilo, diario e cibi memorizzati? L'operazione non si può annullare.</p><div class="stack"><button class="btn danger fill" data-a="reset-yes">Sì, cancella tutto</button><button class="btn tinted" data-a="tab" data-v="profile">Annulla</button></div>`; },
   'reset-yes': () => {
     Store.del('profile'); Object.keys(S.days).forEach(k => Store.del('day-' + k)); S.foods.forEach(f => Store.del('food-' + f.id)); SCANMEM.clear();
@@ -2598,7 +2832,37 @@ const actions = {
   },
   scan: () => { S.date = S.date || todayKey(); openScanner(); },
   'scan-close': () => closeScanner(),
-  'cam-shot': () => snapCamera(),
+  'cam-shot': () => { haptic('medium'); snapCamera(); },
+  'cam-3d': async () => {
+    haptic();
+    const v = $('#camVideo'); if (!v || !v.videoWidth) return;
+    const overlay = document.createElement('div'); overlay.className = 'cam-3d-overlay';
+    overlay.innerHTML = '<div class="cam-3d-arc"></div><div class="cam-3d-label">Gira lentamente<br>attorno al piatto</div><div class="cam-3d-count" id="c3d">3</div>';
+    const cv = $('#camVideo').closest('.cam-view'); if (cv) cv.appendChild(overlay);
+    haptic('medium');
+    const frames = [];
+    for (let i = 3; i >= 1; i--) {
+      const cd = overlay.querySelector('#c3d'); if (cd) cd.textContent = String(i);
+      haptic();
+      const vw = v.videoWidth, vh = v.videoHeight, ew = v.clientWidth, eh = v.clientHeight;
+      const sc = Math.max(ew/vw, eh/vh), z = SC.zoom || 1;
+      const cw = ew/sc/z, ch = eh/sc/z;
+      const c = document.createElement('canvas'); c.width = Math.round(cw); c.height = Math.round(ch);
+      c.getContext('2d').drawImage(v, (vw-cw)/2, (vh-ch)/2, cw, ch, 0, 0, c.width, c.height);
+      frames.push(c);
+      if (i > 1) await sleep(900);
+    }
+    overlay.remove();
+    const f = $('#camFlash'); if (f) { f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
+    await sleep(120);
+    stopCamera();
+    const best = frames.reduce((best, c) => {
+      try { const score = plateCircularity(c); return score > best.score ? { c, score } : best; } catch { return best; }
+    }, { c: frames[Math.floor(frames.length/2)], score: -1 });
+    SC.frames3d = frames;
+    const blob = await new Promise(r => best.c.toBlob(r, 'image/jpeg', .92));
+    if (blob) handlePhoto(blob, frames);
+  },
   'cam-zoom': el => { SC.zoom = +el.dataset.z; const v = $('#camVideo'); if (v) v.style.setProperty('--z', SC.zoom); document.querySelectorAll('.cam-zoom button').forEach(b => b.classList.toggle('on', +b.dataset.z === SC.zoom)); },
   'cam-flip': () => { SC.facing = SC.facing === 'user' ? 'environment' : 'user'; stopCamera(); const w = $('#camWait'); if (w) w.hidden = false; startCamera(); },
   'scan-again': () => { SC.run = (SC.run || 0) + 1; Object.assign(SC, { img:null, desc:'', items:[] }); SC.state = canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); else actions['pick-photo'](); },
@@ -2662,6 +2926,62 @@ document.addEventListener('click', e => {
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive:false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive:false });
 document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive:false });
+// pull-to-refresh
+(function(){
+  const spokes = Array.from({length:12},()=>'<i></i>').join('');
+  const ptr = document.createElement('div');
+  ptr.id = 'ptr';
+  ptr.innerHTML =
+    '<svg class="ptr-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>' +
+    '<div class="ptr-spin">'+spokes+'</div>' +
+    '<svg class="ptr-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+    '<span class="ptr-label">Rilascia</span>';
+  document.body.appendChild(ptr);
+  let y0 = 0, active = false, reached = false;
+  const THRESHOLD = 68;
+  const label = ptr.querySelector('.ptr-label');
+  function setPtr(dy){
+    const p = Math.min(Math.max(dy,0)/THRESHOLD,1);
+    const sc = .85 + p*.2;
+    ptr.style.transform = `translate(-50%,${-64+p*72}px) scale(${sc})`;
+    ptr.style.opacity = String(Math.min(p*1.8,1));
+  }
+  function hidePtr(){
+    ptr.style.transition = 'transform .4s var(--spring-smooth),opacity .25s';
+    ptr.style.transform = 'translate(-50%,-64px) scale(.85)';
+    ptr.style.opacity = '0';
+    setTimeout(()=>{ ptr.style.transition=''; },400);
+  }
+  document.addEventListener('touchstart', e => {
+    if(window.scrollY===0 && !sheetEl && !scanner.classList.contains('show') && e.touches.length===1){
+      y0=e.touches[0].clientY; active=true; reached=false;
+    }
+  },{passive:true});
+  document.addEventListener('touchmove', e => {
+    if(!active) return;
+    if(window.scrollY>2){ active=false; hidePtr(); return; }
+    const dy=e.touches[0].clientY-y0;
+    if(dy>0){
+      setPtr(dy);
+      if(dy>=THRESHOLD && !reached){ reached=true; ptr.classList.add('ready'); label.textContent='Rilascia'; }
+      if(dy<THRESHOLD && reached){ reached=false; ptr.classList.remove('ready'); }
+    }
+  },{passive:true});
+  document.addEventListener('touchend', ()=>{
+    if(!active) return;
+    active=false;
+    if(reached){
+      reached=false; ptr.classList.remove('ready'); ptr.classList.add('spinning');
+      label.textContent='Aggiornamento…'; setPtr(THRESHOLD);
+      setTimeout(()=>{
+        render();
+        ptr.classList.remove('spinning'); ptr.classList.add('done');
+        label.textContent='Aggiornato';
+        setTimeout(()=>{ hidePtr(); setTimeout(()=>ptr.classList.remove('done'),400); },700);
+      },500);
+    } else { hidePtr(); }
+  },{passive:true});
+})();
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.a === 'quote') { e.preventDefault(); actions.quote(); }
   if (e.key === 'Escape') { if (sheetEl) closeSheet(); else if (scanner.classList.contains('show')) closeScanner(); }
@@ -2726,6 +3046,8 @@ actions['add-confirm'] = () => {
 const st = Store.load();
 S.profile = st.profile; S.days = st.days; S.foods = st.foods; S.weights = st.weights; S.chat = st.chat;
 render();
+applyTimeTheme();
+checkWhatsNew();
 // all'apertura la firma resta un attimo, poi i contenuti entrano come a un cambio di sezione
 (() => {
   const el = $('#launch'); if (!el) return;
