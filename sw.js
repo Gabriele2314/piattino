@@ -22,7 +22,14 @@ self.addEventListener('fetch', event => {
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req, { cache: 'no-cache' })
-        .then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return res; })
+        .then(async res => {
+          if (!res.ok) throw new Error('bad');
+          const copy = res.clone();
+          const txt = await copy.clone().text();
+          if (!txt.includes('<title>Piattino</title>')) throw new Error('shape');
+          caches.open(VERSION).then(c => c.put('./index.html', copy));
+          return res;
+        })
         .catch(() => caches.match('./index.html'))
     );
     return;

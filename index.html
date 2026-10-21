@@ -15,6 +15,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests;">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(), geolocation=(), payment=()">
 <style>
 /* Token del design system (tokens.json), generati senza modifiche.
    Temi: chiaro, scuro, Aumenta contrasto chiaro e scuro. Lo scanner è sempre scuro; il suo pannello dei risultati segue il tema. */
@@ -169,7 +172,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .mbar .t{display:flex;justify-content:space-between;font:400 13px/18px var(--font-sans);color:var(--label-muted);gap:6px}
 .mbar .t b{color:var(--label);font-weight:600}
 /* Barre di avanzamento (ProgressIndicator) */
-.track,.dl-bar,.minibar,.prog-bar{height:6px;border-radius:3px;outline:1px solid var(--system-gray);background:var(--system-gray-6);overflow:hidden}
+.track,.dl-bar,.minibar,.prog-bar{height:6px;border-radius:3px;background:var(--system-gray-6);overflow:hidden}
 .track{margin-top:6px}
 .track i,.dl-bar i,.minibar i,.prog-bar i{display:block;height:100%;border-radius:3px;background:var(--fill-prominent)}
 .track i,.minibar i{width:calc(var(--p,0) * 100%);transition:width 1s var(--spring-smooth)}
@@ -298,7 +301,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .goal-grid input:checked+label{border-color:var(--fill-prominent)}
 .goal-grid input:checked+label::after{content:"";position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:var(--radius-capsule);background:var(--fill-prominent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4L18 8'/%3E%3C/svg%3E") center/14px no-repeat}
 .goal-grid input:checked+label::after{animation:popIn var(--dur-bouncy) var(--spring-bouncy) both}
-@keyframes popIn{from{opacity:0;transform:scale(.3)}}
+@keyframes popIn{from{opacity:0;transform:scale(.3);filter:blur(3px)}}
 .goal-grid input:focus-visible+label{outline:3px solid var(--focus-ring);outline-offset:2px}
 .form-label{font:400 13px/18px var(--font-sans);color:var(--label-muted);text-transform:uppercase;margin:18px 16px 8px}
 /* Errori: glifo e testo accanto al problema, mai il solo colore */
@@ -352,13 +355,13 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .nutri{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
 .nutri div{background:var(--bg-grouped-secondary);border-radius:var(--radius-md);padding:10px 6px;text-align:center}
 .nutri b{display:block;font:700 20px/25px var(--font-sans);font-variant-numeric:tabular-nums}
-.nutri span{font:400 11px/13px var(--font-sans);color:var(--label-muted)}
+.nutri span{font:400 12px/16px var(--font-sans);color:var(--label-muted)}
 
 /* Piano */
 .target-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .target-grid div{text-align:center;padding:10px 4px;border-radius:var(--radius-md);background:var(--bg-grouped-tertiary)}
 .target-grid b{display:block;font:700 20px/25px var(--font-sans);font-variant-numeric:tabular-nums}
-.target-grid span{font:400 11px/13px var(--font-sans);color:var(--label-muted)}
+.target-grid span{font:400 12px/16px var(--font-sans);color:var(--label-muted)}
 .plan-item{display:flex;align-items:center;gap:10px;padding:6px 0;font:400 15px/20px var(--font-sans)}
 .plan-item .e{font-size:20px;width:28px;text-align:center;flex:none}
 .plan-item .k{color:var(--label-muted);font-variant-numeric:tabular-nums}
@@ -377,6 +380,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .stat{padding:14px}
 .stat .k{font:400 13px/18px var(--font-sans);color:var(--label-muted)}
 .stat .v{font:700 22px/28px var(--font-sans);margin-top:4px;font-variant-numeric:tabular-nums}
+.stat.hot .v{color:var(--system-orange)}
 .stat .v small{font:400 13px/18px var(--font-sans);color:var(--label-muted)}
 .chart{width:100%;height:auto;display:block}
 .chart text{fill:var(--label-muted);font:400 11px var(--font-sans)}
@@ -385,7 +389,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .food-tile .ph{aspect-ratio:1;max-width:100%;border-radius:var(--radius-md);background:var(--bg-grouped-tertiary);display:grid;place-items:center;font-size:34px;overflow:hidden}
 .food-tile .ph img{width:100%;height:100%;object-fit:cover}
 .food-tile .n{font:600 13px/18px var(--font-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.food-tile .k{font:400 12px/16px var(--font-sans);color:var(--label-muted)}
+.food-tile .k{font:400 13px/18px var(--font-sans);color:var(--label-muted)}
 .hist{display:flex;align-items:center;gap:12px;min-height:var(--row-min-height);padding:8px 16px;width:100%;text-align:left;position:relative}
 .hist+.hist::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:1px solid var(--separator-opaque)}
 .hist .d{flex:1;text-transform:capitalize}
@@ -403,7 +407,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .welcome h1{font:700 34px/41px var(--font-sans);margin:20px 0 6px;text-align:center}
 /* prima apertura: l'icona entra con una molla, il titolo e la frase parola per parola */
 .welcome.intro .app-icon,.welcome.intro .home-preview{animation:iconIn var(--dur-bouncy) var(--spring-bouncy) both}
-@keyframes iconIn{from{opacity:0;transform:scale(.6)}}
+@keyframes iconIn{from{opacity:0;transform:scale(.6);filter:blur(8px)}}
 .welcome.intro :is(h1,.tag,.install-title) .w{animation:wordIn .8s var(--spring-smooth) both;animation-delay:calc(120ms + var(--i,0) * 45ms)}
 .welcome.intro > :not(.app-icon,.home-preview,h1,.tag,.install-title){animation:rise var(--dur-smooth) var(--spring-smooth) both;animation-delay:.45s}
 .welcome .tag{text-align:center;color:var(--label-muted);font:400 17px/22px var(--font-sans);margin:0 auto;max-width:34ch;text-wrap:balance}
@@ -495,7 +499,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 /* Coach */
 .coach-fab{position:fixed;right:max(16px,calc(50% - 264px));bottom:calc(env(safe-area-inset-bottom,0px) + 90px);z-index:19;display:flex;align-items:center;gap:8px;min-height:var(--hit-target);padding:0 16px 0 12px;border-radius:var(--radius-capsule);color:var(--label);font:600 15px/20px var(--font-sans);animation:fabIn .5s cubic-bezier(.2,1.3,.4,1)}
 .coach-fab svg{width:20px;height:20px;color:var(--system-purple)}
-@keyframes fabIn{from{transform:translateY(20px) scale(.8);opacity:0}}
+@keyframes fabIn{from{transform:translateY(20px) scale(.8);opacity:0;filter:blur(6px)}}
 .chat{display:flex;flex-direction:column;min-height:0;flex:1}
 .chat-sub{margin:-4px 16px 6px;text-align:center;font:400 13px/18px var(--font-sans);color:var(--label-muted)}
 .chat-log{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;min-height:0;background:var(--bg-grouped);border-top:1px solid var(--separator-opaque)}
@@ -503,7 +507,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .msg.bot{align-self:flex-start;background:var(--bg-grouped-secondary);border-bottom-left-radius:6px}
 .msg.pop,.typing{animation:bubbleIn var(--dur-bouncy) var(--spring-bouncy) both;transform-origin:0 100%}
 .msg.me.pop{transform-origin:100% 100%}
-@keyframes bubbleIn{from{opacity:0;transform:scale(.6) translateY(12px)}}
+@keyframes bubbleIn{from{opacity:0;transform:scale(.6) translateY(12px);filter:blur(4px)}}
 .msg.me{align-self:flex-end;background:var(--fill-prominent);color:var(--on-prominent);border-bottom-right-radius:6px}
 .msg .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .msg .acts button{font:600 15px/20px var(--font-sans);min-height:var(--hit-target);padding:0 14px;border-radius:var(--radius-capsule);border:2px solid var(--fill-prominent);color:var(--link)}
@@ -560,9 +564,9 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .from-left > :not(.nav),.from-right > :not(.nav){animation:slideIn var(--dur-smooth) var(--spring-smooth) both}
 .from-left{--dx:-28px}.from-right{--dx:28px}
 .swap{animation:blurIn .5s var(--spring-smooth)}
-@keyframes rise{from{opacity:0;transform:translateY(16px)}}
+@keyframes rise{from{opacity:0;transform:translateY(16px);filter:blur(4px)}}
 @keyframes blurIn{from{opacity:0;filter:blur(8px);transform:translateY(8px)}}
-@keyframes slideIn{from{opacity:0;transform:translateX(var(--dx))}}
+@keyframes slideIn{from{opacity:0;transform:translateX(var(--dx));filter:blur(5px)}}
 
 /* Sfondi dei pannelli (dopo le loro regole, per avere la precedenza) */
 .sheet-body,.chat-log,.result{background:linear-gradient(180deg,color-mix(in srgb,var(--system-blue) 7%,var(--bg-grouped)),var(--bg-grouped) 260px)}
@@ -616,7 +620,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const fmt = n => Math.round(Number(n) || 0).toLocaleString('it-IT');
 const fmt1 = n => (Math.round((Number(n) || 0) * 10) / 10).toLocaleString('it-IT');
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const rid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+const rid = () => crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 12) : Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 const pad2 = n => String(n).padStart(2, '0');
 const dkey = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 const parseKey = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -1503,7 +1507,6 @@ function coachReply(text){
   const q = (text || '').toLowerCase();
   const intent = (coachIntents.find(([, re]) => re.test(q)) || ['fallback'])[0];
   const a = analyze(), g = a.g, acts = [];
-  const lead = a.minor ? '' : '';
   switch (intent) {
     case 'safety':
       return { t:`Quello che scrivi è importante e merita attenzione. **Parlane con una persona di cui ti fidi**: un genitore, il medico${a.minor ? ', il pediatra' : ''} o un insegnante.\n\nIn Italia puoi chiamare gratis il **Numero Verde SOS Disturbi Alimentari 800 180 969**.\n\nPiattino è un'app: può darti idee per mangiare bene, ma non sostituisce l'aiuto di una persona.` };
@@ -2670,6 +2673,29 @@ $('#backupInput').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
   let d = null; try { d = JSON.parse(await f.text()); } catch (err) {}
   if (!d || d.app !== 'piattino' || typeof d.days !== 'object' || !d.profile) { toast('Questo file non è un backup di Piattino.', true); return; }
+  // Sanitize imported data to prevent XSS via crafted backup files
+  const cleanStr = (s, max) => (typeof s === 'string' ? s : '').slice(0, max);
+  const isDataImage = s => typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(s) && s.length < 300000;
+  const cleanEntry = entry => ({
+    id: cleanStr(entry.id, 32),
+    name: cleanStr(entry.name, 80),
+    emoji: cleanStr(entry.emoji, 8),
+    thumb: isDataImage(entry.thumb) ? entry.thumb : null,
+    grams: Math.max(0, Math.min(5000, +entry.grams || 0)),
+    kcal: Math.max(0, Math.min(10000, +entry.kcal || 0)),
+    p: Math.max(0, +entry.p || 0), c: Math.max(0, +entry.c || 0),
+    f: Math.max(0, +entry.f || 0), fv: Math.max(0, +entry.fv || 0),
+  });
+  if (Array.isArray(d.foods)) d.foods = d.foods.slice(0, 500).map(cleanEntry);
+  if (d.days && typeof d.days === 'object') {
+    for (const k of Object.keys(d.days)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) { delete d.days[k]; continue; }
+      const day = d.days[k];
+      for (const meal of ['colazione','pranzo','cena','spuntini']) {
+        if (Array.isArray(day[meal])) day[meal] = day[meal].slice(0, 50).map(cleanEntry);
+      }
+    }
+  }
   S.pendingImport = d;
   const when = d.exported ? new Date(d.exported).toLocaleDateString('it-IT', { day:'numeric', month:'long', year:'numeric' }) : '';
   const box = $('#backupBox'); if (!box) return;
