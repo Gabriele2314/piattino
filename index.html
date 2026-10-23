@@ -630,6 +630,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const APP_VERSION = '2.1';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -1177,7 +1178,9 @@ function renderProfile(){
   <div class="stack" style="margin-top:12px" id="backupBox"><button class="btn tinted" data-a="export">Esporta backup</button><button class="btn tinted" data-a="import">Importa backup</button></div>
   ${isStandalone() ? '' : `<h2 class="section-title">Aggiungi alla schermata Home</h2>${installTabs()}<div id="installSteps">${installSteps(S.installTab)}</div>`}
   <h2 class="section-title">Informazioni</h2>
+  <p class="note">Piattino versione ${APP_VERSION}</p>
   <p class="note">Piattino è pensato per chi ha almeno 9 anni. Per bambini e ragazzi non propone diete dimagranti, ma pasti equilibrati per crescere. Il riconoscimento delle foto avviene sul telefono e conosce i cibi più comuni: controlla sempre il risultato. I valori sono stime: per esigenze di salute rivolgiti al medico, al pediatra o a un dietista.</p>
+  <div style="margin-top:12px"><button class="btn tinted" data-a="whats-new">Cosa c'è di nuovo</button></div>
   <div style="margin-top:18px" id="resetBox"><button class="btn danger" data-a="reset-ask">Cancella tutti i dati</button></div>`;
   refreshDlCard();
 }
@@ -2589,6 +2592,7 @@ const actions = {
   'plan-shuffle': () => { S.planShift++; renderPlan(); },
   'plan-reset': () => { const d = ensureDay(S.date); delete d.plan; saveDay(S.date); renderPlan(); },
   'edit-profile': () => { openSheet(`${sheetHead('Profilo')}<div class="sheet-body">${profileForm(S.profile)}</div>`); bindProfileForm(sheetEl); },
+  'whats-new': () => checkWhatsNew(true),
   'reset-ask': () => { $('#resetBox').innerHTML = `<p class="note" style="margin:0 0 10px">Vuoi cancellare profilo, diario e cibi memorizzati? L'operazione non si può annullare.</p><div class="stack"><button class="btn danger fill" data-a="reset-yes">Sì, cancella tutto</button><button class="btn tinted" data-a="tab" data-v="profile">Annulla</button></div>`; },
   'reset-yes': () => {
     Store.del('profile'); Object.keys(S.days).forEach(k => Store.del('day-' + k)); S.foods.forEach(f => Store.del('food-' + f.id)); SCANMEM.clear();
@@ -2722,6 +2726,33 @@ actions['add-confirm'] = () => {
   A.pendingThumb = null; A.pendingEmb = null; origAdd();
 };
 
+/* ---------- novità ---------- */
+function checkWhatsNew(force = false) {
+  try {
+    const seen = localStorage.getItem('piattino-seen-v');
+    if (!force && seen === APP_VERSION) return;
+    if (!force) localStorage.setItem('piattino-seen-v', APP_VERSION);
+    if (!seen && !force) return;
+    setTimeout(() => {
+      openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
+        <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
+        <div class="card pad" style="margin-bottom:12px">
+          <div class="meal-name">PiattinoScan impara dalle tue correzioni</div>
+          <div class="small muted" style="margin-top:4px">Se scegli un cibo diverso da quello proposto, l'app ricorda la foto e la volta dopo riconosce quel piatto.</div>
+        </div>
+        <div class="card pad" style="margin-bottom:12px">
+          <div class="meal-name">150+ cibi con nomi italiani</div>
+          <div class="small muted" style="margin-top:4px">Piadina, arancini, cotoletta, focaccia, polenta e molto altro: PiattinoScan ora usa i nomi che usi tu.</div>
+        </div>
+        <div class="card pad">
+          <div class="meal-name">Backup più sicuro</div>
+          <div class="small muted" style="margin-top:4px">Il file di backup viene validato prima dell'importazione, così i tuoi dati restano integri.</div>
+        </div>
+      </div>`);
+    }, force ? 0 : 2000);
+  } catch (e) {}
+}
+
 /* ---------- boot ---------- */
 const st = Store.load();
 S.profile = st.profile; S.days = st.days; S.foods = st.foods; S.weights = st.weights; S.chat = st.chat;
@@ -2737,6 +2768,7 @@ render();
   };
   setTimeout(close, reduceMotion() ? 1100 : 1700); el.addEventListener('click', close);
 })();
+checkWhatsNew();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 })();
