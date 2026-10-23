@@ -2769,7 +2769,22 @@ render();
   setTimeout(close, reduceMotion() ? 1100 : 1700); el.addEventListener('click', close);
 })();
 checkWhatsNew();
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  // Su iOS la app resta in memoria per giorni: controlla gli aggiornamenti anche al ritorno in primo piano
+  // e ricarica quando un nuovo service worker prende il controllo (solo se ce n'era già uno).
+  let hadController = !!navigator.serviceWorker.controller, reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) { hadController = true; return; }
+    if (reloaded) return;
+    reloaded = true; Store.saveNow(); location.reload();
+  });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    const check = () => reg.update().catch(() => {});
+    check();
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
+    window.addEventListener('pageshow', e => { if (e.persisted) check(); });
+  }).catch(() => {});
+}
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 })();
 </script>
