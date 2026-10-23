@@ -4,6 +4,10 @@ Una web app ottimizzata per iPhone per organizzare la dieta e tenere il diario d
 
 Funziona senza account e senza server: i dati restano sul telefono.
 
+**Indirizzo principale: https://piattino.vercel.app**
+
+Il sito è pubblicato su Vercel e collegato a questo repository: ogni merge su `main` lo aggiorna da solo in produzione, e l'app sul telefono prende la nuova versione alla riapertura. Le intestazioni di cache (`vercel.json`) tengono sempre fresche pagina, `sw.js` e manifest. La vecchia copia su GitHub Pages resta raggiungibile ma non è più quella principale.
+
 ## Cosa fa
 
 - **Oggi**: il pulsante «Aggiungi pasto» subito in alto (da lì si fotografa il piatto o lo si cerca nell'elenco: una strada sola), anelli per calorie, proteine e frutta e verdura, barre di carboidrati e grassi, bicchieri d'acqua e i quattro pasti.
