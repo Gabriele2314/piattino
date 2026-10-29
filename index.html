@@ -15,7 +15,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests;">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(), geolocation=(), payment=()">
 <style>
@@ -1155,7 +1155,7 @@ function preloadModel(){
     const t = $('#dlTitle'); if (t) t.textContent = pct < 100 ? `Scarico… ${pct}%` : 'Pronto, funziona anche offline';
     const sub = $('#dlSub'); if (sub && pct < 100) sub.textContent = `${fmt1(f * MODEL.mb)} di ${MODEL.mb} MB`;
   }).then(() => { const b = $('#dlBarBox'); if (b) setTimeout(() => b.hidden = true, 600); toast('Riconoscimento pronto'); },
-          () => { const t = $('#dlTitle'); if (t) t.textContent = 'Download non riuscito'; const b = $('#dlBtn'); if (b) { b.hidden = false; b.textContent = 'Riprova'; } });
+          e => { const t = $('#dlTitle'); if (t) t.textContent = 'Download non riuscito'; const sb = $('#dlSub'); if (sb && e && /non è disponibile/.test(e.message)) sb.textContent = e.message; const b = $('#dlBtn'); if (b) { b.hidden = false; b.textContent = 'Riprova'; } });
 }
 function renderProfile(){
   const p = S.profile, g = T();
@@ -2206,7 +2206,12 @@ function ensureModel(onFrac = () => {}){
       tf.tidy(() => { SCAN.forward(m, tf.zeros([2, m.spec.size, m.spec.size, 3])); });   // prepara la GPU (due inquadrature, come nel riconoscimento)
       SCANM = m; onFrac(1);
       return { scan: m };
-    } catch (e) { console.warn('PiattinoScan non disponibile, uso i modelli di Google', e); MODEL.mb = MODEL.google; }
+    } catch (e) {
+      // modelli di Google (24 MB) solo se è mancata la rete / il file; con memoria o WebGL al limite fallirebbero di sicuro
+      const isNetworkError = /^(model\.json|weights\.bin) \d{3}$|Failed to fetch|Load failed|NetworkError/i.test(e && e.message || '');
+      if (!isNetworkError) { console.warn('PiattinoScan non caricabile', e); throw new Error('Il riconoscimento automatico non è disponibile su questo dispositivo: usa la ricerca manuale'); }
+      console.warn('PiattinoScan non disponibile, uso i modelli di Google', e); MODEL.mb = MODEL.google;
+    }
     const share = { mobile: MODELS.mobile.mb / MODEL.mb, food: MODELS.food.mb / MODEL.mb };
     let fm = 0, ff = 0; const report = () => onFrac(.04 + .94 * (fm * share.mobile + ff * share.food));
     [FOOD_LABELS, IMAGENET] = await Promise.all([fetch(MODELS.food.labels).then(r => r.json()), fetch('model/imagenet.json').then(r => r.json())]);
