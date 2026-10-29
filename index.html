@@ -125,7 +125,7 @@ button,.tab{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 
 /* Sfondi: sfumature leggere con i colori degli anelli, in cima alla pagina e ai pannelli */
 html{background:var(--bg-grouped)}
-body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(--system-pink) 13%,transparent),transparent 70%),radial-gradient(90% 100% at 100% 0%,color-mix(in srgb,var(--system-cyan) 14%,transparent),transparent 70%),radial-gradient(70% 80% at 50% 0%,color-mix(in srgb,var(--system-green) 8%,transparent),transparent 70%),var(--bg-grouped);background-repeat:no-repeat;background-size:100% 520px,100% 520px,100% 520px,auto}
+body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(--system-red) 11%,transparent),transparent 70%),radial-gradient(90% 100% at 100% 0%,color-mix(in srgb,var(--system-cyan) 14%,transparent),transparent 70%),radial-gradient(70% 80% at 50% 0%,color-mix(in srgb,var(--system-green) 8%,transparent),transparent 70%),var(--bg-grouped);background-repeat:no-repeat;background-size:100% 520px,100% 520px,100% 520px,auto}
 /* Liquid Glass: solo per lo strato dei controlli che galleggia sui contenuti */
 .ios-glass{background:var(--bg-secondary);background:color-mix(in srgb,var(--bg-secondary) 58%,transparent);backdrop-filter:blur(20px) saturate(1.7);-webkit-backdrop-filter:blur(20px) saturate(1.7);border:1px solid var(--separator)}
 
@@ -394,7 +394,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .hist+.hist::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:1px solid var(--separator-opaque)}
 .hist .d{flex:1;text-transform:capitalize}
 .minibar{width:80px}
-.minibar i{background:var(--system-pink)}
+.minibar i{background:var(--system-red)}
 
 /* Avviso temporaneo */
 .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:80;transform:translate(-50%,-160%) scale(.9);opacity:0;color:var(--label);border-radius:var(--radius-capsule);padding:10px 18px 10px 12px;font:600 15px/20px var(--font-sans);display:flex;align-items:center;gap:10px;transition:transform var(--dur-smooth) var(--spring-smooth),opacity .25s;max-width:calc(100% - 32px)}
@@ -630,7 +630,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '2.1';
+const APP_VERSION = '2.2';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -728,9 +728,9 @@ const entryFrom = (s, grams) => ({
 /* ---------- meals, plan templates, copy ---------- */
 const MEALS = [
   { k:'colazione', l:'Colazione', icon:'sunrise', color:'var(--system-orange)' },
-  { k:'pranzo', l:'Pranzo', icon:'sun', color:'var(--system-green)' },
+  { k:'pranzo', l:'Pranzo', icon:'sun', color:'var(--system-mint)' },
   { k:'cena', l:'Cena', icon:'moon', color:'var(--system-indigo)' },
-  { k:'spuntini', l:'Spuntini', icon:'leaf', color:'var(--system-pink)' },
+  { k:'spuntini', l:'Spuntini', icon:'leaf', color:'var(--system-purple)' },
 ];
 const mealByK = k => MEALS.find(m => m.k === k) || MEALS[0];
 const autoMeal = () => { const h = new Date().getHours() + new Date().getMinutes()/60; return h < 10.5 ? 'colazione' : h < 15 ? 'pranzo' : h < 18.5 ? 'spuntini' : 'cena'; };
@@ -992,15 +992,15 @@ function renderToday(){
   </div>
   <button class="btn primary add-meal" data-a="add-open">${I.plus} Aggiungi pasto</button>
   <section class="rings-card" aria-label="Riepilogo della giornata">
-    ${ringsSvg([{pct:t.kcal/g.kcal,color:'var(--system-pink)'},{pct:t.p/g.protein,color:'var(--system-green)'},{pct:t.fv/g.fv,color:'var(--system-cyan)'}])}
+    ${ringsSvg([{pct:t.kcal/g.kcal,color:'var(--system-red)'},{pct:t.p/g.protein,color:'var(--system-blue)'},{pct:t.fv/g.fv,color:'var(--system-green)'}])}
     <div class="legend">
-      <div><div class="k"><i class="key" style="background:var(--system-pink)"></i>${young ? 'Energia' : 'Calorie'}</div><div class="v num"><span data-num="kcal" data-v="${Math.round(t.kcal)}">${fmt(t.kcal)}</span><small>/${fmt(g.kcal)} kcal</small></div></div>
-      <div><div class="k"><i class="key" style="background:var(--system-green)"></i>Proteine</div><div class="v num"><span data-num="prot" data-v="${Math.round(t.p)}">${fmt(t.p)}</span><small>/${fmt(g.protein)} g</small></div></div>
-      <div><div class="k"><i class="key" style="background:var(--system-cyan)"></i>Frutta e verdura</div><div class="v num"><span data-num="fv" data-v="${Math.round(t.fv * 10) / 10}" data-f="1">${fmt1(t.fv)}</span><small>/5 porzioni</small></div></div>
+      <div><div class="k"><i class="key" style="background:var(--system-red)"></i>${young ? 'Energia' : 'Calorie'}</div><div class="v num"><span data-num="kcal" data-v="${Math.round(t.kcal)}">${fmt(t.kcal)}</span><small>/${fmt(g.kcal)} kcal</small></div></div>
+      <div><div class="k"><i class="key" style="background:var(--system-blue)"></i>Proteine</div><div class="v num"><span data-num="prot" data-v="${Math.round(t.p)}">${fmt(t.p)}</span><small>/${fmt(g.protein)} g</small></div></div>
+      <div><div class="k"><i class="key" style="background:var(--system-green)"></i>Frutta e verdura</div><div class="v num"><span data-num="fv" data-v="${Math.round(t.fv * 10) / 10}" data-f="1">${fmt1(t.fv)}</span><small>/5 porzioni</small></div></div>
     </div>
     <div class="macro-bars">
       <div class="mbar"><div class="t"><span>Carboidrati</span><b class="num">${fmt(t.c)} / ${fmt(g.carbs)} g</b></div><div class="track" role="progressbar" aria-label="Carboidrati" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(clamp(t.c/g.carbs*100,0,100))}"><i data-fill="carbs" data-p="${clamp(t.c/g.carbs,0,1)}" style="background:var(--system-yellow)"></i></div></div>
-      <div class="mbar"><div class="t"><span>Grassi</span><b class="num">${fmt(t.f)} / ${fmt(g.fat)} g</b></div><div class="track" role="progressbar" aria-label="Grassi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(clamp(t.f/g.fat*100,0,100))}"><i data-fill="fat" data-p="${clamp(t.f/g.fat,0,1)}" style="background:var(--system-purple)"></i></div></div>
+      <div class="mbar"><div class="t"><span>Grassi</span><b class="num">${fmt(t.f)} / ${fmt(g.fat)} g</b></div><div class="track" role="progressbar" aria-label="Grassi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(clamp(t.f/g.fat*100,0,100))}"><i data-fill="fat" data-p="${clamp(t.f/g.fat,0,1)}" style="background:var(--system-brown)"></i></div></div>
     </div>
   </section>
   <div class="quote" data-a="quote" role="button" tabindex="0"><span class="spark">${I.spark}</span><div><div class="q" aria-live="polite">${esc(q)}</div><div class="h">Tocca per un'altra frase</div></div></div>
@@ -1108,7 +1108,7 @@ function renderDiary(){
   const bw = (W - left - right) / 7;
   const bars = week.map((d, i) => {
     const x = left + i * bw + bw * .22, w = bw * .56, yy = y(d.t.kcal), h = Math.max(0, H - bottom - yy);
-    return `<rect x="${x.toFixed(1)}" y="${(d.t.kcal ? yy : H - bottom - 3).toFixed(1)}" width="${w.toFixed(1)}" height="${(d.t.kcal ? h : 3).toFixed(1)}" rx="${Math.min(6, w/2).toFixed(1)}" style="fill:${d.t.kcal ? 'var(--system-pink)' : 'var(--system-gray-5)'}" ${d.k === today ? '' : 'fill-opacity=".75"'}/>` +
+    return `<rect x="${x.toFixed(1)}" y="${(d.t.kcal ? yy : H - bottom - 3).toFixed(1)}" width="${w.toFixed(1)}" height="${(d.t.kcal ? h : 3).toFixed(1)}" rx="${Math.min(6, w/2).toFixed(1)}" style="fill:${d.t.kcal ? 'var(--system-red)' : 'var(--system-gray-5)'}" ${d.k === today ? '' : 'fill-opacity=".75"'}/>` +
       `<text x="${(left + i*bw + bw/2).toFixed(1)}" y="${H - 8}" text-anchor="middle" ${d.k === today ? 'style="fill:var(--label);font-weight:600"' : ''}>${esc(shortDay(d.k))}</text>`;
   }).join('');
   const ty = y(g.kcal);
@@ -2737,16 +2737,12 @@ function checkWhatsNew(force = false) {
       openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
         <div class="card pad" style="margin-bottom:12px">
-          <div class="meal-name">PiattinoScan impara dalle tue correzioni</div>
-          <div class="small muted" style="margin-top:4px">Se scegli un cibo diverso da quello proposto, l'app ricorda la foto e la volta dopo riconosce quel piatto.</div>
-        </div>
-        <div class="card pad" style="margin-bottom:12px">
-          <div class="meal-name">150+ cibi con nomi italiani</div>
-          <div class="small muted" style="margin-top:4px">Piadina, arancini, cotoletta, focaccia, polenta e molto altro: PiattinoScan ora usa i nomi che usi tu.</div>
+          <div class="meal-name">Nuovi colori</div>
+          <div class="small muted" style="margin-top:4px">Calorie in rosso, proteine in blu, frutta e verdura in verde: gli anelli e i grafici sono più chiari e facili da leggere.</div>
         </div>
         <div class="card pad">
-          <div class="meal-name">Backup più sicuro</div>
-          <div class="small muted" style="margin-top:4px">Il file di backup viene validato prima dell'importazione, così i tuoi dati restano integri.</div>
+          <div class="meal-name">Pasti e grassi</div>
+          <div class="small muted" style="margin-top:4px">Pranzo in mint, spuntini in viola e grassi in marrone, così ogni cosa ha il suo colore.</div>
         </div>
       </div>`);
     }, force ? 0 : 2000);
