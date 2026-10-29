@@ -630,7 +630,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '2.1';
+const APP_VERSION = '2.2';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -2737,16 +2737,12 @@ function checkWhatsNew(force = false) {
       openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
         <div class="card pad" style="margin-bottom:12px">
-          <div class="meal-name">PiattinoScan impara dalle tue correzioni</div>
-          <div class="small muted" style="margin-top:4px">Se scegli un cibo diverso da quello proposto, l'app ricorda la foto e la volta dopo riconosce quel piatto.</div>
-        </div>
-        <div class="card pad" style="margin-bottom:12px">
-          <div class="meal-name">150+ cibi con nomi italiani</div>
-          <div class="small muted" style="margin-top:4px">Piadina, arancini, cotoletta, focaccia, polenta e molto altro: PiattinoScan ora usa i nomi che usi tu.</div>
+          <div class="meal-name">Nuovi colori</div>
+          <div class="small muted" style="margin-top:4px">Calorie in rosso, proteine in blu, frutta e verdura in verde: gli anelli e i grafici sono più chiari e facili da leggere.</div>
         </div>
         <div class="card pad">
-          <div class="meal-name">Backup più sicuro</div>
-          <div class="small muted" style="margin-top:4px">Il file di backup viene validato prima dell'importazione, così i tuoi dati restano integri.</div>
+          <div class="meal-name">Pasti e grassi</div>
+          <div class="small muted" style="margin-top:4px">Pranzo in mint, spuntini in viola e grassi in marrone, così ogni cosa ha il suo colore.</div>
         </div>
       </div>`);
     }, force ? 0 : 2000);
