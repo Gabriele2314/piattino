@@ -49,7 +49,10 @@ Alla prima scansione l'app scarica PiattinoScan (circa 4,5 MB, con la percentual
 
 | File | Contenuto |
 | --- | --- |
-| `index.html` | Tutta l'app: stile, interfaccia e logica |
+| `index.html` | Struttura della pagina e stile |
+| `app.js` | Logica e interfaccia dell'app |
+| `launch.js` | Piccolo script che salta la schermata d'avvio se già vista |
+| `CLAUDE.md` | Regole del progetto (numerazione delle versioni, priorità di prodotto) |
 | `sw.js` | Service worker per l'uso offline |
 | `manifest.webmanifest` | Nome, icone e colori dell'app installata |
 | `model-scan/` | PiattinoScan: `model.json` (struttura della rete, classi, taratura della memoria delle correzioni) e `weights.bin` (pesi in 8 bit). È una EfficientNet-B0 (timm, Apache 2.0) rifinita su Food-101 e su foto a licenza libera di Wikimedia Commons; i crediti sono in `model-scan/CREDITI.md` |
