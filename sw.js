@@ -1,6 +1,6 @@
 // Piattino service worker: app shell subito in cache, modello e librerie alla prima scansione.
-const VERSION = 'piattino-v19';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
+const VERSION = 'piattino-v20';
+const SHELL = ['./', './index.html', './app.js', './launch.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -31,6 +31,22 @@ self.addEventListener('fetch', event => {
           return res;
         })
         .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
+  // Il codice dell'app segue la stessa regola delle pagine: rete prima, cache se offline.
+  const path = new URL(req.url).pathname;
+  if (path.endsWith('/app.js') || path.endsWith('/launch.js')) {
+    event.respondWith(
+      fetch(req, { cache: 'no-cache' })
+        .then(res => {
+          if (!res.ok) throw new Error('bad');
+          const copy = res.clone();
+          caches.open(VERSION).then(c => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req))
     );
     return;
   }
