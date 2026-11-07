@@ -1,5 +1,5 @@
 // Piattino service worker: app shell subito in cache, modello e librerie alla prima scansione.
-const VERSION = 'piattino-v20';
+const VERSION = 'piattino-v21';
 const SHELL = ['./', './index.html', './app.js', './launch.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', event => {

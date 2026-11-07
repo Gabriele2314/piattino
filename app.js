@@ -17,7 +17,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '2.3';
+const APP_VERSION = '2.3.1';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -2123,13 +2123,9 @@ function checkWhatsNew(force = false) {
     setTimeout(() => {
       openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
-        <div class="card pad" style="margin-bottom:12px">
-          <div class="meal-name">Più sicura</div>
-          <div class="small muted" style="margin-top:4px">Il codice dell'app ora gira da file separati con regole di sicurezza più rigide: i tuoi dati restano solo sul tuo telefono.</div>
-        </div>
         <div class="card pad">
-          <div class="meal-name">Aggiornamenti più affidabili</div>
-          <div class="small muted" style="margin-top:4px">Quando esce una nuova versione, Piattino la scarica per intero e funziona anche offline.</div>
+          <div class="meal-name">Il download del riconoscimento non si blocca più</div>
+          <div class="small muted" style="margin-top:4px">Quando scaricavi PiattinoScan la percentuale si fermava all'inizio. Ora il download parte e arriva fino in fondo.</div>
         </div>
       </div>`);
     }, force ? 0 : 2000);
