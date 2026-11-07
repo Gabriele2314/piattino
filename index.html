@@ -229,8 +229,13 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .entry{display:flex;align-items:center;gap:12px;min-height:var(--row-min-height);padding:8px 16px;width:100%;text-align:left;position:relative}
 .entry::before{content:"";position:absolute;top:0;left:60px;right:0;border-top:1px solid var(--separator-opaque)}
 .entry:active,.list-item:active,.hist:active{background:var(--system-gray-5)}
-.thumb{width:36px;height:36px;border-radius:var(--radius-sm);background:var(--bg-grouped-tertiary);display:grid;place-items:center;font-size:21px;flex:none;overflow:hidden}
+.thumb{width:36px;height:36px;border-radius:var(--radius-sm);background:var(--bg-grouped-tertiary);display:grid;place-items:center;flex:none;overflow:hidden}
 .thumb img{width:100%;height:100%;object-fit:cover}
+/* icone 3D dei cibi (icons/kit-*.js): l'SVG riempie il riquadro, su un fondo appena tinto di menta invece del grigio piatto */
+.ico{--ico-bg:color-mix(in srgb,var(--system-mint) 9%,var(--bg-grouped-secondary))}
+.thumb.ico,.food-tile .ph.ico{background:radial-gradient(circle at 35% 30%,var(--bg-grouped-secondary),var(--ico-bg) 70%)}
+.fi{display:block;width:100%;height:100%;object-fit:contain}
+.thumb.ico .fi{width:88%;height:88%;object-fit:contain}
 .entry .n{font:400 17px/22px var(--font-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .entry .g{font:400 13px/18px var(--font-sans);color:var(--label-muted)}
 .entry .k{font:400 15px/20px var(--font-sans);color:var(--label-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -346,7 +351,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .list-item+.list-item::before{content:"";position:absolute;top:0;left:64px;right:0;border-top:1px solid var(--separator-opaque)}
 .chev{color:var(--label-muted);width:16px;height:16px;flex:none}
 .big-food{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 0 6px}
-.big-food .thumb{width:84px;height:84px;border-radius:var(--radius-lg);font-size:52px}
+.big-food .thumb{width:84px;height:84px;border-radius:var(--radius-lg)}
 .big-food h2{margin:0;font:700 22px/28px var(--font-sans);text-align:center;text-wrap:balance}
 .stepper{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0}
 .stepper button{width:var(--hit-target);height:var(--hit-target);border-radius:var(--radius-capsule);background:var(--system-gray-5);font:600 24px/24px var(--font-sans);color:var(--link);display:grid;place-items:center}
@@ -363,7 +368,7 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .target-grid b{display:block;font:700 20px/25px var(--font-sans);font-variant-numeric:tabular-nums}
 .target-grid span{font:400 12px/16px var(--font-sans);color:var(--label-muted)}
 .plan-item{display:flex;align-items:center;gap:10px;padding:6px 0;font:400 15px/20px var(--font-sans)}
-.plan-item .e{font-size:20px;width:28px;text-align:center;flex:none}
+.plan-item .e{width:28px;height:28px;flex:none}
 .plan-item .k{color:var(--label-muted);font-variant-numeric:tabular-nums}
 .rules{margin:0;padding:0;list-style:none}
 .rules li{display:flex;gap:12px;padding:12px 16px;align-items:flex-start;position:relative}
@@ -386,7 +391,8 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .chart text{fill:var(--label-muted);font:400 11px var(--font-sans)}
 .food-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .food-tile{background:var(--bg-grouped-secondary);border-radius:var(--radius-lg);padding:10px;text-align:left;display:flex;flex-direction:column;gap:6px;min-width:0}
-.food-tile .ph{aspect-ratio:1;max-width:100%;border-radius:var(--radius-md);background:var(--bg-grouped-tertiary);display:grid;place-items:center;font-size:34px;overflow:hidden}
+.food-tile .ph{aspect-ratio:1;max-width:100%;border-radius:var(--radius-md);background:var(--bg-grouped-tertiary);display:grid;place-items:center;overflow:hidden}
+.food-tile .ph.ico .fi{width:72%;height:72%;object-fit:contain}
 .food-tile .ph img{width:100%;height:100%;object-fit:cover}
 .food-tile .n{font:600 13px/18px var(--font-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .food-tile .k{font:400 13px/18px var(--font-sans);color:var(--label-muted)}
@@ -434,7 +440,8 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .rig{width:240px;height:240px;position:relative}
 .plate{position:absolute;inset:0;border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-secondary);border:1px solid var(--separator-opaque)}
 .plate img{width:100%;height:100%;object-fit:cover;display:block}
-.plate .idle{position:absolute;inset:0;display:grid;place-items:center;font-size:84px}
+.plate .idle{position:absolute;inset:0;display:grid;place-items:center}
+.plate .idle .fi{width:96px;height:96px;opacity:.9;object-fit:contain}
 .beam{position:absolute;left:4%;right:4%;height:3px;border-radius:2px;background:var(--system-green);top:0;animation:beam 1.6s ease-in-out infinite alternate}
 @keyframes beam{from{top:3%}to{top:96%}}
 .corner{position:absolute;width:34px;height:34px;border:4px solid var(--label)}
@@ -443,8 +450,9 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 .corner.bl{bottom:-10px;left:-10px;border-right:0;border-top:0;border-bottom-left-radius:16px}
 .corner.br{bottom:-10px;right:-10px;border-left:0;border-top:0;border-bottom-right-radius:16px}
 #tags{position:absolute;inset:0;pointer-events:none}
-.tag3d{position:absolute;transform:scale(.6);opacity:0;color:var(--label);border-radius:var(--radius-capsule);padding:6px 12px;font:600 13px/18px var(--font-sans);white-space:nowrap;transition:transform var(--dur-bouncy) var(--spring-bouncy),opacity .3s}
+.tag3d{position:absolute;transform:scale(.6);opacity:0;color:var(--label);border-radius:var(--radius-capsule);padding:5px 12px 5px 6px;display:flex;align-items:center;gap:5px;font:600 13px/18px var(--font-sans);white-space:nowrap;transition:transform var(--dur-bouncy) var(--spring-bouncy),opacity .3s}
 .tag3d.in{transform:none;opacity:1}
+.tag3d .ti{width:22px;height:22px;flex:none}
 .idle-mode .beam{opacity:.5;animation-duration:2.6s}
 .done .beam{display:none}
 .status{font:600 20px/25px var(--font-sans);text-align:center;min-height:25px}
@@ -576,13 +584,83 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
   .scanner{background:var(--bg)}
 }
 
-/* Apertura: la firma dell'app, poi spazio ai contenuti */
-.launch{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .45s ease,transform .45s ease}
-.launch .app-icon{width:96px;height:96px;border-radius:22px;margin:0;animation:iconIn var(--dur-bouncy) var(--spring-bouncy) both}
-.launch-name{font:700 34px/41px var(--font-sans);animation:blurIn .8s var(--spring-smooth) .15s both}
-.launch-by{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 40px);text-align:center;font:400 15px/20px var(--font-sans);color:var(--label-muted);animation:blurIn .8s var(--spring-smooth) .4s both}
+/* Apertura: la firma dell'app (icona con molla, nome, un piattino che si riempie con i tre colori degli anelli),
+   poi la firma si allarga e svanisce mentre i contenuti entrano a cascata. Tutto in circa 1,3 s, solo transform e opacità. */
+.launch{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:opacity .3s ease,transform .42s var(--spring-smooth)}
+.launch .app-icon{width:96px;height:96px;border-radius:22px;margin:0;animation:launchIcon var(--dur-bouncy) var(--spring-bouncy) both}
+.launch-name{font:700 34px/41px var(--font-sans);animation:launchRise .5s var(--spring-smooth) .09s both}
+.launch-by{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 40px);text-align:center;font:400 15px/20px var(--font-sans);color:var(--label-muted);animation:launchFade .5s ease .2s both}
 .launch-by b{color:var(--label);font-weight:600}
-.launch.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.launch.out{opacity:0;transform:scale(1.08);pointer-events:none}
+@keyframes launchIcon{from{opacity:0;transform:scale(.5)}}
+@keyframes launchRise{from{opacity:0;transform:translateY(10px)}}
+@keyframes launchFade{from{opacity:0}}
+/* il piattino: piatto in prospettiva, con conca, ombra a terra e tre "bocconi" lucidi che cadono e rimbalzano */
+.launch-plate{
+  --plate:color-mix(in srgb,var(--bg-grouped-secondary) 80%,var(--system-gray-5));
+  --plate-hi:color-mix(in srgb,var(--bg-grouped-secondary) 82%,#fff);
+  --plate-lo:color-mix(in srgb,var(--bg-grouped-secondary) 60%,var(--system-gray-3));
+  --plate-rim:rgba(255,255,255,.85);
+  position:relative;width:112px;height:48px;margin-top:14px;animation:plateIn .55s var(--spring-bouncy) .16s both}
+.launch-plate i{position:absolute;display:block}
+.lp-shadow{left:8px;right:8px;bottom:0;height:14px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.22),transparent)}
+.lp-dish{left:0;right:0;bottom:5px;height:34px;border-radius:50%;background:radial-gradient(120% 140% at 40% 22%,var(--plate-hi),var(--plate) 55%,var(--plate-lo));box-shadow:inset 0 1px 0 var(--plate-rim),inset 0 -2px 3px rgba(0,0,0,.08)}
+.lp-dish::after{content:"";position:absolute;left:18px;right:18px;top:7px;bottom:9px;border-radius:50%;background:radial-gradient(100% 130% at 50% 90%,var(--plate-hi),var(--plate) 62%,var(--plate-lo));box-shadow:inset 0 2px 3px rgba(0,0,0,.1)}
+.lp-food{width:20px;height:20px;bottom:15px;z-index:2}
+.lp-food::before{content:"";position:absolute;left:0;right:0;bottom:-3px;height:7px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.3),transparent);animation:foodShadow .56s linear var(--d) both}
+.lp-food::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 34% 30%,color-mix(in srgb,#fff 70%,var(--c)) 0,var(--c) 44%,color-mix(in srgb,#000 32%,var(--c)) 100%);transform-origin:50% 100%;animation:foodDrop .56s var(--d) both}
+.lp-food.f1{left:28px;--c:var(--system-red);--d:.3s}
+.lp-food.f2{left:46px;bottom:19px;z-index:1;--c:var(--system-blue);--d:.39s}
+.lp-food.f3{left:64px;bottom:14px;--c:var(--system-green);--d:.48s}
+@keyframes plateIn{from{opacity:0;transform:translateY(8px) scale(.7)}}
+@keyframes foodDrop{
+  0%{opacity:0;transform:translateY(-48px) scale(.9,1.1);animation-timing-function:cubic-bezier(.5,0,1,.6)}
+  24%{opacity:1}
+  48%{transform:translateY(0) scale(1.2,.78);animation-timing-function:cubic-bezier(0,.5,.5,1)}
+  66%{transform:translateY(-10px) scale(.95,1.06);animation-timing-function:cubic-bezier(.5,0,1,.6)}
+  82%{transform:translateY(0) scale(1.06,.94);animation-timing-function:ease-out}
+  100%{opacity:1;transform:none}
+}
+@keyframes foodShadow{0%{opacity:0;transform:scale(.3)}48%{opacity:1;transform:scale(1.15)}66%{transform:scale(.85)}82%,100%{opacity:1;transform:scale(1)}}
+@media (prefers-color-scheme: dark){ .launch-plate{--plate:var(--system-gray-5);--plate-hi:var(--system-gray-3);--plate-lo:var(--bg-grouped-secondary);--plate-rim:rgba(255,255,255,.22)} .lp-shadow{background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent)} }
+
+/* Ricaricamento: niente schermata intera. Finché app.js non disegna, uno scheletro delle card con un riflesso che scorre
+   (stesso fondo delle card vere, così il passaggio non lampeggia); poi i contenuti entrano a cascata. */
+.splash{position:relative;animation:launchFade .3s ease .05s both}
+.splash .sk{position:relative;display:block;overflow:hidden;background:var(--bg-grouped-secondary);border-radius:var(--radius-lg);margin-top:12px}
+.splash .sk::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,color-mix(in srgb,var(--label) 7%,transparent) 50%,transparent 80%);transform:translateX(-100%);animation:skShine 1.2s ease-in-out .2s infinite}
+.splash .sk-date{width:140px;height:13px;margin-top:20px;border-radius:6px;background:color-mix(in srgb,var(--label) 8%,transparent)}
+.splash .sk-title{width:58%;height:34px;margin-top:8px;border-radius:10px;background:color-mix(in srgb,var(--label) 8%,transparent)}
+.splash .sk-btn{height:44px;margin-top:66px;border-radius:var(--radius-capsule)}
+.splash .sk-card{height:200px}
+.splash .sk-card.sm{height:74px}
+@keyframes skShine{to{transform:translateX(100%)}}
+/* barra delle schede che sale dal basso all'ingresso dei contenuti */
+.boot-rise .tabbar-in{animation:barIn .55s var(--spring-smooth) .06s both}
+/* al ricaricamento la cascata è più corta (~0,5 s): chi ricarica vuole i dati, non lo spettacolo */
+.boot-quick.enter > *{animation-duration:.42s;animation-delay:calc(var(--i,0) * 24ms)}
+.boot-quick.enter .large-title{animation-duration:.42s}
+@keyframes barIn{from{opacity:0;transform:translateY(28px)}}
+
+/* Aggiornamento: quando arriva una versione nuova, prima del ricaricamento un velo con una pillola «Aggiornamento…»
+   e un piattino visto dall'alto con i tre bocconi che girano */
+.updating{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:var(--bg-grouped);background:color-mix(in srgb,var(--bg-grouped) 90%,transparent);opacity:0;transition:opacity .25s ease}
+.updating.show{opacity:1}
+.updating-pill{display:flex;align-items:center;gap:10px;padding:10px 18px 10px 10px;border-radius:var(--radius-capsule);color:var(--label);font:600 15px/20px var(--font-sans);transform:scale(.85);transition:transform var(--dur-bouncy) var(--spring-bouncy)}
+.updating.show .updating-pill{transform:none}
+.mini-plate{position:relative;flex:none;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 50% 50%,var(--bg-grouped-secondary) 0 52%,color-mix(in srgb,var(--bg-grouped-secondary) 70%,var(--system-gray-3)) 56%,var(--bg-grouped-secondary) 64%);box-shadow:inset 0 0 0 1px var(--separator)}
+.mini-plate span{position:absolute;inset:0;animation:plateSpin .9s linear infinite}
+.mini-plate i{position:absolute;left:11px;top:3px;width:6px;height:6px;border-radius:50%;background:var(--c);transform-origin:3px 11px}
+.mini-plate i:nth-child(1){--c:var(--system-red)}
+.mini-plate i:nth-child(2){--c:var(--system-blue);transform:rotate(120deg)}
+.mini-plate i:nth-child(3){--c:var(--system-green);transform:rotate(240deg)}
+@keyframes plateSpin{to{transform:rotate(360deg)}}
+@media (prefers-contrast: more){
+  .lp-dish{box-shadow:inset 0 0 0 1px var(--separator-opaque)}
+  .splash .sk{box-shadow:inset 0 0 0 1px var(--separator-opaque)}
+  .updating{background:var(--bg-grouped)}
+  .updating-pill{border-color:var(--separator-opaque)}
+}
 
 /* Riduci movimento: niente molle né spostamenti, solo dissolvenze brevi */
 @media (prefers-reduced-motion: reduce){
@@ -595,13 +673,16 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
   .result.show{opacity:1;visibility:visible;transition:opacity .25s}
   .toast,.toast.show{transform:translate(-50%,0)}
   .scanner,.scanner.show{transform:none;border-radius:0}
+  .launch,.launch.out{transform:none}
+  .updating-pill,.updating.show .updating-pill{transform:none;transition:none}
+  .splash .sk::after{display:none}
   :is(.btn,.chip-btn,.avatar,.add-btn,.close-btn,.stepper button,.water-btns button,.goal-card,.food-tile,.coach-fab,.quote,.send,.chips button,.msg .acts button,.portion button,.mini-step button,.cam-flip,.cam-lib,.tab,.seg button,.seg label,.goal-grid label):active{transform:none}
 }
 </style>
 </head>
 <body>
-<div id="app" class="wrap"><div class="splash" aria-busy="true"></div></div>
-<div class="launch" id="launch"><img class="app-icon" src="icons/apple-touch-icon.png" alt=""><div class="launch-name">Piattino</div><div class="launch-by">Creata da <b>Gabriele</b></div></div>
+<div id="app" class="wrap"><div class="splash" aria-busy="true" aria-label="Caricamento"><i class="sk sk-date"></i><i class="sk sk-title"></i><i class="sk sk-btn"></i><i class="sk sk-card"></i><i class="sk sk-card sm"></i></div></div>
+<div class="launch" id="launch"><img class="app-icon" src="icons/apple-touch-icon.png" alt=""><div class="launch-name">Piattino</div><div class="launch-plate" aria-hidden="true"><i class="lp-shadow"></i><i class="lp-dish"></i><i class="lp-food f1"></i><i class="lp-food f2"></i><i class="lp-food f3"></i></div><div class="launch-by">Creata da <b>Gabriele</b></div></div>
 <script src="launch.js"></script>
 <button class="coach-fab ios-glass" id="coachFab" data-a="coach" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.2 6.3 6.3 2.2-6.3 2.2L12 19.5l-2.2-6.3L3.5 11l6.3-2.2z"/></svg>Cosa faccio ora?</button>
 <nav class="tabbar" id="tabbar" hidden></nav>
@@ -610,6 +691,10 @@ body,.launch{background:radial-gradient(90% 100% at 0% 0%,color-mix(in srgb,var(
 <input type="file" id="photoInput" accept="image/*" hidden>
 <input type="file" id="backupInput" accept="application/json,.json" hidden>
 
+<script src="icons/kit-frutta.js" defer></script>
+<script src="icons/kit-orto.js" defer></script>
+<script src="icons/kit-cucina.js" defer></script>
+<script src="icons/kit-dolci-bevande.js" defer></script>
 <script src="app.js" defer></script>
 </body>
 </html>

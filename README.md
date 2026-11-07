@@ -12,7 +12,8 @@ Funziona senza account e senza server: i dati restano sul telefono.
 - **Impara dalle tue correzioni**: se dopo una foto scegli un cibo diverso da quello proposto, o lo cerchi nell'elenco, l'app ricorda l'«impronta» di quella foto (solo sul telefono) e la volta dopo riconosce quel piatto, con la nota «Ricordo questo piatto da una tua correzione precedente». Se fotografi un bicchiere d'acqua, va nel contatore dell'acqua.
 - **Risultati**: il piatto più probabile con quanto è sicuro, le calorie e la porzione (piccola, media, grande), e sotto le alternative da scegliere con un tocco. Pasto e pulsante «Aggiungi» restano sempre in vista in fondo al pannello. Puoi anche descrivere il piatto a parole («2 uova, 50 g di pane e un'insalata»).
 - **Grammi automatici**: dalla foto l'app misura quanta parte del piatto è coperta dal cibo e calcola i grammi (il piatto chiaro fa da riferimento, quindi non conta quanto sei vicino). Se il piatto non si vede bene usa una porzione standard.
-- **Acqua** con una bottiglia che si riempie, i litri bevuti e i pulsanti «+ Bicchiere 250 ml», «+ Bottiglia 500 ml» e «−».
+- **Elenco degli alimenti**: quasi 250 cibi e bevande (dalla 3.0 anche würstel, tiramisù, sushi, kebab, cappuccino, tè freddo, spremuta, cola zero…). La ricerca ignora maiuscole e accenti e conosce altri nomi («coca», «clementina», «fesa di tacchino»). Le bevande contano al massimo una porzione di frutta e verdura.
+- **Acqua** con una bottiglia che si riempie, i litri bevuti e i pulsanti «+ Bicchiere 250 ml», «+ Bottiglia 500 ml» e «−». Anche «un bicchiere d'acqua» scritto nella descrizione, o l'acqua scelta dall'elenco, va nel contatore.
 - **Percentuale di avanzamento** mentre scarica i modelli e analizza la foto.
 - **Obiettivi**: dimagrire, mantenere, fare muscoli, aumentare di peso, mangiare sano. «Forza e muscoli» c'è anche per 9-13 anni: gioco, sport e proteine, senza calorie in più.
 - **Obiettivo di peso** (adulti): scegli dove vuoi arrivare e quanto veloce; l'app calcola la data, le calorie al giorno e segue le pesate con un grafico. Non accetta obiettivi sotto il peso sano per la tua altezza. Sotto i 18 anni c'è «Come cresci», senza pesi da raggiungere.
@@ -24,7 +25,9 @@ Funziona senza account e senza server: i dati restano sul telefono.
 
 ## Aspetto
 
-All'apertura compare per un attimo la firma «Creata da Gabriele».
+All'apertura compare per circa un secondo la firma «Creata da Gabriele», con un piattino che si riempie; poi i contenuti entrano a cascata. Durante un aggiornamento compare per un attimo «Aggiornamento…».
+
+Nessuna emoji: ogni cibo ha un'icona 3D in SVG (UI kit di Piattino, in `icons/kit-*.js`), con luce dall'alto a sinistra, riflesso e ombra a terra, su un fondo appena tinto. Le voci vecchie salvate con un'emoji vengono mostrate con l'icona corrispondente.
 
 L'interfaccia è ottimizzata per iPhone e segue il design system del progetto. In `index.html` i token del sistema (colori, spaziature, raggi, caratteri) sono variabili CSS con i nomi originali, per quattro temi: chiaro, scuro e le due versioni con Aumenta contrasto. Testo secondario leggibile (4,5:1), aree di tocco da 44 pt, tab bar flottante in Liquid Glass, sfumature leggere negli sfondi, errori con glifo e testo. Lo scanner usa sempre i colori del tema scuro.
 
@@ -59,6 +62,7 @@ Alla prima scansione l'app scarica PiattinoScan (circa 4,5 MB, con la percentual
 | `model/` | Riserva: MobileNet v2 1.0 224 (grafo TensorFlow.js, Google, Apache 2.0) e i nomi delle 1.000 classi ImageNet |
 | `model-food/` | Riserva: AIY Vision Food V1 (Google, Apache 2.0), convertito da TF Hub a TensorFlow.js con pesi float16, e le 2.024 etichette |
 | `vendor/` | TensorFlow.js 4.22.0 (Apache 2.0) |
+| `icons/kit-frutta.js`, `icons/kit-orto.js`, `icons/kit-cucina.js`, `icons/kit-dolci-bevande.js` | UI kit delle icone 3D dei cibi: ogni file registra degli SVG in `PIATTINO_ICONS` (per chiave) e in `PIATTINO_ICON_ALIAS` (dall'emoji delle voci vecchie alla chiave) |
 | `icons/` | Icone dell'app |
 
 Per provarla sul computer serve un piccolo server locale, per esempio `python3 -m http.server`, poi apri `http://localhost:8000`.

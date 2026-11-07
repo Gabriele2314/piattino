@@ -17,7 +17,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '2.3.1';
+const APP_VERSION = '3.0.0';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -52,64 +52,167 @@ const I = {
 };
 
 /* ---------- food database (per 100 g) ---------- */
-// key, nome, emoji, kcal, proteine, carboidrati, grassi, porzione (g), frutta/verdura
+// key, nome, icona (chiave di icons/kit-*.js), kcal, proteine, carboidrati, grassi, porzione (g), frutta/verdura
 const FOODS = [
-['mela','Mela','🍎',52,0.3,14,0.2,150,1],['banana','Banana','🍌',89,1.1,23,0.3,120,1],['arancia','Arancia','🍊',47,0.9,12,0.1,150,1],
-['kiwi','Kiwi','🥝',61,1.1,15,0.5,100,1],['fragole','Fragole','🍓',32,0.7,7.7,0.3,150,1],['bosco','Frutti di bosco','🫐',45,1,10,0.4,100,1],
-['pera','Pera','🍐',57,0.4,15,0.1,150,1],['uva','Uva','🍇',69,0.7,18,0.2,150,1],['anguria','Anguria','🍉',30,0.6,8,0.2,250,1],
-['pesca','Pesca','🍑',39,0.9,10,0.3,150,1],['pomodori','Pomodori','🍅',18,0.9,3.9,0.2,150,1],['insalata','Insalata mista','🥗',17,1.3,3,0.2,100,1],
-['carote','Carote','🥕',41,0.9,10,0.2,100,1],['zucchine','Zucchine','🥒',17,1.2,3.1,0.3,150,1],['broccoli','Broccoli','🥦',34,2.8,7,0.4,150,1],
-['spinaci','Spinaci','🥬',23,2.9,3.6,0.4,150,1],['minestrone','Minestrone di verdure','🍲',45,2,7,1,300,1],['avocado','Avocado','🥑',160,2,9,15,70,1],
-['patate','Patate lesse','🥔',87,1.9,20,0.1,200,0],['patatine','Patatine fritte','🍟',312,3.4,41,15,100,0],
-['pasta','Pasta (cruda)','🍝',353,12,71,1.5,80,0],['pastaint','Pasta integrale (cruda)','🍝',340,13,66,2.5,80,0],['riso','Riso (crudo)','🍚',358,7,79,0.6,70,0],
-['pastapom','Pasta al pomodoro (piatto)','🍝',135,4.5,24,2.5,300,0],['pizza','Pizza margherita','🍕',250,11,31,9,300,0],['lasagne','Lasagne','🥘',165,9,14,8,300,0],
-['pane','Pane','🍞',265,9,49,3.2,50,0],['paneint','Pane integrale','🍞',247,13,41,3.4,50,0],['crackers','Crackers integrali','🍘',430,10,70,11,25,0],
-['fette','Fette biscottate','🍞',410,11,75,6,30,0],['avena','Fiocchi d\'avena','🥣',372,13,60,7,40,0],['muesli','Muesli','🥣',370,10,64,7,40,0],
-['biscotti','Biscotti','🍪',450,7,70,16,30,0],['cornetto','Cornetto','🥐',410,8,45,22,60,0],
-['latte','Latte parz. scremato','🥛',46,3.4,5,1.6,200,0],['latteint','Latte intero','🥛',64,3.3,4.8,3.6,200,0],['soia','Bevanda di soia','🥛',40,3.3,2.5,1.8,200,0],
-['yogurt','Yogurt bianco','🥛',61,3.5,4.7,3.3,125,0],['greco','Yogurt greco 0%','🥛',57,10,4,0.4,150,0],
-['mozzarella','Mozzarella','🧀',253,18,1,20,80,0],['parmigiano','Parmigiano','🧀',392,33,0,28,15,0],['ricotta','Ricotta','🧀',146,9,3.5,11,100,0],
-['uova','Uova','🥚',143,12.6,0.7,9.5,120,0],['pollo','Petto di pollo (cotto)','🍗',165,31,0,3.6,120,0],['manzo','Manzo magro','🥩',187,26,0,9,120,0],
-['burger','Panino hamburger','🍔',254,13,30,9,200,0],['crudo','Prosciutto crudo','🥓',250,26,0,16,50,0],['cotto','Prosciutto cotto','🥓',138,20,1,6,50,0],
-['bresaola','Bresaola','🥩',151,32,0.5,2.6,50,0],['salmone','Salmone','🐟',206,22,0,13,150,0],['tonno','Tonno sgocciolato','🐟',190,25,0,10,80,0],
-['merluzzo','Merluzzo','🐟',82,18,0,0.7,150,0],['gamberi','Gamberi','🦐',99,24,0.2,0.3,100,0],
-['ceci','Ceci (cotti)','🫘',164,9,27,2.6,150,0],['lenticchie','Lenticchie (cotte)','🫘',116,9,20,0.4,150,0],['fagioli','Fagioli (cotti)','🫘',127,8.7,23,0.5,150,0],
-['tofu','Tofu','🥢',76,8,1.9,4.8,100,0],['hummus','Hummus','🥙',166,8,14,10,50,0],
-['olio','Olio extravergine','🫒',884,0,0,100,10,0],['burro','Burro','🧈',717,0.9,0.1,81,10,0],['mandorle','Mandorle','🌰',579,21,22,50,20,0],
-['noci','Noci','🌰',654,15,14,65,20,0],['arachidi','Burro di arachidi','🥜',588,25,20,50,20,0],['miele','Miele','🍯',304,0.3,82,0,10,0],
-['marmellata','Marmellata','🫙',250,0.4,60,0,20,0],['fondente','Cioccolato fondente','🍫',546,5,60,31,20,0],['gelato','Gelato','🍨',207,3.5,24,11,100,0],
-['succo','Succo di frutta','🧃',45,0.2,11,0,200,0],
-['limone','Limone','🍋',29,1.1,9,0.3,50,1],['fichi','Fichi','🟣',74,0.8,19,0.3,100,1],['ananas','Ananas','🍍',50,0.5,13,0.1,150,1],
-['melagrana','Melagrana','🍎',83,1.7,19,1.2,100,1],['frutta','Frutta mista','🍑',50,0.6,12,0.2,150,1],['cavolfiore','Cavolfiore','🥦',25,1.9,5,0.3,150,1],
-['cetrioli','Cetrioli','🥒',15,0.7,3.6,0.1,100,1],['peperoni','Peperoni','🫑',26,1,6,0.3,150,1],['funghi','Funghi','🍄',22,3.1,3.3,0.3,100,1],
-['cavolo','Cavolo','🥬',25,1.3,5.8,0.1,150,1],['carciofi','Carciofi','🌿',47,3.3,10.5,0.2,150,1],['zucca','Zucca','🎃',26,1,6.5,0.1,200,1],
-['mais','Mais','🌽',86,3.3,19,1.4,80,0],['pure','Purè di patate','🥔',106,2,15,4.2,200,0],['guacamole','Guacamole','🥑',157,2,8.5,14.7,60,0],
-['carbonara','Pasta alla carbonara (piatto)','🍝',190,8,22,8,300,0],['hotdog','Hot dog','🌭',290,10,24,17,150,0],['burrito','Burrito','🌯',206,9,25,8,250,0],
-['bagel','Bagel','🥯',250,10,49,1.5,90,0],['pretzel','Pretzel','🥨',338,8,70,3,60,0],['polpettone','Polpettone','🍖',200,15,8,12,150,0],
-['pasticcio','Pasticcio al forno','🥧',250,7,22,15,200,0],['dolce','Dolce al cucchiaio','🍮',200,4,25,9,120,0],['brodo','Brodo','🍵',15,1.5,1,0.5,300,0],
-['stufato','Spezzatino','🍲',110,9,6,5,300,0],['cioccolata','Cioccolata calda','☕',90,3.5,12,3.5,200,0],['ghiacciolo','Ghiacciolo','🍭',80,0,20,0,70,0],
-['caffe','Caffè espresso','☕',2,0.1,0,0,30,0],['bibita','Bibita zuccherata','🥤',42,0,10.6,0,330,0],['passata','Passata di pomodoro','🍅',30,1.3,5.5,0.2,100,0],
-['risozaff','Risotto allo zafferano','🍚',150,3.5,24,4.5,300,0],['risotto','Risotto','🍚',150,4,23,4.5,300,0],['risobianco','Riso in bianco (cotto)','🍚',130,2.7,28,0.3,250,0],
-['risopom','Riso al pomodoro','🍚',135,3,25,2.5,300,0],['pastapesto','Pasta al pesto (piatto)','🍝',190,6,26,7,300,0],['pastabianco','Pasta in bianco (piatto)','🍝',165,5.5,30,2.5,300,0],
-['polenta','Polenta','🌽',85,2,18,0.5,250,0],['salsiccia','Salsiccia (cotta)','🌭',300,17,1,25,120,0],
-['melone','Melone','🍈',34,0.8,8,0.2,200,1],['ciliegie','Ciliegie','🍒',63,1.1,16,0.2,150,1],['melanzane','Melanzane (cotte)','🍆',35,0.8,8.7,0.2,150,1],
-['fagiolini','Fagiolini (cotti)','🫛',35,1.9,7.9,0.3,150,1],['pastafagioli','Pasta e fagioli','🍲',110,5,17,2.5,300,0],['tortellini','Tortellini (piatto)','🥟',200,8.5,26,7,200,0],
-['arancini','Arancini','🍙',220,6,27,10,170,0],['polpette','Polpette al sugo','🧆',200,14,7,13,150,0],['cotoletta','Cotoletta alla milanese','🍖',260,20,12,15,150,0],
-['parmigiana','Parmigiana di melanzane','🍆',150,6,7,11,250,0],['formaggio','Formaggio stagionato','🧀',380,26,1,30,50,0],['salame','Salame','🍖',425,26,1,35,40,0],
-['focaccia','Focaccia','🫓',330,7,45,13,100,0],['piadina','Piadina','🫓',330,7.5,50,11,110,0],['crostata','Crostata di marmellata','🥧',400,5,60,15,80,0],
-].map(([key,name,emoji,kcal,p,c,f,portion,fv]) => ({key,name,emoji,kcal,p,c,f,portion,fv}));
+['mela','Mela','mela',52,0.3,14,0.2,150,1],['banana','Banana','banana',89,1.1,23,0.3,120,1],['arancia','Arancia','arancia',47,0.9,12,0.1,150,1],
+['kiwi','Kiwi','kiwi',61,1.1,15,0.5,100,1],['fragole','Fragole','fragola',32,0.7,7.7,0.3,150,1],['bosco','Frutti di bosco','mirtilli',45,1,10,0.4,100,1],
+['pera','Pera','pera',57,0.4,15,0.1,150,1],['uva','Uva','uva',69,0.7,18,0.2,150,1],['anguria','Anguria','anguria',30,0.6,8,0.2,250,1],
+['pesca','Pesca','pesca',39,0.9,10,0.3,150,1],['pomodori','Pomodori','pomodoro',18,0.9,3.9,0.2,150,1],['insalata','Insalata mista','insalata',17,1.3,3,0.2,100,1],
+['carote','Carote','carota',41,0.9,10,0.2,100,1],['zucchine','Zucchine','zucchina',17,1.2,3.1,0.3,150,1],['broccoli','Broccoli','broccolo',34,2.8,7,0.4,150,1],
+['spinaci','Spinaci','spinaci',23,2.9,3.6,0.4,150,1],['minestrone','Minestrone di verdure','minestrone',45,2,7,1,300,1],['avocado','Avocado','avocado',160,2,9,15,70,1],
+['patate','Patate lesse','patata',87,1.9,20,0.1,200,0],['patatine','Patatine fritte','patatine',312,3.4,41,15,100,0],
+['pasta','Pasta (cruda)','pasta',353,12,71,1.5,80,0],['pastaint','Pasta integrale (cruda)','pasta',340,13,66,2.5,80,0],['riso','Riso (crudo)','riso',358,7,79,0.6,70,0],
+['pastapom','Pasta al pomodoro (piatto)','pasta',135,4.5,24,2.5,300,0],['pizza','Pizza margherita','pizza',250,11,31,9,300,0],['lasagne','Lasagne','lasagne',165,9,14,8,300,0],
+['pane','Pane','pane',265,9,49,3.2,50,0],['paneint','Pane integrale','pane',247,13,41,3.4,50,0],['crackers','Crackers integrali','cracker',430,10,70,11,25,0],
+['fette','Fette biscottate','fette',410,11,75,6,30,0],['avena','Fiocchi d\'avena','cereali',372,13,60,7,40,0],['muesli','Muesli','cereali',370,10,64,7,40,0],
+['biscotti','Biscotti','biscotti',450,7,70,16,30,0],['cornetto','Cornetto','cornetto',410,8,45,22,60,0],
+['latte','Latte parz. scremato','latte',46,3.4,5,1.6,200,0],['latteint','Latte intero','latte',64,3.3,4.8,3.6,200,0],['soia','Bevanda di soia','bevanda-vegetale',40,3.3,2.5,1.8,200,0],
+['yogurt','Yogurt bianco','yogurt',61,3.5,4.7,3.3,125,0],['greco','Yogurt greco 0%','yogurt',57,10,4,0.4,150,0],
+['mozzarella','Mozzarella','mozzarella',253,18,1,20,80,0],['parmigiano','Parmigiano','formaggio',392,33,0,28,15,0],['ricotta','Ricotta','formaggio',146,9,3.5,11,100,0],
+['uova','Uova','uovo',143,12.6,0.7,9.5,120,0],['pollo','Petto di pollo (cotto)','pollo',165,31,0,3.6,120,0],['manzo','Manzo magro','bistecca',187,26,0,9,120,0],
+['burger','Panino hamburger','hamburger',254,13,30,9,200,0],['crudo','Prosciutto crudo','prosciutto',250,26,0,16,50,0],['cotto','Prosciutto cotto','prosciutto',138,20,1,6,50,0],
+['bresaola','Bresaola','prosciutto',151,32,0.5,2.6,50,0],['salmone','Salmone','salmone',206,22,0,13,150,0],['tonno','Tonno sgocciolato','tonno',190,25,0,10,80,0],
+['merluzzo','Merluzzo','pesce',82,18,0,0.7,150,0],['gamberi','Gamberi','gamberi',99,24,0.2,0.3,100,0],
+['ceci','Ceci (cotti)','ceci',164,9,27,2.6,150,0],['lenticchie','Lenticchie (cotte)','lenticchie',116,9,20,0.4,150,0],['fagioli','Fagioli (cotti)','fagioli',127,8.7,23,0.5,150,0],
+['tofu','Tofu','tofu',76,8,1.9,4.8,100,0],['hummus','Hummus','hummus',166,8,14,10,50,0],
+['olio','Olio extravergine','olio',884,0,0,100,10,0],['burro','Burro','burro',717,0.9,0.1,81,10,0],['mandorle','Mandorle','mandorle',579,21,22,50,20,0],
+['noci','Noci','noci',654,15,14,65,20,0],['arachidi','Burro di arachidi','arachidi',588,25,20,50,20,0],['miele','Miele','miele',304,0.3,82,0,10,0],
+['marmellata','Marmellata','marmellata',250,0.4,60,0,20,0],['fondente','Cioccolato fondente','cioccolato',546,5,60,31,20,0],['gelato','Gelato','gelato',207,3.5,24,11,100,0],
+['succo','Succo di frutta','succo',45,0.2,11,0,200,0],
+['limone','Limone','limone',29,1.1,9,0.3,50,1],['fichi','Fichi','fico',74,0.8,19,0.3,100,1],['ananas','Ananas','ananas',50,0.5,13,0.1,150,1],
+['melagrana','Melagrana','melagrana',83,1.7,19,1.2,100,1],['frutta','Frutta mista','frutta',50,0.6,12,0.2,150,1],['cavolfiore','Cavolfiore','cavolfiore',25,1.9,5,0.3,150,1],
+['cetrioli','Cetrioli','cetriolo',15,0.7,3.6,0.1,100,1],['peperoni','Peperoni','peperone',26,1,6,0.3,150,1],['funghi','Funghi','fungo',22,3.1,3.3,0.3,100,1],
+['cavolo','Cavolo','cavolo',25,1.3,5.8,0.1,150,1],['carciofi','Carciofi','carciofo',47,3.3,10.5,0.2,150,1],['zucca','Zucca','zucca',26,1,6.5,0.1,200,1],
+['mais','Mais','mais',86,3.3,19,1.4,80,0],['pure','Purè di patate','patata',106,2,15,4.2,200,0],['guacamole','Guacamole','avocado',157,2,8.5,14.7,60,0],
+['carbonara','Pasta alla carbonara (piatto)','pasta',190,8,22,8,300,0],['hotdog','Hot dog','hotdog',290,10,24,17,150,0],['burrito','Burrito','burrito',206,9,25,8,250,0],
+['bagel','Bagel','bagel',250,10,49,1.5,90,0],['pretzel','Pretzel','pretzel',338,8,70,3,60,0],['polpettone','Polpettone','polpette',200,15,8,12,150,0],
+['pasticcio','Pasticcio al forno','lasagne',250,7,22,15,200,0],['dolce','Dolce al cucchiaio','budino',200,4,25,9,120,0],['brodo','Brodo','zuppa',15,1.5,1,0.5,300,0],
+['stufato','Spezzatino','spezzatino',110,9,6,5,300,0],['cioccolata','Cioccolata calda','cioccolata',90,3.5,12,3.5,200,0],['ghiacciolo','Ghiacciolo','ghiacciolo',80,0,20,0,70,0],
+['caffe','Caffè espresso','caffe',2,0.1,0,0,30,0],['bibita','Bibita zuccherata','bibita',42,0,10.6,0,330,0],['passata','Passata di pomodoro','pomodoro',30,1.3,5.5,0.2,100,0],
+['risozaff','Risotto allo zafferano','risotto',150,3.5,24,4.5,300,0],['risotto','Risotto','risotto',150,4,23,4.5,300,0],['risobianco','Riso in bianco (cotto)','riso',130,2.7,28,0.3,250,0],
+['risopom','Riso al pomodoro','riso',135,3,25,2.5,300,0],['pastapesto','Pasta al pesto (piatto)','pasta',190,6,26,7,300,0],['pastabianco','Pasta in bianco (piatto)','pasta',165,5.5,30,2.5,300,0],
+['polenta','Polenta','mais',85,2,18,0.5,250,0],['salsiccia','Salsiccia (cotta)','salsiccia',300,17,1,25,120,0],
+['melone','Melone','melone',34,0.8,8,0.2,200,1],['ciliegie','Ciliegie','ciliegie',63,1.1,16,0.2,150,1],['melanzane','Melanzane (cotte)','melanzana',35,0.8,8.7,0.2,150,1],
+['fagiolini','Fagiolini (cotti)','fagiolini',35,1.9,7.9,0.3,150,1],['pastafagioli','Pasta e fagioli','zuppa',110,5,17,2.5,300,0],['tortellini','Tortellini (piatto)','ravioli',200,8.5,26,7,200,0],
+['arancini','Arancini','arancino',220,6,27,10,170,0],['polpette','Polpette al sugo','polpette',200,14,7,13,150,0],['cotoletta','Cotoletta alla milanese','fritto',260,20,12,15,150,0],
+['parmigiana','Parmigiana di melanzane','melanzana',150,6,7,11,250,0],['formaggio','Formaggio stagionato','formaggio',380,26,1,30,50,0],['salame','Salame','salame',425,26,1,35,40,0],
+['focaccia','Focaccia','pane',330,7,45,13,100,0],['piadina','Piadina','piadina',330,7.5,50,11,110,0],['crostata','Crostata di marmellata','crostata',400,5,60,15,80,0],
+// cibi e bevande aggiunti nella 3.0 (valori per 100 g; per le bevande 100 ml)
+['mandarino','Mandarino','mandarino',72,0.9,17.6,0.3,80,1],['albicocche','Albicocche','albicocca',28,0.4,6.8,0.1,100,1],['prugne','Prugne','prugna',42,0.7,10,0.2,100,1],
+['mango','Mango','mango',53,1,12.6,0.2,150,1],['lamponi','Lamponi','lampone',36,1.2,8,0.5,100,1],['cachi','Cachi','cachi',65,0.6,16,0.3,150,1],
+['cocco','Cocco fresco','cocco',354,3.3,15,33,30,0],['papaya','Papaya','papaya',28,0.5,6.6,0.1,150,1],['melaverde','Mela verde','mela-verde',52,0.3,14,0.2,150,1],
+['mirtilli','Mirtilli','mirtilli',57,0.7,14,0.3,100,1],['datteri','Datteri secchi','frutta',282,2.5,75,0.4,30,0],['uvetta','Uvetta','uva',299,3,79,0.5,20,0],
+['finocchi','Finocchi','finocchio',9,1.2,1,0.2,150,1],['cipolla','Cipolla','cipolla',26,1,5.7,0.1,80,1],['piselli','Piselli','piselli',53,5.2,7.5,0.5,100,1],
+['asparagi','Asparagi','asparagi',24,3.6,2.1,0.2,150,1],['rucola','Rucola','rucola',28,2.6,3.7,0.4,30,1],['lattuga','Lattuga','lattuga',15,1.8,2.2,0.4,80,1],
+['cavolini','Cavolini di Bruxelles','cavolini',37,4.2,4.5,0.4,150,1],['ravanelli','Ravanelli','ravanelli',14,1.1,2,0.1,50,1],['bietole','Bietole (cotte)','spinaci',20,1.9,3,0.1,150,1],
+['radicchio','Radicchio','insalata',13,1.4,1.6,0.1,80,1],['sedano','Sedano','finocchio',16,1.2,2.4,0.2,80,1],['olive','Olive','olive',145,1,4,14,30,0],
+['patatearrosto','Patate al forno','patata',130,2.5,22,3.5,200,0],['couscous','Cous cous (cotto)','cous-cous',112,3.8,23,0.2,200,0],['farro','Farro (cotto)','cereali',130,5,25,1,200,0],
+['orzo','Orzo (cotto)','cereali',123,3.5,25,0.6,200,0],['quinoa','Quinoa (cotta)','cereali',120,4.4,21,1.9,150,0],['gnocchi','Gnocchi di patate','gnocchi',150,3.5,33,0.4,200,0],
+['gnocchipom','Gnocchi al pomodoro (piatto)','gnocchi',120,3.2,22,2.2,300,0],['ravioli','Ravioli ricotta e spinaci (piatto)','ravioli',190,7.5,25,6.5,200,0],['grissini','Grissini','grissini',433,12,72,11,25,0],
+['taralli','Taralli','cracker',430,9,62,16,30,0],['panesegale','Pane di segale','pane',250,8,48,1.5,50,0],['panecassetta','Pane in cassetta','fette',275,8,49,5,30,0],
+['cornflakes','Cereali da colazione','cereali',375,7,83,1,40,0],['pastaragu','Pasta al ragù (piatto)','pasta',165,7.5,22,5,300,0],['insalatariso','Insalata di riso (piatto)','riso',150,4,22,5,300,0],
+['sushi','Sushi (nigiri e maki)','sushi',145,5.5,28,1.5,150,0],['ramen','Ramen (piatto)','noodles',100,5,12,3.5,400,0],['kebab','Kebab (panino)','kebab',215,12,22,9,250,0],
+['tramezzino','Tramezzino','panino',240,8,25,12,100,0],['toast','Toast prosciutto e formaggio','toast',270,13,26,12,150,0],['zuppalegumi','Zuppa di legumi','zuppa',90,5,12,2.5,300,0],
+['falafel','Falafel','hummus',333,13,32,18,80,0],['tacchino','Petto di tacchino (cotto)','pollo',135,29,0,1.5,120,0],['maiale','Lonza di maiale (cotta)','bistecca',170,27,0,7,120,0],
+['vitello','Vitello (fettina cotta)','bistecca',165,26,0,6.5,120,0],['agnello','Agnello (cotto)','bistecca',230,25,0,15,120,0],['orata','Orata (cotta)','pesce',120,21,0,4,150,0],
+['branzino','Branzino','pesce',82,16.5,0,1.5,150,0],['pescespada','Pesce spada','pesce',120,19,0,4.5,150,0],['sgombro','Sgombro','pesce',180,19,0,12,120,0],
+['sardine','Sardine','pesce',135,21,0,5,100,0],['calamari','Calamari','calamaro',70,12,2,1.5,150,0],['cozze','Cozze','cozze',70,11,3,2,100,0],
+['vongole','Vongole','vongole',72,10,3,1.5,100,0],['mortadella','Mortadella','salame',311,15,1,28,40,0],['speck','Speck','prosciutto',303,29,0.5,20,40,0],
+['wurstel','Würstel','salsiccia',270,11,2,24,100,0],['frittata','Frittata','frittata',170,11,1.5,13,150,0],
+['bastoncini','Bastoncini di pesce','pesce',230,12,18,12,90,0],['nuggets','Nuggets di pollo','pollo',250,14,16,15,100,0],['stracchino','Stracchino','formaggio',300,18,2,24,50,0],
+['gorgonzola','Gorgonzola','formaggio',330,19,0,28,50,0],['feta','Feta','formaggio',264,14,4,21,50,0],['fiocchilatte','Fiocchi di latte','formaggio',98,11,3.4,4.3,100,0],
+['burrata','Burrata','mozzarella',300,14,1.5,27,100,0],['mascarpone','Mascarpone','formaggio',435,4.5,4,44,30,0],['scamorza','Scamorza','formaggio',334,25,1,25,50,0],
+['torta','Torta margherita','torta',390,5,55,16,80,0],['tiramisu','Tiramisù','tiramisu',280,5,30,16,120,0],['panettone','Panettone','panettone',333,6.5,53,10.5,80,0],
+['pandoro','Pandoro','pandoro',400,7,56,17,80,0],['cannolo','Cannolo siciliano','cannolo',340,7,38,17,90,0],['brioche','Brioche vuota','brioche',390,8,50,18,60,0],
+['ciambellone','Ciambellone','ciambella',390,6.5,56,16,70,0],['nutella','Crema spalmabile alla nocciola','crema-spalmabile',540,6,57,31,20,0],['merendina','Merendina','merendina',400,6,58,16,35,0],
+['barretta','Barretta di cereali','barretta',400,6,65,13,25,0],['popcorn','Popcorn','popcorn',390,12,77,5,30,0],['patatinebusta','Patatine in busta','patatine',536,6,53,33,30,0],
+['caramelle','Caramelle','caramelle',375,0,92,0.3,15,0],['pancake','Pancake','pancake',227,6,28,10,100,0],['cioccolatte','Cioccolato al latte','cioccolato',535,7.5,56,30,20,0],
+['budino','Budino','budino',120,3.5,20,3,125,0],['sorbetto','Sorbetto','ghiacciolo',130,0.3,32,0,100,0],['nocciole','Nocciole','nocciole',655,13.8,6,64.1,20,0],
+['pistacchi','Pistacchi','pistacchi',608,18,18,56,20,0],['anacardi','Anacardi','anacardi',575,18,30,46,20,0],['castagne','Castagne','castagne',165,2.5,36,1.5,80,0],
+['acqua','Acqua naturale','acqua',0,0,0,0,250,0],['acquafrizz','Acqua frizzante','acqua-frizzante',0,0,0,0,250,0],['acquasapore','Acqua aromatizzata','bottiglia-acqua',2,0,0.4,0,250,0],
+['te','Tè caldo (senza zucchero)','te',1,0,0.2,0,250,0],['tefreddo','Tè freddo (pesca o limone)','te-freddo',34,0,8.3,0,330,0],['tefreddozero','Tè freddo zero o senza zucchero','te-freddo',2,0,0.4,0,330,0],
+['tisana','Tisana (senza zucchero)','tisana',1,0,0.2,0,250,0],['caffelungo','Caffè lungo (americano)','caffe',2,0.1,0.2,0,120,0],['caffeorzo',"Caffè d'orzo",'caffe-orzo',3,0.1,0.6,0,100,0],
+['cappuccino','Cappuccino','cappuccino',45,2.6,3.9,1.9,150,0],['caffellatte','Caffellatte','cappuccino',44,2.9,4.2,1.7,250,0],['lattemacch','Latte macchiato','latte',48,3.1,4.4,1.8,200,0],
+['lattescrem','Latte scremato','latte',34,3.5,5,0.1,200,0],['lattecacao','Latte al cacao','cioccolata',72,3.2,10.5,1.8,200,0],['avenabev',"Bevanda d'avena",'bevanda-vegetale',45,1,6.5,1.5,200,0],
+['mandorlabev','Bevanda di mandorla','bevanda-vegetale',24,0.5,3,1.1,200,0],['risobev','Bevanda di riso','bevanda-vegetale',47,0.1,9.3,1,200,0],['kefir','Kefir','kefir',61,3.3,4.7,3.3,200,0],
+['yogurtbere','Yogurt da bere','yogurt',70,3.1,11.5,1.5,200,0],['spremuta',"Spremuta d'arancia",'spremuta',40,0.7,9,0.2,200,1],['ace','Succo ACE','succo',43,0.4,10,0.1,200,0],
+['centrifugato','Centrifugato di frutta e verdura','succo',38,0.7,8.5,0.2,250,1],['frullato','Frullato di frutta fresca','frullato',50,0.8,11,0.3,250,1],['smoothie','Smoothie frutta e yogurt','frullato',65,2,12,1,250,0],
+['milkshake','Frappè (milkshake)','milkshake',100,3.2,15.5,3,250,0],['cola','Cola','cola',42,0,10.6,0,330,0],['colazero','Cola zero o light','cola',1,0,0,0,330,0],
+['aranciata','Aranciata','aranciata',40,0,9.7,0,330,0],['limonata','Limonata gassata','limonata',38,0,9.2,0,330,0],['gassosa','Gassosa','bibita',30,0,7.4,0,330,0],
+['chinotto','Chinotto','chinotto',41,0,10,0,330,0],['tonica','Acqua tonica','tonica',34,0,8.5,0,200,0],['sportdrink','Sport drink (integratore salino)','sport-drink',26,0,6.2,0,500,0],
+].map(([key,name,icon,kcal,p,c,f,portion,fv]) => ({key,name,icon,kcal,p,c,f,portion,fv}));
 const FOOD = Object.fromEntries(FOODS.map(f => [f.key, f]));
 // peso di un pezzo, per frasi come «2 uova» o «una mela»
-const PIECE = { uova:60, mela:150, banana:120, arancia:150, kiwi:80, pera:150, pesca:150, fette:10, biscotti:10, cornetto:60, burger:200, hotdog:150, bagel:90, yogurt:125, greco:150, pizza:300, limone:50, caffe:30, ghiacciolo:70, pane:50, paneint:50, arancini:170, piadina:110, polpette:40, cotoletta:150, focaccia:100 };
+const PIECE = { uova:60, mela:150, banana:120, arancia:150, kiwi:80, pera:150, pesca:150, fette:10, biscotti:10, cornetto:60, burger:200, hotdog:150, bagel:90, yogurt:125, greco:150, pizza:300, limone:50, caffe:30, ghiacciolo:70, pane:50, paneint:50, arancini:170, piadina:110, polpette:40, cotoletta:150, focaccia:100,
+  mandarino:80,albicocche:40,prugne:50,cachi:150,papaya:150,melaverde:150,datteri:8,uvetta:20,grissini:5,taralli:10,panecassetta:30,tramezzino:100,toast:150,panettone:80,pandoro:80,cannolo:90,brioche:60,merendina:35,barretta:25,caramelle:5,torta:80,nuggets:20,bastoncini:30,wurstel:50,kebab:250,sushi:30,falafel:20,gnocchi:200,mortadella:20,olive:4,castagne:10,nocciole:2,pistacchi:1,anacardi:3,cioccolatte:20,budino:125,nutella:15,ciambellone:70 };
 const fvFor = (isFv, g) => isFv ? Math.max(1, Math.round(g / 130)) : 0;
+// altri nomi con cui si cercano i cibi (elenco e frasi)
+const SYN = {
+  cannolo:['cannolo','cannoli'], cocco:['cocco'],
+  mandarino:['mandarini','clementina','clementine'], albicocche:['albicocca'], prugne:['prugna','susina','susine'], lamponi:['lampone'],
+  cachi:['caco','kaki'], mirtilli:['mirtillo'], datteri:['dattero'], finocchi:['finocchio'],
+  piselli:['pisello'], asparagi:['asparago'], ravanelli:['ravanello'], cavolini:['cavolino','cavoletti'],
+  olive:['oliva'], couscous:['cous cous','couscous'], gnocchi:['gnocchi','gnocco'], grissini:['grissino'],
+  taralli:['tarallo','taralli pugliesi'], cornflakes:['corn flakes','cereali','fiocchi di mais'], pastaragu:['ragù','ragu','pasta alla bolognese','tagliatelle al ragù'], insalatariso:['riso freddo'],
+  sushi:['nigiri','maki','sashimi'], kebab:['kebap','doner'], toast:['toast','tost'], tacchino:['tacchino','fesa di tacchino'],
+  maiale:['maiale','lonza','arista','braciola di maiale'], wurstel:['wurstel','würstel','frankfurter'], nuggets:['nuggets','crocchette di pollo'],
+  fiocchilatte:['fiocchi di latte','cottage'], torta:['torta','torta della nonna','torta al cioccolato','plumcake'], tiramisu:['tiramisù'], nutella:['nutella','crema alla nocciola','crema di nocciole'],
+  merendina:['merendine','snack','kinder'], barretta:['barrette','barretta ai cereali'], patatinebusta:['patatine','chips','patatine in busta'], cioccolatte:['cioccolato','cioccolatino'],
+  nocciole:['nocciola'], pistacchi:['pistacchio'], anacardi:['anacardo'], castagne:['castagna','caldarroste'],
+  calamari:['calamaro','totano','seppie'], cozze:['cozza'], vongole:['vongola'], sardine:['sardina','alici','acciughe'],
+  orata:['spigola'], stracchino:['crescenza'], pancake:['pancakes'], ciambellone:['ciambella'],
+  brioche:['croissant'], pescespada:['pescespada'], acqua:['acqua','acqua naturale','acqua liscia','acqua minerale'], acquafrizz:['acqua frizzante','acqua gassata','acqua con gas','acqua con le bolle'],
+  acquasapore:['acqua aromatizzata','acqua e limone','acqua al limone','acqua alla menta'], te:['tè','thè','the','tè caldo','tè nero','tè verde'], tefreddo:['tè freddo','te freddo','the freddo','ice tea','estathé','tè al limone','tè alla pesca','tè pesca','tè limone'], tefreddozero:['tè freddo zero','tè freddo senza zucchero','tè freddo light'],
+  tisana:['tisana','tisane','camomilla','infuso','infusi'], caffelungo:['caffè lungo','caffe lungo','caffè americano','americano'], caffeorzo:["caffè d'orzo","caffe d'orzo",'orzo','orzo solubile'], cappuccino:['cappuccino','capuccino','cappuccini'],
+  caffellatte:['caffellatte','caffelatte','caffè latte','caffe latte','latte e caffè'], lattemacch:['latte macchiato','macchiato'], lattescrem:['latte scremato','latte magro'], lattecacao:['latte al cacao','latte al cioccolato','latte e cacao','latte cioccolato'],
+  avenabev:["bevanda d'avena",'bevanda di avena',"latte d'avena",'latte di avena'], mandorlabev:['bevanda di mandorla','bevanda alla mandorla','latte di mandorla','latte di mandorle'], risobev:['bevanda di riso','latte di riso'], kefir:['kefir'],
+  yogurtbere:['yogurt da bere','yogurt liquido','yogurt bevibile','actimel'], spremuta:['spremuta',"spremuta d'arancia",'spremuta di arancia','spremuta di arance'], ace:['succo ace','succo a c e','ace'], centrifugato:['centrifugato','centrifuga','estratto di frutta','estratto di verdura'],
+  frullato:['frullato','frullato di frutta','frullati'], smoothie:['smoothie','smoothies'], milkshake:['frappè','frappe','milkshake','milk shake'], cola:['cola','coca cola','coca','pepsi'],
+  colazero:['cola zero','coca zero','coca cola zero','cola light','coca light','coca cola light','diet coke'], aranciata:['aranciata','fanta'], limonata:['limonata','lemonsoda','sprite'], gassosa:['gassosa'],
+  chinotto:['chinotto'], tonica:['acqua tonica','tonica','schweppes'], sportdrink:['sport drink','gatorade','powerade','bevanda isotonica','isotonica','integratore salino'],
+};
+// bevande: non si scalano con il piatto e valgono al massimo una porzione di frutta e verdura (centrifugati e frullati perdono parte delle fibre)
+const DRINKS = new Set(['acqua','acquafrizz','acquasapore','te','tefreddo','tefreddozero','tisana','caffelungo','caffeorzo','cappuccino','caffellatte','lattemacch','lattescrem','lattecacao','avenabev','mandorlabev','risobev','kefir','yogurtbere','spremuta','ace','centrifugato','frullato','smoothie','milkshake','cola','colazero','aranciata','limonata','gassosa','chinotto','tonica','sportdrink']);
+DRINKS.forEach(k => { FOOD[k].drink = true; });
+// l'acqua scritta o scelta dall'elenco va nel contatore dei bicchieri, non nel diario
+FOOD.acqua.water = FOOD.acquafrizz.water = true;
+// ricerca senza accenti e senza maiuscole: «wurstel» trova «Würstel», «tiramisu» trova «Tiramisù»
+const fold = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/* ---------- icone 3D (icons/kit-*.js): nessuna emoji a schermo ---------- */
+// ripiego neutro se i kit non si sono caricati (rete assente al primo avvio)
+const ICO_FALLBACK = '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="32" cy="57" rx="16" ry="3.5" fill="#000" opacity=".12"/><circle cx="32" cy="32" r="24" fill="#E5E5EA"/><circle cx="32" cy="32" r="16" fill="#F7F7F9"/><ellipse cx="25" cy="22" rx="7" ry="4" fill="#fff" opacity=".6"/></svg>';
+// chiave dell'icona di un cibo o di una voce: prima «icon», poi la vecchia «emoji» (voci salvate e backup), poi il piatto
+// solo chiavi proprie: un backup con icon «constructor» non deve pescare dal prototipo
+const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
+const icoKey = x => {
+  const K = self.PIATTINO_ICONS || {}, A = self.PIATTINO_ICON_ALIAS || {};
+  if (typeof x === 'string') x = { icon:x };
+  if (x && own(K, x.icon)) return x.icon;
+  const e = x && typeof x.emoji === 'string' ? x.emoji : '', a = own(A, e) ? A[e] : own(A, e.replace(/\uFE0F/g, '')) ? A[e.replace(/\uFE0F/g, '')] : '';
+  return own(K, a) ? a : 'piatto';
+};
+// ogni icona diventa un <img> con un data URI preparato una volta sola per chiave:
+// l'elenco resta leggero (niente SVG con gradienti ripetuti) e gli id pk-* non si duplicano nel DOM
+const ICO_IMG = new Map();
+const foodIco = x => {
+  const k = icoKey(x);
+  let h = ICO_IMG.get(k);
+  if (!h) {
+    const K = self.PIATTINO_ICONS || {}, svg = own(K, k) ? K[k] : ICO_FALLBACK;
+    h = `<img class="fi" alt="" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}">`;
+    if (own(K, k)) ICO_IMG.set(k, h);
+  }
+  return h;
+};
 
 /* A "source" is anything that can become a diary entry: values per gram */
-const srcFromDb = f => ({ name:f.name, emoji:f.emoji, thumb:null, grams:f.portion, kg:f.kcal/100, pg:f.p/100, cg:f.c/100, fg:f.f/100, fvDb:!!f.fv, fvg:0 });
-const srcFromSaved = f => { const g = Math.max(1, f.grams||100); return { name:f.name, emoji:f.emoji||'🍽️', thumb:f.thumb||null, grams:g, kg:f.kcal/g, pg:f.p/g, cg:f.c/g, fg:f.f/g, fvDb:false, fvg:(f.fv||0)/g }; };
+const srcFromDb = f => ({ name:f.name, icon:f.icon, thumb:null, grams:f.portion, kg:f.kcal/100, pg:f.p/100, cg:f.c/100, fg:f.f/100, fvDb:!!f.fv, fvg:0, drink:!!f.drink, water:!!f.water });
+const srcFromSaved = f => { const g = Math.max(1, f.grams||100); return { name:f.name, icon:icoKey(f), thumb:f.thumb||null, grams:g, kg:f.kcal/g, pg:f.p/g, cg:f.c/g, fg:f.f/g, fvDb:false, fvg:(f.fv||0)/g }; };
 const entryFrom = (s, grams) => ({
-  id: rid(), name: s.name, emoji: s.emoji, thumb: s.thumb || null, grams: Math.round(grams),
+  id: rid(), name: s.name, icon: s.icon, thumb: s.thumb || null, grams: Math.round(grams),
   kcal: Math.round(s.kg*grams), p: Math.round(s.pg*grams*10)/10, c: Math.round(s.cg*grams*10)/10, f: Math.round(s.fg*grams*10)/10,
-  fv: s.fvDb ? fvFor(true, grams) : Math.round(s.fvg*grams*2)/2,
+  fv: s.fvDb ? (s.drink ? 1 : fvFor(true, grams)) : Math.round(s.fvg*grams*2)/2,
 });
 
 /* ---------- meals, plan templates, copy ---------- */
@@ -267,7 +370,7 @@ function pickQuote(){
 }
 function saveFoodMemo(item){
   const existing = S.foods.find(f => f.name.toLowerCase() === item.name.toLowerCase());
-  const food = { id: existing ? existing.id : rid(), name:item.name, emoji:item.emoji || '🍽️', grams:item.grams, kcal:item.kcal, p:item.p, c:item.c, f:item.f, fv:item.fv||0, thumb:item.thumb||null, saved:Date.now() };
+  const food = { id: existing ? existing.id : rid(), name:item.name, icon:icoKey(item), grams:item.grams, kcal:item.kcal, p:item.p, c:item.c, f:item.f, fv:item.fv||0, thumb:item.thumb||null, saved:Date.now() };
   S.foods = [food, ...S.foods.filter(f => f.id !== food.id)];
   Store.put('food-' + food.id, food);
 }
@@ -362,7 +465,7 @@ function ringsSvg(vals){
   }).join('') + `</svg>`;
 }
 function animateRings(){ requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('.ring-arc').forEach(c => c.style.strokeDashoffset = c.dataset.off))); }
-const thumbHtml = e => e.thumb ? `<span class="thumb"><img src="${esc(e.thumb)}" alt=""></span>` : `<span class="thumb">${esc(e.emoji || '🍽️')}</span>`;
+const thumbHtml = e => e.thumb ? `<span class="thumb"><img src="${esc(e.thumb)}" alt=""></span>` : `<span class="thumb ico">${foodIco(e)}</span>`;
 
 function renderToday(){
   const k = S.date, day = getDay(k), t = totals(day), g = T(), isToday = k === todayKey();
@@ -465,7 +568,7 @@ function renderPlan(){
     <div class="card pad">
       <div class="row"><span class="meal-ico" style="background:${mm.color}">${I[mm.icon]}</span><div class="grow"><div class="meal-name">${esc(m.label)}</div><div class="meal-kcal num">${fmt(kc)} kcal</div></div>
       <button class="chip-btn accent" data-a="plan-add" data-i="${i}">Aggiungi</button></div>
-      <div style="margin-top:8px">${m.items.map(e => `<div class="plan-item"><span class="e">${esc(e.emoji || '🍽️')}</span><span class="grow">${esc(e.name)} <span class="muted num">${fmt(e.grams)} g</span></span><span class="k">${fmt(e.kcal)} kcal</span></div>`).join('')}</div>
+      <div style="margin-top:8px">${m.items.map(e => `<div class="plan-item"><span class="e">${foodIco(e)}</span><span class="grow">${esc(e.name)} <span class="muted num">${fmt(e.grams)} g</span></span><span class="k">${fmt(e.kcal)} kcal</span></div>`).join('')}</div>
     </div>`; }).join('')}</div>
   <div class="stack" style="margin-top:14px">
     ${custom ? `<button class="btn tinted" data-a="plan-reset">Torna al menu mediterraneo</button>` : `<button class="btn tinted" data-a="plan-shuffle">Cambia menu</button>`}
@@ -514,7 +617,7 @@ function renderDiary(){
   </div>
   <div class="card pad" style="margin-top:12px">${chart}</div>
   <h2 class="section-title">I miei cibi <small>${S.foods.length}</small></h2>
-  ${S.foods.length ? `<div class="food-grid">${S.foods.map(f => `<button class="food-tile" data-a="food" data-id="${esc(f.id)}"><span class="ph">${f.thumb ? `<img src="${esc(f.thumb)}" alt="">` : esc(f.emoji || '🍽️')}</span><span class="n">${esc(f.name)}</span><span class="k num">${fmt(f.kcal)} kcal · ${fmt(f.grams)} g</span></button>`).join('')}</div>`
+  ${S.foods.length ? `<div class="food-grid">${S.foods.map(f => `<button class="food-tile" data-a="food" data-id="${esc(f.id)}"><span class="ph${f.thumb ? '' : ' ico'}">${f.thumb ? `<img src="${esc(f.thumb)}" alt="">` : foodIco(f)}</span><span class="n">${esc(f.name)}</span><span class="k num">${fmt(f.kcal)} kcal · ${fmt(f.grams)} g</span></button>`).join('')}</div>`
     : `<div class="card pad muted">Quando scansioni un piatto puoi memorizzarlo qui, per riaggiungerlo con un tocco.</div>`}
   <h2 class="section-title">Giorni registrati</h2>
   ${hist.length ? `<div class="card">${hist.map(d => `<button class="hist" data-a="goto" data-k="${d.k}"><span class="d">${esc(d.k === today ? 'Oggi' : longDate(d.k))}</span><span class="minibar"><i data-fill="day-${d.k}" data-p="${clamp(d.t.kcal/g.kcal,0,1)}"></i></span><span class="muted num" style="min-width:74px;text-align:right">${fmt(d.t.kcal)} kcal</span></button>`).join('')}</div>`
@@ -1082,7 +1185,7 @@ function renderAdd(){
     const s = A.src, e = entryFrom(s, A.grams);
     root.innerHTML = `${sheetHead('Aggiungi', 'Indietro')}
     <div class="sheet-body">
-      <div class="big-food">${s.thumb ? `<span class="thumb"><img src="${esc(s.thumb)}" alt=""></span>` : `<span class="thumb">${esc(s.emoji)}</span>`}<h2>${esc(s.name)}</h2></div>
+      <div class="big-food">${thumbHtml(s)}<h2>${esc(s.name)}</h2></div>
       <div class="stepper"><button data-a="g-step" data-d="-10" aria-label="Meno 10 grammi">−</button><input id="gramsIn" type="number" inputmode="numeric" value="${Math.round(A.grams)}" aria-label="Grammi"><button data-a="g-step" data-d="10" aria-label="Più 10 grammi">+</button></div>
       <p class="small muted" style="text-align:center;margin:0">grammi</p>
       <div class="nutri num" id="nutriBox">${nutriHtml(e)}</div>
@@ -1113,8 +1216,8 @@ function renderAddList(){
       : `<div class="pad muted">${S.foods.length ? 'Nessun risultato.' : 'Scansiona un piatto e memorizzalo: lo ritroverai qui.'}</div>`;
     return;
   }
-  const list = FOODS.filter(f => !q || f.name.toLowerCase().includes(q));
-  box.innerHTML = list.length ? list.map(f => `<button class="list-item" data-a="add-pick-db" data-k="${f.key}"><span class="thumb">${f.emoji}</span><div class="grow"><div>${esc(f.name)}</div><div class="small muted num">${fmt(f.kcal*f.portion/100)} kcal · ${f.portion} g</div></div>${I.right.replace('<svg', '<svg class="chev"')}</button>`).join('')
+  const fq = fold(q), list = FOODS.filter(f => !fq || (f.find || (f.find = fold([f.name, ...(SYN[f.key] || []), ...(KW[f.key] || [])].join('|')))).includes(fq));
+  box.innerHTML = list.length ? list.map(f => `<button class="list-item" data-a="add-pick-db" data-k="${f.key}">${thumbHtml(f)}<div class="grow"><div>${esc(f.name)}</div><div class="small muted num">${fmt(f.kcal*f.portion/100)} kcal · ${f.portion} g</div></div>${I.right.replace('<svg', '<svg class="chev"')}</button>`).join('')
     : `<div class="pad muted">Nessun alimento trovato. Prova «A mano» per inserirlo tu.</div>`;
 }
 function manualForm(){
@@ -1139,7 +1242,7 @@ function bindManual(){
     const name = String(fd.get('name') || '').trim();
     if (!name) return $('#merr').textContent = 'Scrivi il nome dell\'alimento.';
     const grams = n('grams') || 100;
-    addEntries(A.meal, [{ id:rid(), name, emoji:'🍽️', thumb:null, grams, kcal:Math.round(n('kcal')), p:n('p'), c:n('c'), f:n('f'), fv:fd.get('fv') ? fvFor(true, grams) : 0 }]);
+    addEntries(A.meal, [{ id:rid(), name, icon:'piatto', thumb:null, grams, kcal:Math.round(n('kcal')), p:n('p'), c:n('c'), f:n('f'), fv:fd.get('fv') ? fvFor(true, grams) : 0 }]);
     closeSheet();
   });
 }
@@ -1156,7 +1259,7 @@ function openEntry(meal, id){
   const e = (getDay(S.date).meals[meal] || []).find(x => x.id === id); if (!e) return;
   openSheet(`${sheetHead(mealByK(meal).l, 'Chiudi')}
   <div class="sheet-body">
-    <div class="big-food">${e.thumb ? `<span class="thumb"><img src="${esc(e.thumb)}" alt=""></span>` : `<span class="thumb">${esc(e.emoji || '🍽️')}</span>`}<h2>${esc(e.name)}</h2><div class="muted num">${fmt(e.grams)} g${e.fv ? ` · ${fmt1(e.fv)} porz. frutta e verdura` : ''}</div></div>
+    <div class="big-food">${thumbHtml(e)}<h2>${esc(e.name)}</h2><div class="muted num">${fmt(e.grams)} g${e.fv ? ` · ${fmt1(e.fv)} porz. frutta e verdura` : ''}</div></div>
     <div class="nutri num">${nutriHtml(e)}</div>
     <div class="stack" style="margin-top:14px">
       <button class="btn tinted" data-a="entry-memo" data-m="${meal}" data-id="${esc(id)}">Memorizza nei miei cibi</button>
@@ -1263,7 +1366,7 @@ function renderScanner(){
   <div class="scan-top"><button class="close-btn" data-a="scan-close" aria-label="Chiudi">${I.x}</button><span class="scan-title">Scansiona il piatto</span><span></span></div>
   <div class="scan-main ${cls}">
     <div class="stage"><div class="rig">
-      <div class="plate">${SC.img ? `<img src="${SC.img}" alt="La tua foto">` : `<div class="idle">🍽️</div>`}</div>
+      <div class="plate">${SC.img ? `<img src="${SC.img}" alt="La tua foto">` : `<div class="idle ico">${foodIco('piatto')}</div>`}</div>
       <div class="beam"></div>
       <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
       <div id="tags"></div>
@@ -1318,17 +1421,17 @@ const SHAKY = new Set(['mais','zucca','guacamole','caffe','funghi','burrito','pa
 // classi «da piatto» del modello generico: non diventano una voce, sostengono solo la categoria vista dal modello dei piatti
 const MN_VOTE = { 'carbonara':'pasta','consomme':'soup','soup bowl':'soup','hot pot':'curry','hotpot':'curry','mashed potato':'potato','potpie':'meat','meat loaf':'meat','meatloaf':'meat','trifle':'dessert','chocolate sauce':'dessert','chocolate syrup':'dessert' };
 const DISH_HINTS = ['plate','soup bowl','mixing bowl','tray','wok','frying pan','dining table','restaurant','bakery','grocery store','ladle','spatula','coffee mug','cup','spaghetti squash'];
-// categorie per i 2.024 piatti del secondo modello: nome, emoji, kcal, proteine, carboidrati, grassi (per 100 g), porzione, frutta/verdura
+// categorie per i 2.024 piatti del secondo modello: nome, icona, kcal, proteine, carboidrati, grassi (per 100 g), porzione, frutta/verdura
 const CATS = {
-  pasta:['Primo di pasta','🍝',160,6,25,4.5,300,0], rice:['Piatto di riso','🍚',150,4,26,3.5,300,0], noodle:['Noodles','🍜',170,6,27,4,300,0],
-  soup:['Zuppa','🍲',55,3,6,2,350,1], salad:['Insalata condita','🥗',90,2.5,6,6.5,200,1], dessert:['Dolce','🍰',330,5,45,15,100,0],
-  sandwich:['Panino','🥪',250,11,28,10,200,0], meat:['Secondo di carne','🥩',210,24,3,12,180,0], chicken:['Pollo','🍗',200,25,4,9,180,0],
-  fish:['Pesce','🐟',150,20,3,6,180,0], seafood:['Frutti di mare','🦐',110,17,4,3,180,0], egg:['Uova','🍳',155,11,2,11.5,150,0],
-  fried:['Fritto','🍤',280,10,25,16,150,0], bread:['Pane e lievitati','🥖',290,9,50,6,80,0], pancake:['Frittelle','🥞',230,6,30,9,150,0],
-  veg:['Verdure cucinate','🥘',80,2.5,8,4.5,200,1], legumes:['Legumi','🫘',140,8,20,3,250,0], curry:['Spezzatino o curry','🍛',130,9,8,7,300,0],
-  dumpling:['Ravioli e fagottini','🥟',220,9,28,8,200,0], cheese:['Formaggio','🧀',350,24,2,28,60,0], dish:['Piatto misto','🍽️',170,8,18,7,250,0],
-  potato:['Piatto di patate','🥔',130,2.5,18,5.5,200,0], porridge:['Polenta o purea','🥣',95,2.5,18,1.5,250,0], salumi:['Salumi','🥓',300,22,1,24,50,0],
-  sausage:['Salsiccia','🌭',300,17,1,25,120,0],
+  pasta:['Primo di pasta','pasta',160,6,25,4.5,300,0], rice:['Piatto di riso','riso',150,4,26,3.5,300,0], noodle:['Noodles','noodles',170,6,27,4,300,0],
+  soup:['Zuppa','zuppa',55,3,6,2,350,1], salad:['Insalata condita','insalata',90,2.5,6,6.5,200,1], dessert:['Dolce','torta',330,5,45,15,100,0],
+  sandwich:['Panino','panino',250,11,28,10,200,0], meat:['Secondo di carne','bistecca',210,24,3,12,180,0], chicken:['Pollo','pollo',200,25,4,9,180,0],
+  fish:['Pesce','pesce',150,20,3,6,180,0], seafood:['Frutti di mare','gamberi',110,17,4,3,180,0], egg:['Uova','uovo-padella',155,11,2,11.5,150,0],
+  fried:['Fritto','fritto',280,10,25,16,150,0], bread:['Pane e lievitati','baguette',290,9,50,6,80,0], pancake:['Frittelle','pancake',230,6,30,9,150,0],
+  veg:['Verdure cucinate','broccolo',80,2.5,8,4.5,200,1], legumes:['Legumi','fagioli',140,8,20,3,250,0], curry:['Spezzatino o curry','curry',130,9,8,7,300,0],
+  dumpling:['Ravioli e fagottini','ravioli',220,9,28,8,200,0], cheese:['Formaggio','formaggio',350,24,2,28,60,0], dish:['Piatto misto','piatto',170,8,18,7,250,0],
+  potato:['Piatto di patate','patata',130,2.5,18,5.5,200,0], porridge:['Polenta o purea','cereali',95,2.5,18,1.5,250,0], salumi:['Salumi','salame',300,22,1,24,50,0],
+  sausage:['Salsiccia','salsiccia',300,17,1,25,120,0],
 };
 // le etichette che le parole chiave qui sotto non riconoscono, raggruppate per categoria
 const CAT_LABELS = {
@@ -1492,37 +1595,37 @@ const SCAN = {
     return v;
   },
 };
-// classi di PiattinoScan → voci dell'app: id di un cibo dell'elenco, [categoria, nome] o [nome, emoji, kcal, P, C, G (per 100 g), porzione, frutta/verdura].
+// classi di PiattinoScan → voci dell'app: id di un cibo dell'elenco, [categoria, nome] o [nome, icona, kcal, P, C, G (per 100 g), porzione, frutta/verdura].
 // I cibi extra hanno già l'id del cibo dell'elenco.
 const SCAN_MAP = {
-  apple_pie:['dessert','Torta di mele'], baby_back_ribs:['meat','Costine di maiale'], baklava:['dessert','Baklava'], beef_carpaccio:['Carpaccio di manzo','🥩',130,21,1,5,100,0],
-  beef_tartare:['Tartare di manzo','🥩',180,20,2,10,150,0], beet_salad:['salad','Insalata di barbabietole'], beignets:['dessert','Bomboloni'], bibimbap:['rice','Bibimbap'],
-  bread_pudding:['dessert','Budino di pane'], breakfast_burrito:'burrito', bruschetta:['Bruschetta','🍅',200,5,30,7,100,0], caesar_salad:['Insalata Caesar','🥗',150,7,7,11,250,1],
-  cannoli:['Cannoli','🍰',370,7,40,20,100,0], caprese_salad:['Insalata caprese','🍅',180,10,3,14,200,1], carrot_cake:['dessert','Torta di carote'], ceviche:['fish','Ceviche'],
-  cheese_plate:['cheese','Tagliere di formaggi'], cheesecake:['Cheesecake','🍰',320,6,26,22,120,0], chicken_curry:['curry','Pollo al curry'], chicken_quesadilla:['sandwich','Quesadilla'],
+  apple_pie:['dessert','Torta di mele'], baby_back_ribs:['meat','Costine di maiale'], baklava:['dessert','Baklava'], beef_carpaccio:['Carpaccio di manzo','bistecca',130,21,1,5,100,0],
+  beef_tartare:['Tartare di manzo','bistecca',180,20,2,10,150,0], beet_salad:['salad','Insalata di barbabietole'], beignets:['dessert','Bomboloni'], bibimbap:['rice','Bibimbap'],
+  bread_pudding:['dessert','Budino di pane'], breakfast_burrito:'burrito', bruschetta:['Bruschetta','pomodoro',200,5,30,7,100,0], caesar_salad:['Insalata Caesar','insalata',150,7,7,11,250,1],
+  cannoli:['Cannoli','cannolo',370,7,40,20,100,0], caprese_salad:['Insalata caprese','mozzarella',180,10,3,14,200,1], carrot_cake:['dessert','Torta di carote'], ceviche:['fish','Ceviche'],
+  cheese_plate:['cheese','Tagliere di formaggi'], cheesecake:['Cheesecake','torta',320,6,26,22,120,0], chicken_curry:['curry','Pollo al curry'], chicken_quesadilla:['sandwich','Quesadilla'],
   chicken_wings:['chicken','Alette di pollo'], chocolate_cake:['dessert','Torta al cioccolato'], chocolate_mousse:['dessert','Mousse al cioccolato'], churros:['dessert','Churros'],
   clam_chowder:['soup','Zuppa di vongole'], club_sandwich:['sandwich','Club sandwich'], crab_cakes:['fried','Polpette di granchio'], creme_brulee:['dessert','Crème brûlée'],
-  croque_madame:['sandwich','Toast con uovo'], cup_cakes:['dessert','Cupcake'], deviled_eggs:['egg','Uova ripiene'], donuts:['Ciambelle','🍩',420,5,50,22,70,0],
-  dumplings:['dumpling','Ravioli al vapore'], edamame:['Edamame','🫛',120,11,9,5,100,1], eggs_benedict:['egg','Uova alla Benedict'], escargots:['seafood','Lumache'],
-  falafel:['Falafel','🧆',330,13,32,18,100,0], filet_mignon:['Filetto di manzo','🥩',200,28,0,9,150,0], fish_and_chips:['fried','Pesce e patatine'], foie_gras:['meat','Foie gras'],
-  french_fries:'patatine', french_onion_soup:['soup','Zuppa di cipolle'], french_toast:['pancake','French toast'], fried_calamari:['Calamari fritti','🦑',230,15,15,12,150,0],
-  fried_rice:['rice','Riso saltato'], frozen_yogurt:'gelato', garlic_bread:['bread',"Pane all'aglio"], gnocchi:['Gnocchi al sugo','🥔',150,3.5,28,3,250,0],
-  greek_salad:['Insalata greca','🥗',110,4,5,8,250,1], grilled_cheese_sandwich:['sandwich','Toast al formaggio'], grilled_salmon:'salmone', guacamole:'guacamole',
+  croque_madame:['sandwich','Toast con uovo'], cup_cakes:['dessert','Cupcake'], deviled_eggs:['egg','Uova ripiene'], donuts:['Ciambelle','ciambella',420,5,50,22,70,0],
+  dumplings:['dumpling','Ravioli al vapore'], edamame:['Edamame','fagiolini',120,11,9,5,100,1], eggs_benedict:['egg','Uova alla Benedict'], escargots:['seafood','Lumache'],
+  falafel:['Falafel','polpette',330,13,32,18,100,0], filet_mignon:['Filetto di manzo','bistecca',200,28,0,9,150,0], fish_and_chips:['fried','Pesce e patatine'], foie_gras:['meat','Foie gras'],
+  french_fries:'patatine', french_onion_soup:['soup','Zuppa di cipolle'], french_toast:['pancake','French toast'], fried_calamari:['Calamari fritti','calamaro',230,15,15,12,150,0],
+  fried_rice:['rice','Riso saltato'], frozen_yogurt:'gelato', garlic_bread:['bread',"Pane all'aglio"], gnocchi:['Gnocchi al sugo','gnocchi',150,3.5,28,3,250,0],
+  greek_salad:['Insalata greca','insalata',110,4,5,8,250,1], grilled_cheese_sandwich:['sandwich','Toast al formaggio'], grilled_salmon:'salmone', guacamole:'guacamole',
   gyoza:['dumpling','Gyoza'], hamburger:'burger', hot_and_sour_soup:['soup','Zuppa agropiccante'], hot_dog:'hotdog', huevos_rancheros:['egg','Uova alla messicana'],
   hummus:'hummus', ice_cream:'gelato', lasagna:'lasagne', lobster_bisque:['soup','Crema di astice'], lobster_roll_sandwich:['sandwich',"Panino all'astice"],
-  macaroni_and_cheese:['pasta','Pasta al formaggio'], macarons:['dessert','Macaron'], miso_soup:['soup','Zuppa di miso'], mussels:['Cozze','🦪',85,12,4,2.2,250,0],
-  nachos:['fried','Nachos'], omelette:['Frittata','🍳',180,12,1,14,150,0], onion_rings:['fried','Anelli di cipolla'], oysters:['seafood','Ostriche'], pad_thai:['noodle','Pad thai'],
+  macaroni_and_cheese:['pasta','Pasta al formaggio'], macarons:['dessert','Macaron'], miso_soup:['soup','Zuppa di miso'], mussels:['Cozze','cozze',85,12,4,2.2,250,0],
+  nachos:['fried','Nachos'], omelette:['Frittata','frittata',180,12,1,14,150,0], onion_rings:['fried','Anelli di cipolla'], oysters:['seafood','Ostriche'], pad_thai:['noodle','Pad thai'],
   paella:['rice','Paella'], pancakes:['pancake','Pancake'], panna_cotta:['dessert','Panna cotta'], peking_duck:['chicken','Anatra laccata'], pho:['noodle','Pho'], pizza:'pizza',
   pork_chop:['meat','Braciola di maiale'], poutine:['potato','Poutine'], prime_rib:['meat','Costata di manzo'], pulled_pork_sandwich:['sandwich','Panino con maiale sfilacciato'],
-  ramen:['noodle','Ramen'], ravioli:['Ravioli al sugo','🥟',190,8,25,6,250,0], red_velvet_cake:['dessert','Torta red velvet'], risotto:'risotto', samosa:['fried','Samosa'],
-  sashimi:['Sashimi','🍣',140,22,0,5,150,0], scallops:['seafood','Capesante'], seaweed_salad:['salad','Insalata di alghe'], shrimp_and_grits:['seafood','Gamberi con polenta'],
-  spaghetti_bolognese:['Spaghetti al ragù','🍝',170,8,22,5.5,300,0], spaghetti_carbonara:'carbonara', spring_rolls:['fried','Involtini primavera'], steak:['Bistecca','🥩',220,27,0,12,180,0],
-  strawberry_shortcake:['dessert','Torta con panna e fragole'], sushi:['Sushi','🍣',150,6,28,1.5,200,0], tacos:['sandwich','Tacos'], takoyaki:['fried','Takoyaki'],
-  tiramisu:['Tiramisù','🍰',300,6,30,18,120,0], tuna_tartare:['fish','Tartare di tonno'], waffles:['pancake','Waffle'],
-  stufato:'stufato', acqua:['Acqua','💧',0,0,0,0,250,0],
+  ramen:['noodle','Ramen'], ravioli:['Ravioli al sugo','ravioli',190,8,25,6,250,0], red_velvet_cake:['dessert','Torta red velvet'], risotto:'risotto', samosa:['fried','Samosa'],
+  sashimi:['Sashimi','sushi',140,22,0,5,150,0], scallops:['seafood','Capesante'], seaweed_salad:['salad','Insalata di alghe'], shrimp_and_grits:['seafood','Gamberi con polenta'],
+  spaghetti_bolognese:['Spaghetti al ragù','pasta',170,8,22,5.5,300,0], spaghetti_carbonara:'carbonara', spring_rolls:['fried','Involtini primavera'], steak:['Bistecca','bistecca',220,27,0,12,180,0],
+  strawberry_shortcake:['dessert','Torta con panna e fragole'], sushi:['Sushi','sushi',150,6,28,1.5,200,0], tacos:['sandwich','Tacos'], takoyaki:['fried','Takoyaki'],
+  tiramisu:['Tiramisù','tiramisu',300,6,30,18,120,0], tuna_tartare:['fish','Tartare di tonno'], waffles:['pancake','Waffle'],
+  stufato:'stufato', acqua:['Acqua','acqua',0,0,0,0,250,0],
 };
-const catItem = (c, conf) => ({ id:rid(), name:c[0], emoji:c[1], grams:c[6], base:c[6], k:c[2]/100, pp:c[3]/100, cc:c[4]/100, ff:c[5]/100, fvv:c[7] ? 1/130 : 0, conf, on:false });
-const itemFromSaved = (f, conf) => { const g = Math.max(1, f.grams || 100); return { id:rid(), name:f.name, emoji:f.emoji || '🍽️', grams:g, base:g, k:f.kcal/g, pp:f.p/g, cc:f.c/g, ff:f.f/g, fvv:(f.fv || 0)/g, conf, on:false }; };
+const catItem = (c, conf) => ({ id:rid(), name:c[0], icon:c[1], grams:c[6], base:c[6], k:c[2]/100, pp:c[3]/100, cc:c[4]/100, ff:c[5]/100, fvv:c[7] ? 1/130 : 0, conf, on:false });
+const itemFromSaved = (f, conf) => { const g = Math.max(1, f.grams || 100); return { id:rid(), name:f.name, icon:icoKey(f), grams:g, base:g, k:f.kcal/g, pp:f.p/g, cc:f.c/g, ff:f.f/g, fvv:(f.fv || 0)/g, conf, on:false }; };
 // sk: nome di una classe di PiattinoScan, «db:<cibo dell'elenco>» o «my:<cibo memorizzato>»
 function scanTarget(sk){
   if (sk.startsWith('my:')) return { id:sk, sk, make: conf => { const f = S.foods.find(x => x.id === sk.slice(3)); return f ? itemFromSaved(f, conf) : null; } };
@@ -1610,8 +1713,8 @@ function ensureModel(onFrac = () => {}){
   return modelP;
 }
 function topK(arr, k){ return Array.from(arr, (p, i) => [i, p]).sort((a, b) => b[1] - a[1]).slice(0, k); }
-const itemFromFood = (f, grams, conf, on) => ({ id:rid(), key:f.key, name:f.name, emoji:f.emoji, grams, base:grams, k:f.kcal/100, pp:f.p/100, cc:f.c/100, ff:f.f/100, fvv:f.fv ? 1/130 : 0, conf, on });
-const itemFromCat = (c, label, conf) => ({ id:rid(), name:(label && IT[label.toLowerCase()]) || c[0], emoji:c[1], grams:c[6], base:c[6], k:c[2]/100, pp:c[3]/100, cc:c[4]/100, ff:c[5]/100, fvv:c[7] ? 1/130 : 0, conf, on:false });
+const itemFromFood = (f, grams, conf, on) => ({ id:rid(), key:f.key, name:f.name, icon:f.icon, grams, base:grams, k:f.kcal/100, pp:f.p/100, cc:f.c/100, ff:f.f/100, fvv:f.fv ? 1/130 : 0, conf, on, ...(f.drink ? { fvMax:1 } : {}), ...(f.water ? { water:true } : {}) });
+const itemFromCat = (c, label, conf) => ({ id:rid(), name:(label && IT[label.toLowerCase()]) || c[0], icon:c[1], grams:c[6], base:c[6], k:c[2]/100, pp:c[3]/100, cc:c[4]/100, ff:c[5]/100, fvv:c[7] ? 1/130 : 0, conf, on:false });
 
 /* colore del cibo al centro della foto: distingue, per esempio, il riso allo zafferano dal riso in bianco */
 function foodColor(canvas){
@@ -1724,7 +1827,7 @@ async function recognizePhoto(canvas, onFrac){
 
 /* porzione automatica: quanta parte del piatto è coperta dal cibo.
    Il piatto (chiaro, poco saturo) fa da riferimento, quindi la stima non dipende da quanto sei vicino. */
-const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco','cioccolata','acqua']);
+const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco','cioccolata', ...DRINKS]);
 function estimatePortion(canvas){
   try {
     const N = 72, c = document.createElement('canvas'); c.width = c.height = N;
@@ -1769,39 +1872,48 @@ function applyEstimate(items, est){
 /* description in words: «2 uova, 50 g di pane e un'insalata» */
 const KW = {
   latte:['latte'], latteint:['latte intero'], pasta:['pasta','spaghetti','penne','fusilli','maccheroni'], pastaint:['pasta integrale'], riso:['riso'], risotto:['risotto'], risozaff:['risotto allo zafferano','riso allo zafferano','riso giallo','risotto giallo','risotto alla milanese'], risobianco:['riso in bianco','riso bianco','riso bollito'], risopom:['riso al pomodoro','riso al sugo'], pastapesto:['pasta al pesto','trofie al pesto','pesto'], pastabianco:['pasta in bianco','pasta al burro','pasta all\'olio'], polenta:['polenta'], salsiccia:['salsiccia','salsicce','luganega','salamella'],
-  pastapom:['pasta al pomodoro','spaghetti al pomodoro','pasta al sugo'], pollo:['pollo','petto di pollo'], manzo:['manzo','carne','bistecca'], burger:['hamburger','panino'],
-  crudo:['prosciutto crudo','prosciutto'], cotto:['prosciutto cotto'], uova:['uovo','uova','frittata'], olio:['olio'], yogurt:['yogurt'], greco:['yogurt greco'],
-  avena:['avena','porridge'], biscotti:['biscotti','biscotto'], cornetto:['cornetto','brioche','croissant'], succo:['succo'], bibita:['bibita','coca cola','cola','aranciata'],
+  pastapom:['pasta al pomodoro','spaghetti al pomodoro','pasta al sugo'], pollo:['pollo','petto di pollo'], manzo:['manzo','carne','bistecca'], burger:['hamburger','panino hamburger'],
+  crudo:['prosciutto crudo','prosciutto'], cotto:['prosciutto cotto'], uova:['uovo','uova','uovo sodo','uova sode'], olio:['olio'], yogurt:['yogurt'], greco:['yogurt greco'],
+  avena:['avena','porridge'], biscotti:['biscotti','biscotto'], cornetto:['cornetto','croissant'], brioche:['brioche'], succo:['succo'], bibita:['bibita'],
   patate:['patate','patata'], pomodori:['pomodoro','pomodori'], fette:['fette biscottate'], crackers:['crackers','cracker'], fondente:['cioccolato'],
-  caffe:['caffè','caffe','espresso'], pure:['purè','pure'], bosco:['mirtilli','lamponi','frutti di bosco'], minestrone:['minestrone','minestra','zuppa'],
-  lasagne:['lasagne','lasagna'], carbonara:['carbonara'], insalata:['insalata'], pane:['pane','pagnotta','panino al latte'], paneint:['pane integrale'],
+  caffe:['caffè','caffe','espresso'], pure:['purè','pure'], bosco:['frutti di bosco'], minestrone:['minestrone','minestra','zuppa'],
+  lasagne:['lasagne','lasagna'], carbonara:['carbonara','spaghetti alla carbonara'], insalata:['insalata'], pane:['pane','pagnotta','panino al latte','panino','panini'], paneint:['pane integrale'],
   fagioli:['fagioli'], ceci:['ceci'], lenticchie:['lenticchie'], tonno:['tonno'], salmone:['salmone'], merluzzo:['merluzzo','pesce'], gamberi:['gamberi','gamberetti'],
   mozzarella:['mozzarella'], parmigiano:['parmigiano','grana'], ricotta:['ricotta'], gelato:['gelato'], mela:['mela','mele'], pizza:['pizza','pizzetta'],
   arancini:['arancini','arancino','arancina','arancine'], polpette:['polpette','polpetta'], cotoletta:['cotoletta','cotolette','milanese'], tortellini:['tortellini','cappelletti'],
-  pastafagioli:['pasta e fagioli','pasta fagioli'], parmigiana:['parmigiana'], formaggio:['formaggio','pecorino','stracchino','fontina'], salame:['salame','salami'],
+  pastafagioli:['pasta e fagioli','pasta fagioli'], parmigiana:['parmigiana'], formaggio:['formaggio','pecorino','fontina'], salame:['salame','salami'],
   melanzane:['melanzane','melanzana'], fagiolini:['fagiolini'], ciliegie:['ciliegie','ciliegia'], melone:['melone'], crostata:['crostata'], focaccia:['focaccia'], piadina:['piadina','piada'],
 };
+// sinonimi che nelle frasi sarebbero ambigui (già usati da un altro cibo, o con un senso più comune)
+const SYN_NOPARSE = new Set(['uovo','cioccolato','croissant','orzo','patatine','macchiato']);
 const NUMW = { 'un':1, 'uno':1, 'una':1, "un'":1, 'due':2, 'tre':3, 'quattro':4, 'cinque':5, 'sei':6, 'mezzo':.5, 'mezza':.5 };
 function parseDescription(text){
   let t = ' ' + text.toLowerCase().replace(/[’`]/g, "'") + ' ';
   const pairs = [];
   FOODS.forEach(f => {
     const base = f.name.toLowerCase().replace(/\s*\(.*?\)\s*/g, '').replace(/\./g, '').trim();
-    new Set([base, ...(KW[f.key] || [])]).forEach(kw => pairs.push([kw, f]));
+    new Set([base, ...(KW[f.key] || []), ...(SYN[f.key] || []).filter(w => !SYN_NOPARSE.has(w))]).forEach(kw => pairs.push([kw, f]));
   });
   pairs.sort((a, b) => b[0].length - a[0].length);
   const found = [];
-  for (const [kw, f] of pairs) {
-    const stem = kw.includes(' ') ? kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[aeio]$/, '') + '[aeio]?';
-    const re = new RegExp("(^|[^a-zàèéìòù])(" + stem + ")(?=$|[^a-zàèéìòù])");
+  const rx = w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // prima le parole esatte, poi le varianti (mela/mele): così «pesce» non diventa «pesca».
+  // Le parole di 4 lettere o meno valgono solo intere, o «col» diventerebbe «cola».
+  const passes = [pairs.map(([kw, f]) => [rx(kw), f]),
+    pairs.filter(([kw]) => !kw.includes(' ') && kw.length > 4).map(([kw, f]) => [rx(kw).replace(/[aeio]$/, '') + '[aeio]?', f])];
+  for (const list of passes) for (const [pat, f] of list) {
+    const re = new RegExp("(^|[^a-zàèéìòù])(" + pat + ")(?=$|[^a-zàèéìòù])");
     const m = re.exec(t); if (!m) continue;
     const start = m.index + m[1].length, end = start + m[2].length;
     if (found.some(x => x.f.key === f.key)) { t = t.slice(0, start) + ' '.repeat(end - start) + t.slice(end); continue; }
     const before = t.slice(Math.max(0, start - 40), start);
     let grams = f.portion; const piece = PIECE[f.key] || f.portion;
-    const mq = /(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammi|ml|l|litri?)?\.?\s*(?:[a-zàèéìòù']+\s+){0,2}(?:di\s+|d')?$/.exec(before);
-    const mw = /(?:^|\s)(un'|un|uno|una|due|tre|quattro|cinque|sei|mezzo|mezza)\s*(?:[a-zàèéìòù']+\s+){0,2}(?:di\s+|d')?$/.exec(before);
-    if (mq) { const n = parseFloat(mq[1].replace(',', '.')); const u = mq[2] || ''; grams = /^(g|gr|grammi|ml)$/.test(u) ? n : /^(kg|l|litr)/.test(u) ? n * 1000 : n * piece; }
+    // «mezzo litro d'acqua», «un litro di latte», «una bottiglietta d'acqua» (500 ml)
+    const ml = /(?:^|\s)(\d+(?:[.,]\d+)?|un|uno|una|due|tre|quattro|cinque|sei|mezzo|mezza)\s*(litr[oi]|bottigli(?:ett)?[ae])\s+(?:di\s+|d')?$/.exec(before);
+    const mq = /(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammi|ml|l|litri?)?\.?\s*(?:(?!(?:e|ed|con)\s)[a-zàèéìòù']+\s+){0,2}(?:di\s+|d')?$/.exec(before);
+    const mw = /(?:^|\s)(un'|un|uno|una|due|tre|quattro|cinque|sei|mezzo|mezza)\s*(?:(?!(?:e|ed|con)\s)[a-zàèéìòù']+\s+){0,2}(?:di\s+|d')?$/.exec(before);
+    if (ml) grams = (/\d/.test(ml[1]) ? parseFloat(ml[1].replace(',', '.')) : NUMW[ml[1]]) * (ml[2].startsWith('litr') ? 1000 : 500);
+    else if (mq) { const n = parseFloat(mq[1].replace(',', '.')); const u = mq[2] || ''; grams = /^(g|gr|grammi|ml)$/.test(u) ? n : /^(kg|l|litr)/.test(u) ? n * 1000 : n * piece; }
     else if (mw) grams = NUMW[mw[1]] * piece;
     found.push({ f, grams: clamp(Math.round(grams), 1, 3000), at:start });
     t = t.slice(0, start) + ' '.repeat(end - start) + t.slice(end);
@@ -1889,13 +2001,13 @@ function showResults(items){
   swapText($('#scanStatus'), unsure ? 'Forse è uno di questi' : 'Ecco cosa ho trovato');
   swapText($('#scanSub'), unsure ? 'Non sono sicuro: tocca il cerchio accanto al cibo giusto.' : items.map(x => x.name).join(', '));
   const tags = $('#tags'); const pos = [[8,14],[48,40],[12,66],[52,8],[30,82],[60,62],[4,40],[56,86]];
-  tags.innerHTML = items.map((x, j) => `<span class="tag3d ios-glass" style="left:${pos[j][0]}%;top:${pos[j][1]}%">${esc(x.emoji)} ${esc(x.name.replace(/\s*\(.*?\)/, ''))}</span>`).join('');
+  tags.innerHTML = items.map((x, j) => `<span class="tag3d ios-glass" style="left:${pos[j][0]}%;top:${pos[j][1]}%"><span class="ti">${foodIco(x)}</span>${esc(x.name.replace(/\s*\(.*?\)/, ''))}</span>`).join('');
   tags.querySelectorAll('.tag3d').forEach((el, j) => setTimeout(() => el.classList.add('in'), 120 + j*180));
   scanner.querySelector('.scan-actions').innerHTML = '';
   setTimeout(() => { if (SC.state !== 'result') return; renderResult(); $('#scanResult')?.classList.add('show'); }, 700 + items.length*180);
 }
 const PORTIONS = [['Piccola', .65], ['Media', 1], ['Grande', 1.5]];
-const itemEntry = x => ({ id:rid(), name:x.name, emoji:x.emoji, thumb:SC.thumb, grams:Math.round(x.grams), kcal:Math.round(x.k*x.grams), p:Math.round(x.pp*x.grams*10)/10, c:Math.round(x.cc*x.grams*10)/10, f:Math.round(x.ff*x.grams*10)/10, fv:Math.round(x.fvv*x.grams*2)/2 });
+const itemEntry = x => ({ id:rid(), name:x.name, icon:x.icon, thumb:SC.thumb, grams:Math.round(x.grams), kcal:Math.round(x.k*x.grams), p:Math.round(x.pp*x.grams*10)/10, c:Math.round(x.cc*x.grams*10)/10, f:Math.round(x.ff*x.grams*10)/10, fv:Math.min(x.fvMax || 99, Math.round(x.fvv*x.grams*2)/2) });
 function renderResult(){
   const box = $('#scanResult'); if (!box) return;
   const keep = box.querySelector('.result-in'), top = keep ? keep.scrollTop : 0;
@@ -1909,7 +2021,7 @@ function renderResult(){
     ${unsure ? `<p class="note" style="margin:10px 0 0">Non sono sicuro di cosa ci sia nella foto. Tocca il cerchio accanto al cibo giusto, oppure cercalo nell'elenco.</p>` : ''}
     <div class="group" style="margin-top:10px">${SC.items.map((x, j) => { const e = itemEntry(x); return `${j === 1 && x.grp ? '<div class="alt-cap">Non è questo? Tocca quello giusto</div>' : ''}<div class="res-item ${x.on ? '' : 'off'}">
       <button class="check" data-a="res-toggle" data-id="${x.id}" aria-label="${x.on ? 'Escludi' : 'Includi'} ${esc(x.name)}">${I.check}</button>
-      <span class="thumb">${esc(x.emoji)}</span>
+      <span class="thumb ico">${foodIco(x)}</span>
       <div class="grow"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</div><div class="small muted num">${x.conf != null ? `<b class="conf">${Math.round(x.conf * 100)}%</b> · ` : ''}<b style="color:var(--label)">${fmt(e.kcal)} kcal</b> · P ${fmt(e.p)} · C ${fmt(e.c)} · G ${fmt(e.f)}</div>
         <div class="portion-row"><div class="portion" role="group" aria-label="Porzione">${x.auto ? `<button class="auto ${x.grams === x.auto ? 'on' : ''}" data-a="res-portion" data-id="${x.id}" data-g="${x.auto}">${I.scale} Dalla foto</button>` : ''}${PORTIONS.map(([l, fct]) => `<button class="${(!x.auto || x.grams !== x.auto) && Math.abs(x.grams - Math.round(x.base * fct / 5) * 5) < 3 ? 'on' : ''}" data-a="res-portion" data-id="${x.id}" data-f="${fct}">${l}</button>`).join('')}</div>
         <div class="mini-step"><button data-a="res-step" data-id="${x.id}" data-d="-1" aria-label="Meno grammi">−</button><span>${fmt(x.grams)} g</span><button data-a="res-step" data-id="${x.id}" data-d="1" aria-label="Più grammi">+</button></div></div></div>
@@ -1963,7 +2075,16 @@ const actions = {
   'add-pick-my': el => { const f = S.foods.find(x => x.id === el.dataset.id); if (!f) return; A.src = srcFromSaved(f); A.memSk = 'my:' + f.id; A.grams = A.src.grams; renderAdd(); },
   'g-step': el => { A.grams = clamp(Math.round((A.grams + +el.dataset.d) / 5) * 5, 5, 5000); $('#gramsIn').value = A.grams; $('#nutriBox').innerHTML = nutriHtml(entryFrom(A.src, A.grams)); },
   'add-meal': el => { A.meal = el.dataset.m; renderAdd(); },
-  'add-confirm': () => { if (!(A.grams > 0)) return; addEntries(A.meal, [entryFrom(A.src, A.grams)]); closeSheet(); },
+  'add-confirm': () => {
+    if (!(A.grams > 0)) return;
+    if (A.src.water) {
+      // acqua scelta dall'elenco: va nel contatore dei bicchieri (250 ml l'uno), come dallo scanner
+      const d = ensureDay(S.date), n = Math.max(1, Math.round(A.grams / 250));
+      d.water = clamp((d.water || 0) + n, 0, 30); saveDay(S.date); closeSheet(); if (S.view === 'today') renderToday();
+      toast(`+${n * 250} ml · ${litri(d.water)} L oggi`); return;
+    }
+    addEntries(A.meal, [entryFrom(A.src, A.grams)]); closeSheet();
+  },
   'sheet-close': () => { if ($('#addRoot') && A.src && !A.fromOutside) { A.src = null; renderAdd(); return; } A.fromOutside = false; closeSheet(); },
   entry: el => openEntry(el.dataset.m, el.dataset.id),
   'entry-del': el => { const d = ensureDay(S.date); d.meals[el.dataset.m] = d.meals[el.dataset.m].filter(e => e.id !== el.dataset.id); saveDay(S.date); closeSheet(); renderToday(); toast('Eliminato dal diario'); },
@@ -2071,6 +2192,7 @@ $('#backupInput').addEventListener('change', async e => {
     id: cleanStr(entry.id, 32),
     name: cleanStr(entry.name, 80),
     emoji: cleanStr(entry.emoji, 8),
+    icon: typeof entry.icon === 'string' && /^[a-z-]{1,24}$/.test(entry.icon) && (!self.PIATTINO_ICONS || own(self.PIATTINO_ICONS, entry.icon)) ? entry.icon : '',
     thumb: isDataImage(entry.thumb) ? entry.thumb : null,
     grams: Math.max(0, Math.min(5000, +entry.grams || 0)),
     kcal: Math.max(0, Math.min(10000, +entry.kcal || 0)),
@@ -2124,8 +2246,16 @@ function checkWhatsNew(force = false) {
       openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
         <div class="card pad">
-          <div class="meal-name">Il download del riconoscimento non si blocca più</div>
-          <div class="small muted" style="margin-top:4px">Quando scaricavi PiattinoScan la percentuale si fermava all'inizio. Ora il download parte e arriva fino in fondo.</div>
+          <div class="meal-name">Icone 3D al posto delle emoji</div>
+          <div class="small muted" style="margin-top:4px">Ogni cibo ha la sua icona disegnata apposta per Piattino: nel diario, nell'elenco, nel piano e nello scanner.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">125 cibi e bevande nuovi</div>
+          <div class="small muted" style="margin-top:4px">Ci sono anche würstel, tiramisù, sushi, kebab, cappuccino, tè freddo, spremuta e cola zero. La ricerca trova i cibi anche senza accenti e con altri nomi, per esempio «coca» o «clementina». Se scrivi «un bicchiere d'acqua», va nel contatore dell'acqua.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Nuova animazione di apertura</div>
+          <div class="small muted" style="margin-top:4px">All'avvio il piattino si riempie e l'app entra più in fretta. Durante un aggiornamento compare «Aggiornamento…» invece di un salto improvviso.</div>
         </div>
       </div>`);
     }, force ? 0 : 2000);
@@ -2136,17 +2266,53 @@ function checkWhatsNew(force = false) {
 const st = Store.load();
 S.profile = st.profile; S.days = st.days; S.foods = st.foods; S.weights = st.weights; S.chat = st.chat;
 render();
-// all'apertura la firma resta un attimo, poi i contenuti entrano come a un cambio di sezione
+// Avvio. Prima apertura della sessione: la firma (icona con molla, nome, piattino che si riempie) resta circa un secondo,
+// poi si allarga e svanisce mentre i contenuti entrano a cascata. Ricaricamento (launch.js ha già tolto la firma):
+// lo scheletro di index.html lascia il posto ai contenuti con la stessa cascata, senza schermata intera.
+const bootIn = first => {
+  const bar = $('#tabbar'), fab = $('#coachFab');
+  if (reduceMotion()) {
+    // solo una dissolvenza (le animazioni sono spente: si usa una transizione)
+    if (!first) { app.style.opacity = '0'; void app.offsetWidth; app.style.transition = 'opacity .25s ease'; app.style.opacity = ''; setTimeout(() => { app.style.transition = ''; }, 300); }
+    return;
+  }
+  if (!S.profile) {
+    // benvenuto: la sua animazione d'ingresso è partita sotto la firma, la si fa ripartire
+    const w = first && app.querySelector('.welcome.intro');
+    if (w) { w.classList.remove('intro'); void w.offsetWidth; w.classList.add('intro'); }
+    return;
+  }
+  if (!first) { app.classList.add('boot-quick'); setTimeout(() => app.classList.remove('boot-quick'), 1000); }
+  enterView();
+  bar.classList.remove('boot-rise'); void bar.offsetWidth; bar.classList.add('boot-rise');
+  setTimeout(() => bar.classList.remove('boot-rise'), 900);
+  if (!fab.hidden) { fab.style.animation = 'none'; void fab.offsetWidth; fab.style.animation = ''; }
+};
 (() => {
-  const el = $('#launch'); if (!el) return;
+  const el = $('#launch');
+  if (!el) { bootIn(false); return; }
   try { sessionStorage.setItem('piattino-launch', '1'); } catch (e) {}
   let done = false;
   const close = () => {
-    if (done) return; done = true; el.classList.add('out'); setTimeout(() => el.remove(), 480);
-    if (S.profile) { S.ringPrev = {}; for (const k in numPrev) delete numPrev[k]; for (const k in fillPrev) delete fillPrev[k]; render(); enterView(); }
+    if (done) return; done = true; el.classList.add('out'); setTimeout(() => el.remove(), 440);
+    if (S.profile) { S.ringPrev = {}; for (const k in numPrev) delete numPrev[k]; for (const k in fillPrev) delete fillPrev[k]; render(); }
+    bootIn(true);
   };
-  setTimeout(close, reduceMotion() ? 1100 : 1700); el.addEventListener('click', close);
+  // la firma è in pagina dal primo fotogramma: si chiude a circa 1,1 s dall'apertura (0,75 s con Riduci movimento),
+  // contando anche il tempo già passato a caricare app.js, così il totale non supera ~1,4 s con la dissolvenza
+  const at = reduceMotion() ? 750 : 1100;
+  setTimeout(close, Math.max(150, at - performance.now())); el.addEventListener('click', close);
 })();
+// Prima di ricaricare per un aggiornamento: un velo con «Aggiornamento…» per un attimo, invece di un ricaricamento secco.
+// Se l'app non è in primo piano nessuno lo vedrebbe: si ricarica subito.
+function showUpdating(then){
+  if (document.visibilityState !== 'visible') return then();
+  const v = document.createElement('div');
+  v.className = 'updating';
+  v.innerHTML = '<div class="updating-pill ios-glass" role="status" aria-live="polite"><span class="mini-plate" aria-hidden="true"><span><i></i><i></i><i></i></span></span>Aggiornamento…</div>';
+  document.body.appendChild(v); void v.offsetWidth; v.classList.add('show');
+  setTimeout(then, reduceMotion() ? 350 : 700);
+}
 checkWhatsNew();
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   // Su iOS la app resta in memoria per giorni: controlla gli aggiornamenti anche al ritorno in primo piano
@@ -2155,7 +2321,8 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) { hadController = true; return; }
     if (reloaded) return;
-    reloaded = true; Store.saveNow(); location.reload();
+    reloaded = true; Store.saveNow();
+    showUpdating(() => { Store.saveNow(); location.reload(); });
   });
   navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
     const check = () => reg.update().catch(() => {});
