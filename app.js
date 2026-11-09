@@ -17,7 +17,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.0.1';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -1687,10 +1687,15 @@ function decideScan(p, emb){
 
 let modelP = null, FOOD_LABELS = null, IMAGENET = null;
 function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(el); }); }
+function rejectAfter(p, ms, what){ let t; return Promise.race([p, new Promise((_, rej) => { t = setTimeout(() => rej(new Error('timeout ' + what)), ms); })]).finally(() => clearTimeout(t)); }
 function ensureModel(onFrac = () => {}){
   if (!modelP) modelP = (async () => {
-    if (!window.tf) await loadScript('vendor/tf.min.js');
-    onFrac(.04); await tf.ready();
+    // se il caricamento si pianta (succede su alcuni iPhone) non resta fermo per sempre: dopo qualche secondo ripiega o dà errore
+    if (!window.tf) await rejectAfter(loadScript('vendor/tf.min.js'), 25000, 'tf.min.js');
+    onFrac(.04);
+    try { await rejectAfter(tf.ready(), 8000, 'tf.ready'); }
+    catch (e) { console.warn('GPU non pronta, uso il processore', e); await tf.setBackend('cpu'); await tf.ready(); }
+    onFrac(.06);
     try {
       const m = await SCAN.load(SCAN_URL, f => onFrac(.04 + .94 * f));
       tf.tidy(() => { SCAN.forward(m, tf.zeros([2, m.spec.size, m.spec.size, 3])); });   // prepara la GPU (due inquadrature, come nel riconoscimento)
@@ -2246,6 +2251,10 @@ function checkWhatsNew(force = false) {
       openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
         <div class="card pad">
+          <div class="meal-name">Scansione della foto più affidabile</div>
+          <div class="small muted" style="margin-top:4px">Se il riconoscimento si bloccava all'inizio, ora l'app non resta ferma: ripiega sul processore oppure ti dice che c'è un problema, così puoi riprovare o descrivere il piatto a parole.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
           <div class="meal-name">Icone 3D al posto delle emoji</div>
           <div class="small muted" style="margin-top:4px">Ogni cibo ha la sua icona disegnata apposta per Piattino: nel diario, nell'elenco, nel piano e nello scanner.</div>
         </div>
