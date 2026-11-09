@@ -17,7 +17,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '3.0.1';
+const APP_VERSION = '3.0.2';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -1693,13 +1693,20 @@ function ensureModel(onFrac = () => {}){
     // se il caricamento si pianta (succede su alcuni iPhone) non resta fermo per sempre: dopo qualche secondo ripiega o dà errore
     if (!window.tf) await rejectAfter(loadScript('vendor/tf.min.js'), 25000, 'tf.min.js');
     onFrac(.04);
-    try { await rejectAfter(tf.ready(), 8000, 'tf.ready'); }
-    catch (e) { console.warn('GPU non pronta, uso il processore', e); await tf.setBackend('cpu'); await tf.ready(); }
+    // se un tentativo con la GPU non è mai finito (app chiusa mentre era ferma), la volta dopo si parte dal processore
+    const GLK = 'piattino-gl-' + APP_VERSION; let gl = null; try { gl = localStorage.getItem(GLK); } catch (e) {}
+    const glSet = v => { try { localStorage.setItem(GLK, v); } catch (e) {} };
+    if (gl === 'trying' || gl === 'cpu') { glSet('cpu'); await tf.setBackend('cpu'); await tf.ready(); }
+    else {
+      glSet('trying');
+      try { await rejectAfter(tf.ready(), 8000, 'tf.ready'); }
+      catch (e) { console.warn('GPU non pronta, uso il processore', e); glSet('cpu'); await tf.setBackend('cpu'); await tf.ready(); }
+    }
     onFrac(.06);
     try {
       const m = await SCAN.load(SCAN_URL, f => onFrac(.04 + .94 * f));
       tf.tidy(() => { SCAN.forward(m, tf.zeros([2, m.spec.size, m.spec.size, 3])); });   // prepara la GPU (due inquadrature, come nel riconoscimento)
-      SCANM = m; onFrac(1);
+      SCANM = m; if (tf.getBackend() === 'webgl') glSet('ok'); onFrac(1);
       return { scan: m };
     } catch (e) { console.warn('PiattinoScan non disponibile, uso i modelli di Google', e); MODEL.mb = MODEL.google; }
     const share = { mobile: MODELS.mobile.mb / MODEL.mb, food: MODELS.food.mb / MODEL.mb };
@@ -2252,7 +2259,7 @@ function checkWhatsNew(force = false) {
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
         <div class="card pad">
           <div class="meal-name">Scansione della foto più affidabile</div>
-          <div class="small muted" style="margin-top:4px">Se il riconoscimento si bloccava all'inizio, ora l'app non resta ferma: ripiega sul processore oppure ti dice che c'è un problema, così puoi riprovare o descrivere il piatto a parole.</div>
+          <div class="small muted" style="margin-top:4px">Se il riconoscimento si bloccava all'inizio, ora l'app non resta ferma: se la grafica del telefono si pianta ripiega sul processore, oppure ti dice che c'è un problema, così puoi riprovare o descrivere il piatto a parole.</div>
         </div>
         <div class="card pad" style="margin-top:12px">
           <div class="meal-name">Icone 3D al posto delle emoji</div>
