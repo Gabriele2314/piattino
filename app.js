@@ -17,7 +17,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '3.0.2';
+const APP_VERSION = '4.0.0';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -348,6 +348,37 @@ document.addEventListener('visibilitychange', () => {
   else if ($('#scanner').classList.contains('show') && SC.state === 'camera') startCamera();
 });
 const isStandalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
+
+/* ---------- angoli dello schermo ---------- */
+// Il sito non può leggere il raggio degli angoli del display: lo si ricava dal modello di iPhone, riconosciuto dalla misura
+// dello schermo in punti (lato corto x lato lungo) e, dove serve, dalla densità. Valori di _displayCornerRadius (iOS).
+const SCREEN_RADIUS = {
+  '375x812':41,      // X, XS, 11 Pro (39) e 12 mini, 13 mini (44): stessa misura, si prende la via di mezzo
+  '414x896@2':41.5,  // XR, 11
+  '414x896@3':39,    // XS Max, 11 Pro Max
+  '390x844':47.33,   // 12, 12 Pro, 13, 13 Pro, 14, 16e
+  '428x926':53.33,   // 12 Pro Max, 13 Pro Max, 14 Plus
+  '393x852':55,      // 14 Pro, 15, 15 Pro, 16
+  '430x932':55,      // 14 Pro Max, 15 Plus, 15 Pro Max, 16 Plus
+  '402x874':62,      // 16 Pro, 17, 17 Pro
+  '420x912':62,      // Air
+  '440x956':62,      // 16 Pro Max, 17 Pro Max
+};
+// Vale solo nell'app installata, dove la pagina arriva fino agli angoli; nel browser in fondo c'è la barra di Safari.
+// Gli iPhone con tasto Home (schermo 16:9, angoli dritti) restano a 0. Un modello nuovo non ancora in tabella
+// prende il raggio dei modelli più recenti della sua larghezza.
+function screenRadius(){
+  if (!/iPhone|iPod/.test(navigator.userAgent) || !isStandalone()) return 0;
+  const w = Math.min(screen.width, screen.height), h = Math.max(screen.width, screen.height);
+  if (!w || h / w < 2) return 0;
+  const k = `${w}x${h}`, dpr = Math.round(window.devicePixelRatio || 1);
+  return SCREEN_RADIUS[`${k}@${dpr}`] || SCREEN_RADIUS[k] || (w >= 400 ? 62 : 47.33);
+}
+(() => {
+  const r = screenRadius(), root = document.documentElement;
+  root.style.setProperty('--screen-r', r + 'px');
+  root.classList.toggle('screen-r', r > 0);
+})();
 
 /* ---------- state ---------- */
 const S = { profile:null, days:{}, foods:[], weights:[], chat:[], view:'today', date:todayKey(), planShift:0, quoteIdx:-1, ringPrev:{} };
@@ -2258,6 +2289,10 @@ function checkWhatsNew(force = false) {
       openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
         <div class="card pad">
+          <div class="meal-name">Su misura per lo schermo del tuo iPhone</div>
+          <div class="small muted" style="margin-top:4px">Nell'app installata, la barra delle schede, il pulsante «Cosa faccio ora?» e la barra «Aggiungi» dello scanner seguono la curva degli angoli dello schermo, con lo stesso margine sui lati e in basso. Lo scanner si apre e si chiude con gli angoli arrotondati come il display.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
           <div class="meal-name">Scansione della foto più affidabile</div>
           <div class="small muted" style="margin-top:4px">Se il riconoscimento si bloccava all'inizio, ora l'app non resta ferma: se la grafica del telefono si pianta ripiega sul processore, oppure ti dice che c'è un problema, così puoi riprovare o descrivere il piatto a parole.</div>
         </div>

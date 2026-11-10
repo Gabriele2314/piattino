@@ -31,6 +31,8 @@ Nessuna emoji: ogni cibo ha un'icona 3D in SVG (UI kit di Piattino, in `icons/ki
 
 L'interfaccia è ottimizzata per iPhone e segue il design system del progetto. In `index.html` i token del sistema (colori, spaziature, raggi, caratteri) sono variabili CSS con i nomi originali, per quattro temi: chiaro, scuro e le due versioni con Aumenta contrasto. Testo secondario leggibile (4,5:1), aree di tocco da 44 pt, tab bar flottante in Liquid Glass, sfumature leggere negli sfondi, errori con glifo e testo. Lo scanner usa sempre i colori del tema scuro.
 
+Nell'app installata su un iPhone con Face ID l'interfaccia segue gli angoli dello schermo. L'app riconosce il modello dalla misura dello schermo e usa il raggio dei suoi angoli, da 39 a 62 pt. La tab bar, il pulsante «Cosa faccio ora?» e la barra «Aggiungi» dello scanner hanno lo stesso margine sui lati e in basso, pari al raggio dello schermo meno il loro. Così le loro curve sono concentriche con quelle del display. Lo scanner aperto ha gli stessi angoli del display. Nel browser e sugli iPhone con tasto Home la disposizione resta quella di sempre.
+
 Anche il movimento è ottimizzato per iPhone: molle simulate al posto di durate fisse, solo transform e opacità perché resti fluido anche a 120 Hz, animazioni legate a quello che fai (lo scanner si apre dal pulsante della fotocamera e ci rientra, l'indicatore della tab bar scivola, i giorni arrivano dal lato verso cui ti sposti, i numeri contano fino al nuovo valore) e testi che entrano parola per parola da sfocati a nitidi. Gli sheet si chiudono anche trascinandoli verso il basso. Con Riduci movimento restano solo dissolvenze brevi.
 
 ## Per chi ha meno di 18 anni
