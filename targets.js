@@ -61,10 +61,10 @@ export function bmrOf(sex, age, w, h){
 }
 
 /* ---------- ritmo di variazione del peso ---------- */
-// massimo prudente in kg a settimana per questa persona
+// massimo prudente in kg a settimana per questa persona (a passi di 0,05)
 export function maxRate(dir, w, bmi){
   const s = C.safety;
-  if (dir === 'lose') return Math.floor(Math.min(s.loseMaxKgWeek, s.loseMaxFracWeek * w) * 100 + 1e-6) / 100;
+  if (dir === 'lose') return Math.floor(Math.min(s.loseMaxKgWeek, s.loseMaxFracWeek * w) * 20 + 1e-6) / 20;
   return bmi < s.minBmi ? s.gainMaxKgWeekUnderweight : s.gainMaxKgWeek;
 }
 // ritmi da proporre: solo quelli entro il massimo; ce n'è sempre almeno uno

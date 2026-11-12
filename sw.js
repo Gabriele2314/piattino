@@ -1,6 +1,8 @@
 // Piattino service worker: app shell subito in cache, modello e librerie alla prima scansione.
-const VERSION = 'piattino-v26';
-const SHELL = ['./', './index.html', './app.js', './launch.js', './icons/kit-frutta.js', './icons/kit-orto.js', './icons/kit-cucina.js', './icons/kit-dolci-bevande.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
+const VERSION = 'piattino-v27';
+// il codice dell'app: app.js è un modulo ES che importa gli altri. Un file nuovo va aggiunto qui, altrimenti offline manca.
+const CODE = ['app.js', 'config.js', 'targets.js', 'migrate.js', 'launch.js'];
+const SHELL = ['./', './index.html', ...CODE.map(f => './' + f), './icons/kit-frutta.js', './icons/kit-orto.js', './icons/kit-cucina.js', './icons/kit-dolci-bevande.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -37,7 +39,7 @@ self.addEventListener('fetch', event => {
 
   // Il codice dell'app segue la stessa regola delle pagine: rete prima, cache se offline.
   const path = new URL(req.url).pathname;
-  if (path.endsWith('/app.js') || path.endsWith('/launch.js')) {
+  if (CODE.some(f => path.endsWith('/' + f))) {
     event.respondWith(
       fetch(req, { cache: 'no-cache' })
         .then(res => {
