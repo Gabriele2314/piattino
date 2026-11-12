@@ -124,6 +124,23 @@ export const CONFIG = Object.freeze({
     maxKcalFracOfTdee: 2.5,  // media oltre 2,5 volte il fabbisogno: quasi certamente un errore
   }),
 
+  // stima della porzione dalla foto (portion.js): il piatto chiaro fa da riferimento
+  portion: Object.freeze({
+    grid: 72,            // la foto viene ridotta a 72×72 pixel
+    maxSat: .16,         // «piatto» = pixel poco saturo…
+    minLight: .66,       // …e chiaro
+    minPlateFrac: .08,   // il piatto occupa almeno l'8% della foto
+    maxEdgeFrac: .3,     // se la macchia chiara tocca più del 30% del bordo della foto è lo sfondo, non un piatto
+    minSizeFrac: .4,     // larghezza e altezza del piatto: almeno il 40% della foto
+    maxAspect: 1.8,      // piatto visto di sbieco: al massimo così schiacciato
+    rimFrom: .62,        // oltre il 79% del raggio (0,62 = 0,79²) è bordo del piatto
+    minRimPlate: .45,    // almeno il 45% del bordo deve essere piatto visibile
+    minCover: .04,       // sotto il 4% di copertura il piatto è vuoto
+    mediumCover: .55,    // una porzione media copre circa il 55% dell'interno del piatto
+    minScale: .5,        // la stima non scende sotto metà…
+    maxScale: 1.6,       // …né sale oltre 1,6 volte la porzione standard
+  }),
+
   // segnali a cui rispondere con un invito gentile a parlarne con medico o dietista (mai una diagnosi)
   risk: Object.freeze({
     windowDays: 7,

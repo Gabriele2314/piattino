@@ -3,6 +3,7 @@ import { clamp, dkey, parseKey, addDays, todayKey, ageOf, tierOf, targets, normS
   addWeight, weightJump, weightTrend as trendOf, goalReview, coachData, riskSignals, journeyText } from './targets.js';
 import { migrate, readBackup, toBackup } from './migrate.js';
 import { FOODS } from './foods.js';
+import { estimateFromPixels } from './portion.js';
 
 (() => {
 'use strict';
@@ -1944,41 +1945,18 @@ async function recognizePhoto(canvas, onFrac){
 /* porzione automatica: quanta parte del piatto è coperta dal cibo.
    Il piatto (chiaro, poco saturo) fa da riferimento, quindi la stima non dipende da quanto sei vicino. */
 const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco','cioccolata', ...DRINKS]);
+// cibi chiari: su un piatto chiaro non si distinguono dal piatto, quindi la copertura misurata sarebbe troppo bassa
+const PALE = new Set(['risobianco','riso','pastabianco','mozzarella','burrata','ricotta','stracchino','fiocchilatte','pure','cavolfiore','gnocchi','tofu','feta','finocchi']);
 function estimatePortion(canvas){
   try {
-    const N = 72, c = document.createElement('canvas'); c.width = c.height = N;
+    const N = CONFIG.portion.grid, c = document.createElement('canvas'); c.width = c.height = N;
     const g = c.getContext('2d', { willReadFrequently:true }); g.drawImage(canvas, 0, 0, N, N);
-    const d = g.getImageData(0, 0, N, N).data;
-    const plate = new Uint8Array(N * N);
-    let minX = N, minY = N, maxX = -1, maxY = -1, pc = 0;
-    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-      const i = (y * N + x) * 4, r = d[i], gg = d[i + 1], b = d[i + 2];
-      const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), l = (mx + mn) / 510, sat = mx ? (mx - mn) / mx : 0;
-      if (sat < .16 && l > .66) { plate[y * N + x] = 1; pc++; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
-    }
-    const w = maxX - minX + 1, h = maxY - minY + 1;
-    // serve un piatto chiaro abbastanza grande e abbastanza rotondo
-    if (pc < N * N * .08 || w < N * .4 || h < N * .4 || w / h > 1.8 || h / w > 1.8) return { method:'standard', scale:1 };
-    const cx = minX + w / 2, cy = minY + h / 2, rx = w / 2, ry = h / 2;
-    let inside = 0, food = 0, rim = 0, rimPlate = 0;
-    for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) {
-      const dx = (x + .5 - cx) / rx, dy = (y + .5 - cy) / ry, e = dx * dx + dy * dy;
-      if (e > 1) continue;
-      const isPlate = plate[y * N + x];
-      if (e > .62) { rim++; if (isPlate) rimPlate++; continue; }   // bordo del piatto (oltre il 79% del raggio)
-      inside++; if (!isPlate) food++;
-    }
-    // il bordo deve essere davvero piatto: nei primi piani il "bianco" è besciamella o sfondo
-    if (inside < 50 || rim < 30 || rimPlate / rim < .45) return { method:'standard', scale:1 };
-    const cover = food / inside;
-    if (cover < .04) return { method:'standard', scale:1 };
-    // una porzione "media" copre circa metà della parte interna del piatto
-    return { method:'plate', cover, scale: clamp(cover / .55, .5, 1.6) };
+    return estimateFromPixels(g.getImageData(0, 0, N, N).data, N);
   } catch (e) { return { method:'standard', scale:1 }; }
 }
 function applyEstimate(items, est){
   items.forEach(x => {
-    if (est.method !== 'plate' || (x.key && (PIECE[x.key] || NO_SCALE.has(x.key)))) return;
+    if (est.method !== 'plate' || (x.key && (PIECE[x.key] || NO_SCALE.has(x.key) || PALE.has(x.key)))) return;
     x.auto = Math.max(10, Math.round(x.base * est.scale / 10) * 10);
     x.grams = x.auto;
   });
