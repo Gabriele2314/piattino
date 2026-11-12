@@ -1,7 +1,7 @@
 // Piattino service worker: app shell subito in cache, modello e librerie alla prima scansione.
 const VERSION = 'piattino-v27';
 // il codice dell'app: app.js è un modulo ES che importa gli altri. Un file nuovo va aggiunto qui, altrimenti offline manca.
-const CODE = ['app.js', 'config.js', 'targets.js', 'migrate.js', 'foods.js', 'portion.js', 'launch.js'];
+const CODE = ['app.js', 'config.js', 'targets.js', 'migrate.js', 'foods.js', 'portion.js', 'scan.js', 'launch.js'];
 const SHELL = ['./', './index.html', ...CODE.map(f => './' + f), './icons/kit-frutta.js', './icons/kit-orto.js', './icons/kit-cucina.js', './icons/kit-dolci-bevande.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 // Modelli di riconoscimento e TensorFlow.js: cache a parte, che resta da una versione all'altra. Così un aggiornamento dell'app
