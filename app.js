@@ -17,7 +17,7 @@ const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long',
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '4.0.0';
+const APP_VERSION = '4.1.0';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -476,10 +476,11 @@ function renderTabbar(){
 function moveTabInd(){
   const tabs = $('#tabbar .tabs'); if (!tabs) return;
   const on = tabs.querySelector('[aria-selected=true]'), ind = tabs.querySelector('.tab-ind');
-  if (!on || !on.offsetWidth) return;
-  const x = on.offsetLeft;
-  if (ind._x != null && ind._x !== x && !tabs.classList.contains('no-anim') && !reduceMotion()) { ind.classList.remove('moving'); void ind.offsetWidth; ind.classList.add('moving'); }
-  ind._x = x; ind.style.width = on.offsetWidth + 'px'; ind.style.transform = `translateX(${x}px)`;
+  if (!on) return;
+  // 4 tab uguali: la posizione dipende solo dall'indice (calcolata in CSS), senza misure che possano sbagliare
+  const i = [...tabs.querySelectorAll('.tab')].indexOf(on);
+  if (ind._i != null && ind._i !== i && !tabs.classList.contains('no-anim') && !reduceMotion()) { ind.classList.remove('moving'); ind.classList.toggle('back', i < ind._i); void ind.offsetWidth; ind.classList.add('moving'); }
+  ind._i = i; tabs.style.setProperty('--i', i);
   requestAnimationFrame(() => tabs.classList.remove('no-anim'));
 }
 window.addEventListener('resize', () => { const t = $('#tabbar .tabs'); if (t) { t.classList.add('no-anim'); moveTabInd(); } });
@@ -1320,6 +1321,8 @@ function openScanner(meal, rect){
   SC.meal = meal || (S.date === todayKey() ? autoMeal() : 'pranzo');
   SC.state = canCamera() ? 'camera' : 'idle';
   scanOrigin(rect); scanner.classList.add('show'); scanner.setAttribute('aria-hidden', 'false'); document.body.classList.add('locked');
+  // finita l'apertura il bordo diventa esattamente quello dello schermo (raggio 0, gli angoli li ritaglia il display)
+  clearTimeout(SC.flatT); SC.flatT = setTimeout(() => scanner.classList.add('flat'), 650);
   renderScanner(); if (SC.state === 'camera') startCamera();
 }
 // lo scanner cresce dal pulsante che lo apre e, chiudendosi, rientra in «Aggiungi pasto» (se è in vista)
@@ -1330,32 +1333,117 @@ function scanOrigin(rect){
   scanner.style.setProperty('--oy', (r ? r.top + r.height / 2 : innerHeight * .8) + 'px');
 }
 function closeScanner(){
-  SC.run = (SC.run || 0) + 1; SC.state = 'idle'; stopCamera();
-  scanOrigin(); scanner.classList.remove('show'); scanner.setAttribute('aria-hidden', 'true');
+  SC.run = (SC.run || 0) + 1; SC.state = 'idle'; attesaStop(true); stopCamera();
+  clearTimeout(SC.flatT); scanOrigin(); scanner.classList.remove('show', 'flat'); scanner.setAttribute('aria-hidden', 'true');
   if (!sheetEl) document.body.classList.remove('locked');
   if (SC.img) { try { URL.revokeObjectURL(SC.img); } catch (e) {} }
 }
 async function startCamera(){
   if (SC.stream || !canCamera()) { if (SC.stream) attachCamera(); return; }
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:SC.facing || 'environment' }, width:{ ideal:1920 }, height:{ ideal:1920 } }, audio:false });
-    if (!scanner.classList.contains('show') || SC.state !== 'camera') { stream.getTracks().forEach(t => t.stop()); return; }
-    SC.stream = stream; attachCamera();
-  } catch (e) { SC.camOff = true; if (SC.state === 'camera') { SC.state = 'idle'; renderScanner(); } }
+  // ogni avvio ha il suo numero: se nel frattempo ne parte un altro (o la fotocamera si ferma) questo stream si chiude subito
+  const run = SC.camRun = (SC.camRun || 0) + 1;
+  const live = () => run === SC.camRun && scanner.classList.contains('show') && SC.state === 'camera';
+  // 0,5× senza zoom hardware: si apre direttamente la fotocamera ultra grandangolare
+  const uw = (SC.zoom || 1) < 1 && SC.facing !== 'user' && !SC.hw && SC.uwId;
+  const video = { width:{ ideal:1920 }, height:{ ideal:1920 } };
+  if (uw) video.deviceId = { exact:uw }; else video.facingMode = { ideal:SC.facing || 'environment' };
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ video, audio:false }); }
+  catch (e) {
+    if (run !== SC.camRun) return;
+    if (uw) { camUltraFail(); return startCamera(); }   // l'ultra grandangolo non si apre: si torna a 1× senza errori
+    SC.camOff = true; if (SC.state === 'camera') { SC.state = 'idle'; renderScanner(); }
+    return;
+  }
+  const end = () => stream.getTracks().forEach(t => t.stop());
+  if (!live()) return end();
+  const t = stream.getVideoTracks()[0];
+  SC.onUw = !!uw;
+  if (!uw) await camLenses(t);
+  if (!live()) return end();
+  if ((SC.zoom || 1) < 1 && !uw) {
+    if (SC.hw) { try { await t.applyConstraints({ advanced:[{ zoom:SC.hw.ultra }] }); } catch (e) { camUltraFail(); } }
+    else SC.zoom = 1;
+    if (!live()) return end();
+  }
+  SC.stream = stream; attachCamera(); camZoomPaint();
 }
-function stopCamera(){ if (SC.stream) { SC.stream.getTracks().forEach(t => t.stop()); SC.stream = null; } }
+function stopCamera(){ SC.camRun = (SC.camRun || 0) + 1; if (SC.stream) { SC.stream.getTracks().forEach(t => t.stop()); SC.stream = null; } }
 function attachCamera(){
   const v = $('#camVideo'); if (!v || !SC.stream) return;
   v.srcObject = SC.stream; v.play().catch(() => {});
-  v.classList.toggle('mirror', SC.facing === 'user');
+  v.classList.toggle('mirror', SC.facing === 'user'); v.classList.remove('busy');
   const w = $('#camWait'); if (w) w.hidden = true;
 }
+/* obiettivi: SC.zoom è lo zoom scelto nella pillola (0,5 · 1 · 2). Sotto 1 serve l'ultra grandangolo vero, mai un ritaglio:
+   - zoom hardware: sugli iPhone con Dual Wide o Triple Camera Safari apre il dispositivo virtuale e WebKit espone
+     zoom.min 0,5 (1 = grandangolo normale), quindi basta applyConstraints({ zoom:0.5 }) sullo stesso stream;
+   - altrimenti la fotocamera posteriore «ultra grandangolare» separata (riconosciuta dal nome, che c'è solo dopo il permesso).
+   Il 2× resta lo zoom digitale (video ingrandito + ritaglio nello scatto). Lo zoom si azzera a ogni apertura dello scanner. */
+const ULTRA_RE = /ultra|超广角|超廣角|超広角|초광각/i, FRONT_RE = /front|anterior|frontal|avant|vorder|前|전면/i;
+const camDigital = () => Math.max(1, SC.zoom || 1);   // con l'ultra grandangolo lo zoom digitale è 1
+const camZoomTxt = z => String(+z.toFixed(1)).replace('.', ',') + '×';
+async function camLenses(t){
+  SC.hw = null;
+  if (!t || SC.facing === 'user') return;
+  const caps = t.getCapabilities ? t.getCapabilities() : {}, set = t.getSettings ? t.getSettings() : {};
+  const base = set.zoom || 1;
+  if (caps.zoom && caps.zoom.min < base - .05) { SC.hw = { base, ultra:Math.max(caps.zoom.min, base / 2) }; return; }
+  if (SC.uwId !== undefined) return;   // la ricerca per nome si fa una volta sola per sessione
+  try {
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const d = devs.find(x => x.kind === 'videoinput' && x.deviceId && x.deviceId !== set.deviceId && ULTRA_RE.test(x.label) && !FRONT_RE.test(x.label));
+    SC.uwId = d ? d.deviceId : null;
+  } catch (e) { SC.uwId = null; }
+}
+function camZooms(){
+  const u = SC.facing === 'user' ? 0 : SC.hw ? SC.hw.ultra / SC.hw.base : SC.uwId ? .5 : 0;
+  return u ? [u, 1, 2] : [1, 2];
+}
+function camZoomPill(){
+  return camZooms().map(z => {
+    const on = Math.abs(z - (SC.zoom || 1)) < .01, t = camZoomTxt(z);
+    return `<button class="${on ? 'on' : ''}" data-a="cam-zoom" data-z="${z}" aria-pressed="${on}" aria-label="${z < 1 ? 'Grandangolo' : 'Zoom'} ${t}">${t}</button>`;
+  }).join('');
+}
+function camZoomPaint(){
+  const p = $('#camZoom'), v = $('#camVideo');
+  if (v) v.style.setProperty('--z', camDigital());
+  if (!p) return;
+  const k = camZooms().join();
+  if (p.dataset.k !== k) { p.dataset.k = k; p.innerHTML = camZoomPill(); return; }
+  p.querySelectorAll('button').forEach(b => { const on = Math.abs(+b.dataset.z - (SC.zoom || 1)) < .01; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+function camWaitShow(txt){
+  const w = $('#camWait'), v = $('#camVideo');
+  if (w) { w.textContent = txt; w.hidden = false; }
+  if (v) v.classList.add('busy');
+}
+function camUltraFail(){
+  SC.hw = null; SC.uwId = null; SC.onUw = false; SC.zoom = 1; camZoomPaint();
+  toast('Grandangolo non disponibile: torno a 1×', true);
+}
+async function camSetZoom(z){
+  const was = SC.zoom || 1; if (!z || Math.abs(z - was) < .01) return;
+  SC.zoom = z; camZoomPaint();
+  if (SC.facing === 'user' || (was < 1) === (z < 1)) return;   // 1× ↔ 2× è solo digitale
+  const t = SC.stream && SC.stream.getVideoTracks()[0];
+  if (SC.hw && !SC.onUw) {
+    if (!t) return;   // lo stream sta partendo: lo zoom scelto lo applica startCamera
+    try { await t.applyConstraints({ advanced:[{ zoom:z < 1 ? SC.hw.ultra : SC.hw.base }] }); }
+    catch (e) { if (z < 1) camUltraFail(); }
+    return;
+  }
+  // obiettivo separato: si chiude lo stream di prima e si apre l'altro (mai due fotocamere accese insieme)
+  camWaitShow('Cambio obiettivo…'); stopCamera(); startCamera();
+}
 async function snapCamera(){
-  const v = $('#camVideo'); if (!v || !v.videoWidth) return;
+  // durante «Cambio obiettivo…» (o senza stream) niente scatto: si catturerebbe un fotogramma vecchio o nero
+  const v = $('#camVideo'); if (!v || !v.videoWidth || !SC.stream || v.classList.contains('busy')) return;
   const f = $('#camFlash'); if (f) { f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
-  // ritaglia esattamente ciò che vedi nel mirino (object-fit: cover + zoom)
+  // ritaglia esattamente ciò che vedi nel mirino (object-fit: cover + zoom digitale; l'ultra grandangolo è già nel video)
   const vw = v.videoWidth, vh = v.videoHeight, ew = v.clientWidth, eh = v.clientHeight;
-  const sc = Math.max(ew / vw, eh / vh), z = SC.zoom || 1;
+  const sc = Math.max(ew / vw, eh / vh), z = camDigital();
   const cw = ew / sc / z, ch = eh / sc / z;
   const c = document.createElement('canvas'); c.width = Math.round(cw); c.height = Math.round(ch);
   c.getContext('2d').drawImage(v, (vw - cw) / 2, (vh - ch) / 2, cw, ch, 0, 0, c.width, c.height);
@@ -1369,11 +1457,11 @@ function renderCamera(){
   scanner.innerHTML = `<div class="cam">
     <div class="cam-top"><button class="close-btn" data-a="scan-close" aria-label="Chiudi">${I.x}</button><span class="pill">${esc(mealByK(SC.meal).l)}</span><span></span></div>
     <div class="cam-view">
-      <video id="camVideo" playsinline muted autoplay style="--z:${SC.zoom || 1}"></video>
+      <video id="camVideo" playsinline muted autoplay style="--z:${camDigital()}"></video>
       <div class="cam-wait" id="camWait" ${SC.stream ? 'hidden' : ''}>Avvio la fotocamera…</div>
       <div class="cam-guide"><i></i><i></i><i></i><i></i></div>
       <div class="cam-hint ios-glass">Inquadra tutto il piatto dall'alto</div>
-      <div class="cam-zoom ios-glass">${[1, 2].map(z => `<button class="${(SC.zoom || 1) === z ? 'on' : ''}" data-a="cam-zoom" data-z="${z}" aria-label="Zoom ${z}x">${z}×</button>`).join('')}</div>
+      <div class="cam-zoom ios-glass" id="camZoom" role="group" aria-label="Zoom" data-k="${camZooms().join()}">${camZoomPill()}</div>
       <div class="cam-flash" id="camFlash"></div>
     </div>
     <div class="cam-bottom">
@@ -1404,16 +1492,17 @@ function renderScanner(){
     </div></div>
     <div class="status" id="scanStatus">${status}</div>
     <div class="status-sub" id="scanSub">${sub}</div>
-    ${st === 'scanning' ? `<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="scanProg"><div class="prog-pct" id="scanPct">${Math.round(SC.pctShown || 0)}%</div><div class="prog-bar"><i id="scanBar" style="width:${SC.pctShown || 0}%"></i></div></div>` : ''}
+    ${st === 'scanning' ? `<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="scanProg"><div class="prog-pct" id="scanPct">${Math.round(SC.pctShown || 0)}%</div><div class="prog-bar"><i id="scanBar" style="width:${SC.pctShown || 0}%"></i></div></div><p class="scan-wait ${attesaClass()}" id="scanWait" role="status" aria-live="polite">${attesaText()}</p>` : ''}
     <div class="scan-actions">
       ${st === 'idle' ? `<button class="btn primary" data-a="pick-photo">${I.camera} Scatta o scegli una foto</button><button class="btn tinted" data-a="scan-describe">Descrivi a parole</button>` : ''}
       ${st === 'describe' ? `<textarea id="scanDesc" class="scan-desc" rows="3" maxlength="400" placeholder="Es. un piatto di pasta al pomodoro, una mela e un bicchiere di latte">${esc(SC.desc || '')}</textarea><button class="btn primary" data-a="scan-desc-go">${I.spark} Analizza</button>${canCamera() ? `<button class="btn tinted" data-a="scan-again">Torna alla fotocamera</button>` : ''}` : ''}
-      ${st === 'scanning' ? `<button class="btn tinted" data-a="scan-stop">Annulla</button>` : ''}
+      ${st === 'scanning' ? `<button class="btn primary scan-wait-btn" id="scanWaitBtn" data-a="scan-wait-describe" ${SC.waitLvl >= 2 ? '' : 'hidden'}>Descrivi a parole</button><button class="btn tinted" data-a="scan-stop">Annulla</button>` : ''}
       ${st === 'error' ? `<button class="btn primary" data-a="scan-again">${I.camera} Riprova</button><button class="btn tinted" data-a="scan-describe">Descrivi a parole</button><button class="btn tinted" data-a="scan-manual">Cerca nell'elenco</button>` : ''}
     </div>
   </div>
   <div class="result" id="scanResult"></div>`;
   if (st === 'describe') setTimeout(() => $('#scanDesc')?.focus(), 350);
+  if (st !== 'scanning') attesaStop();
 }
 const STATUS_STEPS = ['Analizzo forme e colori', 'Riconosco gli ingredienti', 'Stimo le porzioni', 'Calcolo i nutrienti'];
 async function prepImage(file){
@@ -1971,6 +2060,7 @@ const TIPS = {
 };
 /* progress: the number follows the real work and never goes backwards */
 function setPct(target, sub){
+  if (target > (SC.realPct || 0)) { SC.realPct = target; SC.waitAt = Date.now(); }   // avanzamento vero (non la corsa lenta di SC.creep): serve a capire se l'analisi è ferma
   SC.pctTarget = Math.max(SC.pctTarget || 0, Math.min(100, target));
   if (sub && sub !== SC.sub) { SC.sub = sub; swapText($('#scanSub'), sub); }
   if (!SC.pctRaf) SC.pctRaf = setTimeout(tickPct, 30);
@@ -1986,6 +2076,59 @@ function tickPct(){
   $('#scanProg')?.setAttribute('aria-valuenow', n);
   if (SC.state === 'scanning' && (SC.pctShown < tgt || SC.creep)) SC.pctRaf = setTimeout(tickPct, 30);
 }
+/* «Non chiudere questa schermata»: compare con calma dopo qualche secondo; se l'avanzamento vero si ferma diventa un avviso più chiaro,
+   poi dice cosa fare. Non chiude mai nulla da solo. Tiene lo schermo acceso (Wake Lock) finché l'analisi dura. */
+const ATTESA = [
+  'Non chiudere questa schermata.',
+  'Ci vuole un po’ più del solito. Non chiudere questa schermata: sto ancora lavorando.',
+  'Sembra ferma. Aspetta ancora un momento; se non riparte, tocca Annulla e riprova, oppure descrivi il piatto a parole.'
+];
+const attesaText = () => SC.waitLvl >= 0 ? ATTESA[SC.waitLvl] : '';
+const attesaClass = () => SC.waitLvl >= 0 ? 'in' + (SC.waitLvl ? ' warn' : '') + (SC.waitLvl > 1 ? ' hard' : '') : '';
+function attesaLevel(){
+  const now = Date.now(), tot = now - SC.waitT0, stall = now - SC.waitAt;
+  if (stall >= 25000) return 2;
+  if (stall >= 6000 || tot >= 40000) return 1;
+  return tot >= 2500 ? 0 : -1;
+}
+function attesaTick(){
+  if (!SC.waitTimer) return;
+  if (SC.state !== 'scanning' || SC.run !== SC.waitRun) return attesaStop();   // analisi finita, annullata o scanner chiuso
+  const lvl = attesaLevel(); if (lvl === SC.waitLvl) return;
+  const had = SC.waitLvl >= 0; SC.waitLvl = lvl;
+  const el = $('#scanWait'); if (!el) return;
+  el.className = 'scan-wait ' + attesaClass();
+  const wb = $('#scanWaitBtn'); if (wb) wb.hidden = lvl < 2;
+  if (had && lvl >= 0) swapText(el, attesaText()); else el.textContent = attesaText();
+}
+function attesaStart(run){
+  attesaStop();
+  SC.waitT0 = SC.waitAt = Date.now(); SC.waitRun = run; SC.waitLvl = -1; SC.realPct = 0;
+  SC.waitTimer = setInterval(attesaTick, 500);
+  attesaLock();
+}
+function attesaStop(abort){
+  // analisi lasciata dopo un lungo stallo con il modello non pronto: la promessa appesa non deve ripresentarsi al tentativo dopo, che riparte dal processore
+  // (a ogni uscita con il modello non pronto si azzera modelP, così il tentativo dopo riparte da capo; il ripiego sul processore solo dopo uno stallo lungo)
+  if (abort && SC.waitTimer && !SCANM) {
+    modelP = null;
+    if (Date.now() - SC.waitAt >= 25000) { try { localStorage.setItem('piattino-gl-' + APP_VERSION, 'cpu'); } catch (e) {} }
+  }
+  if (SC.waitTimer) { clearInterval(SC.waitTimer); SC.waitTimer = 0; }
+  SC.waitLvl = -1; attesaUnlock();
+}
+async function attesaLock(){
+  if (!navigator.wakeLock || SC.wakeBusy || SC.wake) return;
+  SC.wakeBusy = true;
+  try {
+    const w = await navigator.wakeLock.request('screen');
+    if (!SC.waitTimer) { w.release().catch(() => {}); } else { SC.wake = w; w.addEventListener('release', () => { if (SC.wake === w) SC.wake = null; }); }
+  } catch (e) {}
+  SC.wakeBusy = false;
+}
+function attesaUnlock(){ const w = SC.wake; SC.wake = null; if (w) w.release().catch(() => {}); }
+// il blocco schermo o il cambio di app rilasciano il Wake Lock da soli: al ritorno lo richiedo di nuovo se l'analisi è ancora in corso
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && SC.waitTimer && SC.state === 'scanning') attesaLock(); });
 const waitPct = v => new Promise(res => { const t0 = Date.now(); (function chk(){ if ((SC.pctShown || 0) >= v - .5 || Date.now() - t0 > 1500 || SC.state !== 'scanning') res(); else setTimeout(chk, 40); })(); });
 
 async function handlePhoto(file){
@@ -2002,7 +2145,7 @@ async function runScan(){
   const run = SC.run = (SC.run || 0) + 1;
   const fromText = !!SC.desc;
   Object.assign(SC, { items:[], tip:'', sub:'', pctShown:0, pctTarget:0, creep:0, est:null, emb:null, scanTop:null });
-  SC.state = 'scanning'; renderScanner();
+  SC.state = 'scanning'; attesaStart(run); renderScanner();
   const t0 = Date.now();
   let items = [], dish = 0, failed = false;
   try {
@@ -2021,6 +2164,7 @@ async function runScan(){
   } catch (e) { failed = true; console.error(e); }
   SC.creep = 0;
   if (run !== SC.run || SC.state !== 'scanning') return;
+  attesaStop();
   setPct(100, failed ? '' : 'Fatto');
   await waitPct(100);
   const min = fromText ? 1200 : 1600; if (Date.now() - t0 < min) await sleep(min - (Date.now() - t0));
@@ -2154,8 +2298,8 @@ const actions = {
   scan: () => { S.date = S.date || todayKey(); openScanner(); },
   'scan-close': () => closeScanner(),
   'cam-shot': () => snapCamera(),
-  'cam-zoom': el => { SC.zoom = +el.dataset.z; const v = $('#camVideo'); if (v) v.style.setProperty('--z', SC.zoom); document.querySelectorAll('.cam-zoom button').forEach(b => b.classList.toggle('on', +b.dataset.z === SC.zoom)); },
-  'cam-flip': () => { SC.facing = SC.facing === 'user' ? 'environment' : 'user'; stopCamera(); const w = $('#camWait'); if (w) w.hidden = false; startCamera(); },
+  'cam-zoom': el => camSetZoom(+el.dataset.z),
+  'cam-flip': () => { SC.facing = SC.facing === 'user' ? 'environment' : 'user'; if ((SC.zoom || 1) < 1) SC.zoom = 1; SC.hw = null; SC.onUw = false; stopCamera(); camWaitShow('Avvio la fotocamera…'); camZoomPaint(); startCamera(); },
   'scan-again': () => { SC.run = (SC.run || 0) + 1; Object.assign(SC, { img:null, desc:'', items:[] }); SC.state = canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); else actions['pick-photo'](); },
   'res-portion': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.grams = el.dataset.g ? +el.dataset.g : Math.max(5, Math.round(x.base * +el.dataset.f / 5) * 5); renderResult(); },
   export: () => exportData(),
@@ -2184,7 +2328,8 @@ const actions = {
   'import-yes': () => { const d = S.pendingImport; if (!d) return; S.profile = d.profile; S.days = d.days || {}; S.foods = d.foods || []; S.weights = d.weights || []; S.pendingImport = null; Store.saveNow(); S.view = 'today'; S.date = todayKey(); render(); window.scrollTo(0, 0); toast('Backup importato'); },
   'scan-describe': () => { stopCamera(); SC.state = 'describe'; renderScanner(); },
   'scan-desc-go': () => { const t = ($('#scanDesc')?.value || '').trim(); if (!t) { $('#scanDesc')?.focus(); return; } SC.desc = t.slice(0, 400); runScan(); },
-  'scan-stop': () => { SC.run = (SC.run || 0) + 1; SC.img = null; SC.state = SC.desc ? 'describe' : canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); },
+  'scan-wait-describe': () => { SC.run = (SC.run || 0) + 1; attesaStop(true); SC.img = null; SC.state = 'describe'; renderScanner(); },
+  'scan-stop': () => { SC.run = (SC.run || 0) + 1; attesaStop(true); SC.img = null; SC.state = SC.desc ? 'describe' : canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); },
   'pick-photo': () => { stopCamera(); const inp = $('#photoInput'); inp.value = ''; inp.click(); },
   'scan-manual': () => { const thumb = SC.thumb, emb = SC.emb; closeScanner(); openAdd(SC.meal); A.pendingThumb = thumb; A.pendingEmb = emb; },
   'res-toggle': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.on = !x.on; if (x.on && x.grp) SC.items.forEach(i => { if (i !== x && i.grp) i.on = false; }); SC.touched = true; renderResult(); },
@@ -2289,8 +2434,24 @@ function checkWhatsNew(force = false) {
       openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
         <div class="card pad">
+          <div class="meal-name">Fotocamera con il grandangolo</div>
+          <div class="small muted" style="margin-top:4px">Nuovo zoom 0,5× con il grandangolo, quando l'iPhone ce l'ha: per inquadrare tutto il piatto anche da vicino.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">«Non chiudere questa schermata»</div>
+          <div class="small muted" style="margin-top:4px">Mentre Piattino analizza la foto ti ricorda di non chiudere la schermata. Se l'analisi sembra ferma, ti dice cosa fare e compare il pulsante «Descrivi a parole»; lo schermo resta acceso così l'iPhone non si blocca a metà.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Nuova animazione di ricaricamento</div>
+          <div class="small muted" style="margin-top:4px">Quando ricarichi l'app, il piattino si riempie con i tre bocconi per meno di un secondo, poi lascia il posto ai tuoi dati. Se torni dopo più di 10 minuti ritrovi la firma completa.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Barra in basso e scanner più precisi</div>
+          <div class="small muted" style="margin-top:4px">L'indicatore della sezione non esce più dal bordo, e lo scanner aperto copre tutto lo schermo senza angoli che lasciano vedere sotto.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
           <div class="meal-name">Su misura per lo schermo del tuo iPhone</div>
-          <div class="small muted" style="margin-top:4px">Nell'app installata, la barra delle schede, il pulsante «Cosa faccio ora?» e la barra «Aggiungi» dello scanner seguono la curva degli angoli dello schermo, con lo stesso margine sui lati e in basso. Lo scanner si apre e si chiude con gli angoli arrotondati come il display.</div>
+          <div class="small muted" style="margin-top:4px">Nell'app installata, la barra delle schede, il pulsante «Cosa faccio ora?» e la barra «Aggiungi» dello scanner seguono la curva degli angoli dello schermo, con lo stesso margine sui lati e in basso.</div>
         </div>
         <div class="card pad" style="margin-top:12px">
           <div class="meal-name">Scansione della foto più affidabile</div>
@@ -2318,13 +2479,14 @@ const st = Store.load();
 S.profile = st.profile; S.days = st.days; S.foods = st.foods; S.weights = st.weights; S.chat = st.chat;
 render();
 // Avvio. Prima apertura della sessione: la firma (icona con molla, nome, piattino che si riempie) resta circa un secondo,
-// poi si allarga e svanisce mentre i contenuti entrano a cascata. Ricaricamento (launch.js ha già tolto la firma):
-// lo scheletro di index.html lascia il posto ai contenuti con la stessa cascata, senza schermata intera.
-const bootIn = first => {
+// poi si allarga e svanisce mentre i contenuti entrano a cascata. Ricaricamento (launch.js ha messo .launch-quick su <html>):
+// resta solo il piattino che si riempie (~0,6 s), poi si dissolve mentre i contenuti entrano con una cascata più corta.
+// veiled: i contenuti entrano da sotto la firma (completa o breve), che con Riduci movimento fa già da dissolvenza.
+const bootIn = (first, veiled = first) => {
   const bar = $('#tabbar'), fab = $('#coachFab');
   if (reduceMotion()) {
     // solo una dissolvenza (le animazioni sono spente: si usa una transizione)
-    if (!first) { app.style.opacity = '0'; void app.offsetWidth; app.style.transition = 'opacity .25s ease'; app.style.opacity = ''; setTimeout(() => { app.style.transition = ''; }, 300); }
+    if (!veiled) { app.style.opacity = '0'; void app.offsetWidth; app.style.transition = 'opacity .25s ease'; app.style.opacity = ''; setTimeout(() => { app.style.transition = ''; }, 300); }
     return;
   }
   if (!S.profile) {
@@ -2343,6 +2505,19 @@ const bootIn = first => {
   const el = $('#launch');
   if (!el) { bootIn(false); return; }
   try { sessionStorage.setItem('piattino-launch', '1'); } catch (e) {}
+  const root = document.documentElement;
+  if (root.classList.contains('launch-quick')) {
+    // firma breve: resta finché il terzo boccone è atterrato (~0,6 s dall'apertura, ~0,4 s con Riduci movimento), contando
+    // il tempo già passato a caricare; se app.js arriva più tardi si dissolve subito. Poi velo e cascata partono insieme.
+    const wait = Math.max(0, (reduceMotion() ? 400 : 620) - performance.now());
+    setTimeout(() => {
+      // se si è aspettato, gli anelli ripartono da vuoti sotto gli occhi (sotto il velo sarebbero già pieni)
+      if (wait && S.profile) { S.ringPrev = {}; for (const k in numPrev) delete numPrev[k]; for (const k in fillPrev) delete fillPrev[k]; render(); }
+      void el.offsetWidth; el.classList.add('out'); setTimeout(() => { el.remove(); root.classList.remove('launch-quick'); }, 440);
+      bootIn(false, true);
+    }, wait);
+    return;
+  }
   let done = false;
   const close = () => {
     if (done) return; done = true; el.classList.add('out'); setTimeout(() => el.remove(), 440);
@@ -2354,6 +2529,11 @@ const bootIn = first => {
   const at = reduceMotion() ? 750 : 1100;
   setTimeout(close, Math.max(150, at - performance.now())); el.addEventListener('click', close);
 })();
+// quando l'app esce di vista (background, ricaricamento, chiusura) se ne annota l'ora: launch.js la usa per scegliere
+// tra firma completa (assente da più di 10 minuti) e firma breve
+const markSeen = () => { try { localStorage.setItem('piattino-seen-at', String(Date.now())); } catch (e) {} };
+window.addEventListener('pagehide', markSeen);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') markSeen(); });
 // Prima di ricaricare per un aggiornamento: un velo con «Aggiornamento…» per un attimo, invece di un ricaricamento secco.
 // Se l'app non è in primo piano nessuno lo vedrebbe: si ricarica subito.
 function showUpdating(then){
