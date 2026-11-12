@@ -62,6 +62,7 @@ Alla prima scansione l'app scarica PiattinoScan (circa 4,5 MB, con la percentual
 | `config.js` | Tutte le formule e le soglie, con le fonti: metabolismo, livelli di attività, limiti di sicurezza, intervalli plausibili, segnali di rischio |
 | `targets.js` | Calcolo degli obiettivi giornalieri, storico e andamento del peso, proposta di rivedere l'obiettivo, segnali di rischio (funzioni pure) |
 | `migrate.js` | Formato dei dati salvati e dei backup, migrazione dalle versioni precedenti |
+| `foods.js` | Elenco degli alimenti con i valori per 100 g (fonti: CREA e, dove manca, USDA) |
 | `tests/` | Test senza dipendenze: `node --test` (Node 22 o più recente) |
 | `launch.js` | Piccolo script che sceglie la firma d'avvio (completa o breve) prima del primo fotogramma |
 | `CLAUDE.md` | Regole del progetto (numerazione delle versioni, priorità di prodotto) |
