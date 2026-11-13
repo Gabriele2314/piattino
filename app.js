@@ -768,7 +768,7 @@ function weightChart(target){
   const say = `Andamento del peso: ${fmt1(pts[0].kg)} kg il ${dayMonth(pts[0].d)}, ${fmt1(last.kg)} kg il ${dayMonth(last.d)}${target ? `. Obiettivo ${fmt1(target)} kg` : ''}`;
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(say)}">
     ${[lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" style="stroke:var(--separator-opaque)"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${fmt1(v)}</text>`).join('')}
-    ${target ? `<line x1="${L}" x2="${W - R}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" style="stroke:var(--system-green)" stroke-dasharray="5 4"/><text x="${W - R}" y="${(y(target) - 5).toFixed(1)}" text-anchor="end">obiettivo ${fmt1(target)}</text>` : ''}
+    ${target ? `<line x1="${L}" x2="${W - R}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" style="stroke:var(--toggle-on)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="${W - R}" y="${(y(target) - 5).toFixed(1)}" text-anchor="end">obiettivo ${fmt1(target)}</text>` : ''}
     <polyline points="${line}" fill="none" style="stroke:var(--system-blue)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     <circle cx="${x(last.d).toFixed(1)}" cy="${y(last.kg).toFixed(1)}" r="4.5" style="fill:var(--system-blue);stroke:var(--bg-grouped-secondary)" stroke-width="2"/>
     <text x="${L}" y="${H - 6}">${esc(parseKey(pts[0].d).toLocaleDateString('it-IT', { day:'numeric', month:'short' }))}</text>
