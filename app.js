@@ -1,3 +1,11 @@
+import { CONFIG } from './config.js';
+import { clamp, dkey, parseKey, addDays, todayKey, ageOf, tierOf, targets, normSex, minHealthyKg, bmiOf, checkBody, maxRate, rateOptions, defaultRate,
+  addWeight, weightJump, weightTrend as trendOf, goalReview, coachData, riskSignals, journeyText } from './targets.js';
+import { migrate, readBackup, toBackup } from './migrate.js';
+import { FOODS } from './foods.js';
+import { estimateFromPixels } from './portion.js';
+import { SCAN, SCAN_URL } from './scan.js';
+
 (() => {
 'use strict';
 
@@ -5,19 +13,14 @@
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = n => Math.round(Number(n) || 0).toLocaleString('it-IT');
+const fmt2 = n => (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('it-IT');
 const fmt1 = n => (Math.round((Number(n) || 0) * 10) / 10).toLocaleString('it-IT');
-const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const rid = () => crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 12) : Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
-const pad2 = n => String(n).padStart(2, '0');
-const dkey = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-const parseKey = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
-const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate() + n); return dkey(d); };
-const todayKey = () => dkey(new Date());
 const longDate = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
 const shortDay = k => parseKey(k).toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
 const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const APP_VERSION = '4.0.0';
+const APP_VERSION = '4.2.0';
 
 const I = {
   // icone delle tab: le parti .f si riempiono e le .cut si ritagliano quando la tab è selezionata
@@ -51,96 +54,7 @@ const I = {
   camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.5-2h4.4l1.5 2h1.8A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg>',
 };
 
-/* ---------- food database (per 100 g) ---------- */
-// key, nome, icona (chiave di icons/kit-*.js), kcal, proteine, carboidrati, grassi, porzione (g), frutta/verdura
-const FOODS = [
-['mela','Mela','mela',52,0.3,14,0.2,150,1],['banana','Banana','banana',89,1.1,23,0.3,120,1],['arancia','Arancia','arancia',47,0.9,12,0.1,150,1],
-['kiwi','Kiwi','kiwi',61,1.1,15,0.5,100,1],['fragole','Fragole','fragola',32,0.7,7.7,0.3,150,1],['bosco','Frutti di bosco','mirtilli',45,1,10,0.4,100,1],
-['pera','Pera','pera',57,0.4,15,0.1,150,1],['uva','Uva','uva',69,0.7,18,0.2,150,1],['anguria','Anguria','anguria',30,0.6,8,0.2,250,1],
-['pesca','Pesca','pesca',39,0.9,10,0.3,150,1],['pomodori','Pomodori','pomodoro',18,0.9,3.9,0.2,150,1],['insalata','Insalata mista','insalata',17,1.3,3,0.2,100,1],
-['carote','Carote','carota',41,0.9,10,0.2,100,1],['zucchine','Zucchine','zucchina',17,1.2,3.1,0.3,150,1],['broccoli','Broccoli','broccolo',34,2.8,7,0.4,150,1],
-['spinaci','Spinaci','spinaci',23,2.9,3.6,0.4,150,1],['minestrone','Minestrone di verdure','minestrone',45,2,7,1,300,1],['avocado','Avocado','avocado',160,2,9,15,70,1],
-['patate','Patate lesse','patata',87,1.9,20,0.1,200,0],['patatine','Patatine fritte','patatine',312,3.4,41,15,100,0],
-['pasta','Pasta (cruda)','pasta',353,12,71,1.5,80,0],['pastaint','Pasta integrale (cruda)','pasta',340,13,66,2.5,80,0],['riso','Riso (crudo)','riso',358,7,79,0.6,70,0],
-['pastapom','Pasta al pomodoro (piatto)','pasta',135,4.5,24,2.5,300,0],['pizza','Pizza margherita','pizza',250,11,31,9,300,0],['lasagne','Lasagne','lasagne',165,9,14,8,300,0],
-['pane','Pane','pane',265,9,49,3.2,50,0],['paneint','Pane integrale','pane',247,13,41,3.4,50,0],['crackers','Crackers integrali','cracker',430,10,70,11,25,0],
-['fette','Fette biscottate','fette',410,11,75,6,30,0],['avena','Fiocchi d\'avena','cereali',372,13,60,7,40,0],['muesli','Muesli','cereali',370,10,64,7,40,0],
-['biscotti','Biscotti','biscotti',450,7,70,16,30,0],['cornetto','Cornetto','cornetto',410,8,45,22,60,0],
-['latte','Latte parz. scremato','latte',46,3.4,5,1.6,200,0],['latteint','Latte intero','latte',64,3.3,4.8,3.6,200,0],['soia','Bevanda di soia','bevanda-vegetale',40,3.3,2.5,1.8,200,0],
-['yogurt','Yogurt bianco','yogurt',61,3.5,4.7,3.3,125,0],['greco','Yogurt greco 0%','yogurt',57,10,4,0.4,150,0],
-['mozzarella','Mozzarella','mozzarella',253,18,1,20,80,0],['parmigiano','Parmigiano','formaggio',392,33,0,28,15,0],['ricotta','Ricotta','formaggio',146,9,3.5,11,100,0],
-['uova','Uova','uovo',143,12.6,0.7,9.5,120,0],['pollo','Petto di pollo (cotto)','pollo',165,31,0,3.6,120,0],['manzo','Manzo magro','bistecca',187,26,0,9,120,0],
-['burger','Panino hamburger','hamburger',254,13,30,9,200,0],['crudo','Prosciutto crudo','prosciutto',250,26,0,16,50,0],['cotto','Prosciutto cotto','prosciutto',138,20,1,6,50,0],
-['bresaola','Bresaola','prosciutto',151,32,0.5,2.6,50,0],['salmone','Salmone','salmone',206,22,0,13,150,0],['tonno','Tonno sgocciolato','tonno',190,25,0,10,80,0],
-['merluzzo','Merluzzo','pesce',82,18,0,0.7,150,0],['gamberi','Gamberi','gamberi',99,24,0.2,0.3,100,0],
-['ceci','Ceci (cotti)','ceci',164,9,27,2.6,150,0],['lenticchie','Lenticchie (cotte)','lenticchie',116,9,20,0.4,150,0],['fagioli','Fagioli (cotti)','fagioli',127,8.7,23,0.5,150,0],
-['tofu','Tofu','tofu',76,8,1.9,4.8,100,0],['hummus','Hummus','hummus',166,8,14,10,50,0],
-['olio','Olio extravergine','olio',884,0,0,100,10,0],['burro','Burro','burro',717,0.9,0.1,81,10,0],['mandorle','Mandorle','mandorle',579,21,22,50,20,0],
-['noci','Noci','noci',654,15,14,65,20,0],['arachidi','Burro di arachidi','arachidi',588,25,20,50,20,0],['miele','Miele','miele',304,0.3,82,0,10,0],
-['marmellata','Marmellata','marmellata',250,0.4,60,0,20,0],['fondente','Cioccolato fondente','cioccolato',546,5,60,31,20,0],['gelato','Gelato','gelato',207,3.5,24,11,100,0],
-['succo','Succo di frutta','succo',45,0.2,11,0,200,0],
-['limone','Limone','limone',29,1.1,9,0.3,50,1],['fichi','Fichi','fico',74,0.8,19,0.3,100,1],['ananas','Ananas','ananas',50,0.5,13,0.1,150,1],
-['melagrana','Melagrana','melagrana',83,1.7,19,1.2,100,1],['frutta','Frutta mista','frutta',50,0.6,12,0.2,150,1],['cavolfiore','Cavolfiore','cavolfiore',25,1.9,5,0.3,150,1],
-['cetrioli','Cetrioli','cetriolo',15,0.7,3.6,0.1,100,1],['peperoni','Peperoni','peperone',26,1,6,0.3,150,1],['funghi','Funghi','fungo',22,3.1,3.3,0.3,100,1],
-['cavolo','Cavolo','cavolo',25,1.3,5.8,0.1,150,1],['carciofi','Carciofi','carciofo',47,3.3,10.5,0.2,150,1],['zucca','Zucca','zucca',26,1,6.5,0.1,200,1],
-['mais','Mais','mais',86,3.3,19,1.4,80,0],['pure','Purè di patate','patata',106,2,15,4.2,200,0],['guacamole','Guacamole','avocado',157,2,8.5,14.7,60,0],
-['carbonara','Pasta alla carbonara (piatto)','pasta',190,8,22,8,300,0],['hotdog','Hot dog','hotdog',290,10,24,17,150,0],['burrito','Burrito','burrito',206,9,25,8,250,0],
-['bagel','Bagel','bagel',250,10,49,1.5,90,0],['pretzel','Pretzel','pretzel',338,8,70,3,60,0],['polpettone','Polpettone','polpette',200,15,8,12,150,0],
-['pasticcio','Pasticcio al forno','lasagne',250,7,22,15,200,0],['dolce','Dolce al cucchiaio','budino',200,4,25,9,120,0],['brodo','Brodo','zuppa',15,1.5,1,0.5,300,0],
-['stufato','Spezzatino','spezzatino',110,9,6,5,300,0],['cioccolata','Cioccolata calda','cioccolata',90,3.5,12,3.5,200,0],['ghiacciolo','Ghiacciolo','ghiacciolo',80,0,20,0,70,0],
-['caffe','Caffè espresso','caffe',2,0.1,0,0,30,0],['bibita','Bibita zuccherata','bibita',42,0,10.6,0,330,0],['passata','Passata di pomodoro','pomodoro',30,1.3,5.5,0.2,100,0],
-['risozaff','Risotto allo zafferano','risotto',150,3.5,24,4.5,300,0],['risotto','Risotto','risotto',150,4,23,4.5,300,0],['risobianco','Riso in bianco (cotto)','riso',130,2.7,28,0.3,250,0],
-['risopom','Riso al pomodoro','riso',135,3,25,2.5,300,0],['pastapesto','Pasta al pesto (piatto)','pasta',190,6,26,7,300,0],['pastabianco','Pasta in bianco (piatto)','pasta',165,5.5,30,2.5,300,0],
-['polenta','Polenta','mais',85,2,18,0.5,250,0],['salsiccia','Salsiccia (cotta)','salsiccia',300,17,1,25,120,0],
-['melone','Melone','melone',34,0.8,8,0.2,200,1],['ciliegie','Ciliegie','ciliegie',63,1.1,16,0.2,150,1],['melanzane','Melanzane (cotte)','melanzana',35,0.8,8.7,0.2,150,1],
-['fagiolini','Fagiolini (cotti)','fagiolini',35,1.9,7.9,0.3,150,1],['pastafagioli','Pasta e fagioli','zuppa',110,5,17,2.5,300,0],['tortellini','Tortellini (piatto)','ravioli',200,8.5,26,7,200,0],
-['arancini','Arancini','arancino',220,6,27,10,170,0],['polpette','Polpette al sugo','polpette',200,14,7,13,150,0],['cotoletta','Cotoletta alla milanese','fritto',260,20,12,15,150,0],
-['parmigiana','Parmigiana di melanzane','melanzana',150,6,7,11,250,0],['formaggio','Formaggio stagionato','formaggio',380,26,1,30,50,0],['salame','Salame','salame',425,26,1,35,40,0],
-['focaccia','Focaccia','pane',330,7,45,13,100,0],['piadina','Piadina','piadina',330,7.5,50,11,110,0],['crostata','Crostata di marmellata','crostata',400,5,60,15,80,0],
-// cibi e bevande aggiunti nella 3.0 (valori per 100 g; per le bevande 100 ml)
-['mandarino','Mandarino','mandarino',72,0.9,17.6,0.3,80,1],['albicocche','Albicocche','albicocca',28,0.4,6.8,0.1,100,1],['prugne','Prugne','prugna',42,0.7,10,0.2,100,1],
-['mango','Mango','mango',53,1,12.6,0.2,150,1],['lamponi','Lamponi','lampone',36,1.2,8,0.5,100,1],['cachi','Cachi','cachi',65,0.6,16,0.3,150,1],
-['cocco','Cocco fresco','cocco',354,3.3,15,33,30,0],['papaya','Papaya','papaya',28,0.5,6.6,0.1,150,1],['melaverde','Mela verde','mela-verde',52,0.3,14,0.2,150,1],
-['mirtilli','Mirtilli','mirtilli',57,0.7,14,0.3,100,1],['datteri','Datteri secchi','frutta',282,2.5,75,0.4,30,0],['uvetta','Uvetta','uva',299,3,79,0.5,20,0],
-['finocchi','Finocchi','finocchio',9,1.2,1,0.2,150,1],['cipolla','Cipolla','cipolla',26,1,5.7,0.1,80,1],['piselli','Piselli','piselli',53,5.2,7.5,0.5,100,1],
-['asparagi','Asparagi','asparagi',24,3.6,2.1,0.2,150,1],['rucola','Rucola','rucola',28,2.6,3.7,0.4,30,1],['lattuga','Lattuga','lattuga',15,1.8,2.2,0.4,80,1],
-['cavolini','Cavolini di Bruxelles','cavolini',37,4.2,4.5,0.4,150,1],['ravanelli','Ravanelli','ravanelli',14,1.1,2,0.1,50,1],['bietole','Bietole (cotte)','spinaci',20,1.9,3,0.1,150,1],
-['radicchio','Radicchio','insalata',13,1.4,1.6,0.1,80,1],['sedano','Sedano','finocchio',16,1.2,2.4,0.2,80,1],['olive','Olive','olive',145,1,4,14,30,0],
-['patatearrosto','Patate al forno','patata',130,2.5,22,3.5,200,0],['couscous','Cous cous (cotto)','cous-cous',112,3.8,23,0.2,200,0],['farro','Farro (cotto)','cereali',130,5,25,1,200,0],
-['orzo','Orzo (cotto)','cereali',123,3.5,25,0.6,200,0],['quinoa','Quinoa (cotta)','cereali',120,4.4,21,1.9,150,0],['gnocchi','Gnocchi di patate','gnocchi',150,3.5,33,0.4,200,0],
-['gnocchipom','Gnocchi al pomodoro (piatto)','gnocchi',120,3.2,22,2.2,300,0],['ravioli','Ravioli ricotta e spinaci (piatto)','ravioli',190,7.5,25,6.5,200,0],['grissini','Grissini','grissini',433,12,72,11,25,0],
-['taralli','Taralli','cracker',430,9,62,16,30,0],['panesegale','Pane di segale','pane',250,8,48,1.5,50,0],['panecassetta','Pane in cassetta','fette',275,8,49,5,30,0],
-['cornflakes','Cereali da colazione','cereali',375,7,83,1,40,0],['pastaragu','Pasta al ragù (piatto)','pasta',165,7.5,22,5,300,0],['insalatariso','Insalata di riso (piatto)','riso',150,4,22,5,300,0],
-['sushi','Sushi (nigiri e maki)','sushi',145,5.5,28,1.5,150,0],['ramen','Ramen (piatto)','noodles',100,5,12,3.5,400,0],['kebab','Kebab (panino)','kebab',215,12,22,9,250,0],
-['tramezzino','Tramezzino','panino',240,8,25,12,100,0],['toast','Toast prosciutto e formaggio','toast',270,13,26,12,150,0],['zuppalegumi','Zuppa di legumi','zuppa',90,5,12,2.5,300,0],
-['falafel','Falafel','hummus',333,13,32,18,80,0],['tacchino','Petto di tacchino (cotto)','pollo',135,29,0,1.5,120,0],['maiale','Lonza di maiale (cotta)','bistecca',170,27,0,7,120,0],
-['vitello','Vitello (fettina cotta)','bistecca',165,26,0,6.5,120,0],['agnello','Agnello (cotto)','bistecca',230,25,0,15,120,0],['orata','Orata (cotta)','pesce',120,21,0,4,150,0],
-['branzino','Branzino','pesce',82,16.5,0,1.5,150,0],['pescespada','Pesce spada','pesce',120,19,0,4.5,150,0],['sgombro','Sgombro','pesce',180,19,0,12,120,0],
-['sardine','Sardine','pesce',135,21,0,5,100,0],['calamari','Calamari','calamaro',70,12,2,1.5,150,0],['cozze','Cozze','cozze',70,11,3,2,100,0],
-['vongole','Vongole','vongole',72,10,3,1.5,100,0],['mortadella','Mortadella','salame',311,15,1,28,40,0],['speck','Speck','prosciutto',303,29,0.5,20,40,0],
-['wurstel','Würstel','salsiccia',270,11,2,24,100,0],['frittata','Frittata','frittata',170,11,1.5,13,150,0],
-['bastoncini','Bastoncini di pesce','pesce',230,12,18,12,90,0],['nuggets','Nuggets di pollo','pollo',250,14,16,15,100,0],['stracchino','Stracchino','formaggio',300,18,2,24,50,0],
-['gorgonzola','Gorgonzola','formaggio',330,19,0,28,50,0],['feta','Feta','formaggio',264,14,4,21,50,0],['fiocchilatte','Fiocchi di latte','formaggio',98,11,3.4,4.3,100,0],
-['burrata','Burrata','mozzarella',300,14,1.5,27,100,0],['mascarpone','Mascarpone','formaggio',435,4.5,4,44,30,0],['scamorza','Scamorza','formaggio',334,25,1,25,50,0],
-['torta','Torta margherita','torta',390,5,55,16,80,0],['tiramisu','Tiramisù','tiramisu',280,5,30,16,120,0],['panettone','Panettone','panettone',333,6.5,53,10.5,80,0],
-['pandoro','Pandoro','pandoro',400,7,56,17,80,0],['cannolo','Cannolo siciliano','cannolo',340,7,38,17,90,0],['brioche','Brioche vuota','brioche',390,8,50,18,60,0],
-['ciambellone','Ciambellone','ciambella',390,6.5,56,16,70,0],['nutella','Crema spalmabile alla nocciola','crema-spalmabile',540,6,57,31,20,0],['merendina','Merendina','merendina',400,6,58,16,35,0],
-['barretta','Barretta di cereali','barretta',400,6,65,13,25,0],['popcorn','Popcorn','popcorn',390,12,77,5,30,0],['patatinebusta','Patatine in busta','patatine',536,6,53,33,30,0],
-['caramelle','Caramelle','caramelle',375,0,92,0.3,15,0],['pancake','Pancake','pancake',227,6,28,10,100,0],['cioccolatte','Cioccolato al latte','cioccolato',535,7.5,56,30,20,0],
-['budino','Budino','budino',120,3.5,20,3,125,0],['sorbetto','Sorbetto','ghiacciolo',130,0.3,32,0,100,0],['nocciole','Nocciole','nocciole',655,13.8,6,64.1,20,0],
-['pistacchi','Pistacchi','pistacchi',608,18,18,56,20,0],['anacardi','Anacardi','anacardi',575,18,30,46,20,0],['castagne','Castagne','castagne',165,2.5,36,1.5,80,0],
-['acqua','Acqua naturale','acqua',0,0,0,0,250,0],['acquafrizz','Acqua frizzante','acqua-frizzante',0,0,0,0,250,0],['acquasapore','Acqua aromatizzata','bottiglia-acqua',2,0,0.4,0,250,0],
-['te','Tè caldo (senza zucchero)','te',1,0,0.2,0,250,0],['tefreddo','Tè freddo (pesca o limone)','te-freddo',34,0,8.3,0,330,0],['tefreddozero','Tè freddo zero o senza zucchero','te-freddo',2,0,0.4,0,330,0],
-['tisana','Tisana (senza zucchero)','tisana',1,0,0.2,0,250,0],['caffelungo','Caffè lungo (americano)','caffe',2,0.1,0.2,0,120,0],['caffeorzo',"Caffè d'orzo",'caffe-orzo',3,0.1,0.6,0,100,0],
-['cappuccino','Cappuccino','cappuccino',45,2.6,3.9,1.9,150,0],['caffellatte','Caffellatte','cappuccino',44,2.9,4.2,1.7,250,0],['lattemacch','Latte macchiato','latte',48,3.1,4.4,1.8,200,0],
-['lattescrem','Latte scremato','latte',34,3.5,5,0.1,200,0],['lattecacao','Latte al cacao','cioccolata',72,3.2,10.5,1.8,200,0],['avenabev',"Bevanda d'avena",'bevanda-vegetale',45,1,6.5,1.5,200,0],
-['mandorlabev','Bevanda di mandorla','bevanda-vegetale',24,0.5,3,1.1,200,0],['risobev','Bevanda di riso','bevanda-vegetale',47,0.1,9.3,1,200,0],['kefir','Kefir','kefir',61,3.3,4.7,3.3,200,0],
-['yogurtbere','Yogurt da bere','yogurt',70,3.1,11.5,1.5,200,0],['spremuta',"Spremuta d'arancia",'spremuta',40,0.7,9,0.2,200,1],['ace','Succo ACE','succo',43,0.4,10,0.1,200,0],
-['centrifugato','Centrifugato di frutta e verdura','succo',38,0.7,8.5,0.2,250,1],['frullato','Frullato di frutta fresca','frullato',50,0.8,11,0.3,250,1],['smoothie','Smoothie frutta e yogurt','frullato',65,2,12,1,250,0],
-['milkshake','Frappè (milkshake)','milkshake',100,3.2,15.5,3,250,0],['cola','Cola','cola',42,0,10.6,0,330,0],['colazero','Cola zero o light','cola',1,0,0,0,330,0],
-['aranciata','Aranciata','aranciata',40,0,9.7,0,330,0],['limonata','Limonata gassata','limonata',38,0,9.2,0,330,0],['gassosa','Gassosa','bibita',30,0,7.4,0,330,0],
-['chinotto','Chinotto','chinotto',41,0,10,0,330,0],['tonica','Acqua tonica','tonica',34,0,8.5,0,200,0],['sportdrink','Sport drink (integratore salino)','sport-drink',26,0,6.2,0,500,0],
-].map(([key,name,icon,kcal,p,c,f,portion,fv]) => ({key,name,icon,kcal,p,c,f,portion,fv}));
+/* ---------- elenco degli alimenti (per 100 g): i dati stanno in foods.js ---------- */
 const FOOD = Object.fromEntries(FOODS.map(f => [f.key, f]));
 // peso di un pezzo, per frasi come «2 uova» o «una mela»
 const PIECE = { uova:60, mela:150, banana:120, arancia:150, kiwi:80, pera:150, pesca:150, fette:10, biscotti:10, cornetto:60, burger:200, hotdog:150, bagel:90, yogurt:125, greco:150, pizza:300, limone:50, caffe:30, ghiacciolo:70, pane:50, paneint:50, arancini:170, piadina:110, polpette:40, cotoletta:150, focaccia:100,
@@ -266,77 +180,22 @@ const RULES_MUSCLE = {
 };
 const QUOTES_MUSCLE = ['I muscoli si costruiscono in palestra e si finiscono in cucina.','Ogni ripetizione conta, e anche ogni pasto.','Forza è costanza: oggi un mattone in più.','Il recupero fa parte dell\'allenamento.','Più forte di ieri, un giorno alla volta.'];
 
-/* ---------- targets ---------- */
-function ageOf(p){
-  if (!p) return 0;
-  if (p.birth) {
-    const b = parseKey(p.birth), n = new Date();
-    let a = n.getFullYear() - b.getFullYear();
-    if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--;
-    return a;
-  }
-  return +p.age || 0;
-}
-function tierOf(age){ return age < 14 ? 'kid' : age < 18 ? 'teen' : age < 65 ? 'adult' : 'senior'; }
-function targets(p){
-  const age = ageOf(p), w = +p.weight, h = +p.height, male = p.sex === 'M', act = +p.activity || 0;
-  const tier = tierOf(age);
-  let bmr, kcal, tdee, note = '', reached = false;
-  const bmi = w / Math.pow(h / 100, 2);
-  if (age < 18) {
-    bmr = age < 10 ? (male ? 22.706*w + 504.3 : 20.315*w + 485.9) : (male ? 17.686*w + 658.2 : 13.384*w + 692.6);
-    kcal = tdee = bmr * [1.45,1.6,1.75,1.9][act];
-    note = 'Chi sta crescendo ha bisogno di tutta l\'energia per il suo corpo: niente diete, solo pasti equilibrati.';
-  } else {
-    bmr = 10*w + 6.25*h - 5*age + (male ? 5 : -161);
-    kcal = bmr * [1.2,1.375,1.55,1.725][act];
-    tdee = kcal;
-    const tg = p.target && p.target.kg ? p.target : null;
-    if (tg && ['lose','gain','muscle'].includes(p.goal)) {
-      const diff = tg.kg - w, delta = Math.round((tg.rate || .5) * 7700 / 7);
-      if (p.goal === 'lose' && diff < -.2) {
-        if (bmi < 18.5) note = 'Con un indice di massa corporea sotto 18,5 dimagrire non è consigliato: il piano resta di mantenimento.';
-        else kcal = tdee - delta;
-      } else if (p.goal !== 'lose' && diff > .2) kcal = tdee + delta;
-      else { reached = true; if (p.goal === 'muscle') kcal = tdee * 1.03; }
-    } else {
-      if (p.goal === 'lose') {
-        if (bmi < 18.5) note = 'Con un indice di massa corporea sotto 18,5 dimagrire non è consigliato: il piano resta di mantenimento.';
-        else kcal = kcal * .85;
-      }
-      if (p.goal === 'gain') kcal *= 1.1;
-      if (p.goal === 'muscle') kcal *= age >= 65 ? 1.05 : 1.08;
-    }
-    kcal += clamp(+p.kcalAdj || 0, -500, 500);                  // correzione suggerita dal coach
-    kcal = Math.max(kcal, male ? 1500 : 1200, bmr);             // mai sotto il metabolismo a riposo
-  }
-  if (p.goal === 'muscle') note = age < 14
-    ? 'Alla tua età i muscoli crescono giocando: sport, corsa, salti, arrampicate ed esercizi a corpo libero. Proteine a ogni pasto, tanto sonno, niente pesi pesanti senza istruttore e niente integratori.'
-    : age < 18
-    ? 'Per i muscoli contano allenamento, sonno e proteine a ogni pasto. Allenati con un istruttore e non usare integratori senza il parere del medico.'
-    : 'Leggero surplus di calorie e più proteine: abbinalo ad allenamenti di forza 3-4 volte a settimana.';
-  kcal = Math.round(clamp(kcal, 1200, 4200) / 10) * 10;
-  const perKg = p.goal === 'muscle' ? (tier === 'kid' ? 1.1 : tier === 'teen' ? 1.3 : tier === 'senior' ? 1.4 : 1.8)
-    : tier === 'kid' ? .95 : tier === 'teen' ? .9 : tier === 'senior' ? 1.1 : (p.goal === 'lose' || p.goal === 'gain') ? 1.3 : 1.0;
-  const protein = Math.round(w * perKg);
-  const fat = Math.round(kcal * (p.goal === 'muscle' ? .27 : .3) / 9);
-  const carbs = Math.max(0, Math.round((kcal - protein*4 - fat*9) / 4));
-  const water = age < 14 ? 7 : male ? 10 : 8;
-  if (reached && age >= 18) note = 'Hai raggiunto il tuo obiettivo di peso: il piano passa al mantenimento. Complimenti!';
-  return { kcal, protein, fat, carbs, water, fv:5, bmr:Math.round(bmr), tdee:Math.round(tdee), bmi, tier, note, reached };
-}
+/* ---------- obiettivi: il calcolo sta in targets.js, numeri e soglie in config.js ---------- */
 
 /* ---------- storage: on this device ---------- */
 const LKEY = 'piattino-v1';
 const Store = {
+  // i dati salvati da una versione precedente vengono portati al formato di oggi (migrate.js), senza perdere niente
   load(){
-    const st = { profile:null, days:{}, foods:[], weights:[], chat:[] };
-    try { const raw = localStorage.getItem(LKEY); if (raw) { const v = JSON.parse(raw); st.profile = v.profile || null; st.days = v.days || {}; st.foods = v.foods || []; st.weights = v.weights || []; st.chat = v.chat || []; } } catch (e) {}
+    let raw = null;
+    try { raw = JSON.parse(localStorage.getItem(LKEY) || 'null'); } catch (e) {}
+    const st = migrate(raw);
+    st.migrated = !!raw && +raw.v !== CONFIG.schema;
     return st;
   },
   saveNow(){
     clearTimeout(this._t);
-    try { localStorage.setItem(LKEY, JSON.stringify({ v:1, profile:S.profile, days:S.days, foods:S.foods, weights:S.weights, chat:S.chat.slice(-40) })); return true; }
+    try { localStorage.setItem(LKEY, JSON.stringify({ v:CONFIG.schema, profile:S.profile, days:S.days, foods:S.foods, weights:S.weights, chat:S.chat.slice(-40), meta:S.meta })); return true; }
     catch (e) { toast('Memoria piena: esporta un backup e rimuovi qualche cibo memorizzato.', true); return false; }
   },
   put(){ clearTimeout(this._t); this._t = setTimeout(() => this.saveNow(), 150); },
@@ -381,7 +240,7 @@ function screenRadius(){
 })();
 
 /* ---------- state ---------- */
-const S = { profile:null, days:{}, foods:[], weights:[], chat:[], view:'today', date:todayKey(), planShift:0, quoteIdx:-1, ringPrev:{} };
+const S = { profile:null, days:{}, foods:[], weights:[], chat:[], meta:{ riskSeen:{}, askedBody:false }, view:'today', date:todayKey(), planShift:0, quoteIdx:-1, ringPrev:{} };
 const blankDay = () => ({ meals:{ colazione:[], pranzo:[], cena:[], spuntini:[] }, water:0 });
 const getDay = k => S.days[k] || blankDay();
 const ensureDay = k => (S.days[k] = S.days[k] || blankDay());
@@ -476,10 +335,11 @@ function renderTabbar(){
 function moveTabInd(){
   const tabs = $('#tabbar .tabs'); if (!tabs) return;
   const on = tabs.querySelector('[aria-selected=true]'), ind = tabs.querySelector('.tab-ind');
-  if (!on || !on.offsetWidth) return;
-  const x = on.offsetLeft;
-  if (ind._x != null && ind._x !== x && !tabs.classList.contains('no-anim') && !reduceMotion()) { ind.classList.remove('moving'); void ind.offsetWidth; ind.classList.add('moving'); }
-  ind._x = x; ind.style.width = on.offsetWidth + 'px'; ind.style.transform = `translateX(${x}px)`;
+  if (!on) return;
+  // 4 tab uguali: la posizione dipende solo dall'indice (calcolata in CSS), senza misure che possano sbagliare
+  const i = [...tabs.querySelectorAll('.tab')].indexOf(on);
+  if (ind._i != null && ind._i !== i && !tabs.classList.contains('no-anim') && !reduceMotion()) { ind.classList.remove('moving'); ind.classList.toggle('back', i < ind._i); void ind.offsetWidth; ind.classList.add('moving'); }
+  ind._i = i; tabs.style.setProperty('--i', i);
   requestAnimationFrame(() => tabs.classList.remove('no-anim'));
 }
 window.addEventListener('resize', () => { const t = $('#tabbar .tabs'); if (t) { t.classList.add('no-anim'); moveTabInd(); } });
@@ -498,6 +358,36 @@ function ringsSvg(vals){
 function animateRings(){ requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('.ring-arc').forEach(c => c.style.strokeDashoffset = c.dataset.off))); }
 const thumbHtml = e => e.thumb ? `<span class="thumb"><img src="${esc(e.thumb)}" alt=""></span>` : `<span class="thumb ico">${foodIco(e)}</span>`;
 
+/* ---------- avvisi: profilo da completare, obiettivo da rivedere, inviti a parlarne con qualcuno ---------- */
+const GOAL_NAME = { lose:'Dimagrire', maintain:'Mantenere', gain:'Aumentare di peso', muscle:'Fare muscoli', healthy:'Mangiare sano', sport:'Energia per lo sport' };
+// all: anche i segnali a cui si è già risposto «Ho capito» (servono al coach, che con un segnale presente non abbassa le calorie)
+const riskNow = all => S.profile ? riskSignals({ profile:S.profile, days:S.days, weights:S.weights, seen: all ? {} : S.meta.riskSeen }) : [];
+const noticeCard = (title, text, btns) => `<section class="card pad notice" aria-label="${esc(title)}"><div class="meal-name">${esc(title)}</div><p>${text}</p><div class="notice-acts">${btns.map(([l, a, k, main]) => `<button class="chip-btn${main ? ' accent' : ''}" data-a="${a}"${k ? ` data-k="${k}"` : ''}>${l}</button>`).join('')}</div></section>`;
+function reviewCard(){
+  const p = S.profile, r = goalReview(p); if (!r) return '';
+  if (r.kind === 'reached') return noticeCard('Obiettivo raggiunto', `Sei a ${fmt1(p.weight)} kg: hai raggiunto il peso che avevi scelto. Per ora il piano è di mantenimento. Vuoi passare a «Mantenere» o scegliere un nuovo obiettivo?`,
+    [['Passa a Mantenere', 'review-maintain', '', 1], ['Nuovo obiettivo', 'review-open'], ['Più tardi', 'review-keep', 'reached']]);
+  if (r.kind === 'low') return noticeCard('Rivediamo l\'obiettivo', 'Con il tuo peso di oggi dimagrire non è consigliato, quindi il piano è di mantenimento. Vuoi cambiare obiettivo? Se hai dubbi, parlane con il medico o con un dietista.',
+    [['Passa a Mantenere', 'review-maintain', '', 1], ['Più tardi', 'review-keep', 'low']]);
+  return noticeCard('Il tuo peso è cambiato', `Da quando hai scelto l'obiettivo «${esc(GOAL_NAME[p.goal] || 'Mangiare sano')}» il tuo peso è ${r.delta > 0 ? 'salito' : 'sceso'} di ${fmt1(Math.abs(r.delta))} kg. Calorie, proteine e acqua sono già ricalcolate sul peso di oggi; l'obiettivo invece resta quello che hai scelto tu. Vuoi rivederlo?`,
+    [['Rivedi l\'obiettivo', 'review-open', '', 1], ['Va bene così', 'review-keep', 'changed']]);
+}
+const RISK_TEXT = {
+  lowIntake: m => `Negli ultimi giorni il diario segna molto meno di quello che serve al corpo per stare bene. Se è solo il diario incompleto, nessun problema. Se invece stai mangiando così poco, ${m ? 'parlane con un genitore o con il pediatra' : 'parlarne con il medico o con un dietista ti aiuta a farlo in sicurezza'}.`,
+  fastLoss: m => `Nelle ultime settimane il peso è sceso più in fretta di quanto è prudente. Può capitare, ma vale la pena ${m ? 'parlarne con un genitore o con il pediatra' : 'parlarne con il medico o con un dietista: un ritmo più tranquillo protegge muscoli ed energia'}.`,
+  manyLogs: m => `In questi giorni stai registrando peso e pasti molto spesso. I numeri servono a te, non il contrario: per il peso basta una volta a settimana. Se pensare al cibo o al peso ti pesa, ${m ? 'parlane con un genitore o con il pediatra' : 'parlarne con il medico o con un dietista può fare bene'}.`,
+};
+function riskCard(){
+  const k = riskNow()[0]; if (!k) return '';
+  return noticeCard('Come stai?', RISK_TEXT[k](ageOf(S.profile) < 18), [['Ho capito', 'risk-ok', k]]);
+}
+function bodyCard(){
+  const g = T(); if (!g.generic) return '';
+  const what = g.missing.map(k => ({ weight:'il peso', height:'l\'altezza', birth:'la data di nascita' }[k])).join(' e ');
+  return noticeCard('Completa il profilo', `${g.missing.length > 1 ? 'Mancano' : 'Manca'} ${what}: per ora gli obiettivi sono valori di riferimento generici. Con i tuoi dati li calcolo su misura. Puoi farlo anche dopo.`, [['Completa il profilo', 'edit-profile', '', 1]]);
+}
+// un avviso alla volta, dal più importante: prima i dati che mancano, poi come stai, poi l'obiettivo
+const notices = () => bodyCard() || riskCard() || reviewCard();
 function renderToday(){
   const k = S.date, day = getDay(k), t = totals(day), g = T(), isToday = k === todayKey();
   const young = g.tier === 'kid';
@@ -512,6 +402,7 @@ function renderToday(){
     <button class="chip-btn" data-a="day" data-d="1" aria-label="Giorno successivo" ${isToday ? 'disabled' : ''}>${I.right}</button>
   </div>
   <button class="btn primary add-meal" data-a="add-open">${I.plus} Aggiungi pasto</button>
+  ${isToday ? notices() : ''}
   <section class="rings-card" aria-label="Riepilogo della giornata">
     ${ringsSvg([{pct:t.kcal/g.kcal,color:'var(--system-red)'},{pct:t.p/g.protein,color:'var(--system-blue)'},{pct:t.fv/g.fv,color:'var(--system-green)'}])}
     <div class="legend">
@@ -576,7 +467,7 @@ function goalCard(){
   if (minor) return `<button class="card pad goal-card" data-a="goal" style="margin-top:14px"><div class="grow"><div class="meal-name">Come cresci</div><div class="small muted">Segna il tuo peso e guarda il tuo andamento</div></div>${I.right.replace('<svg', '<svg class="chev"')}</button>`;
   if (!t) return `<button class="card pad goal-card" data-a="goal" style="margin-top:14px"><div class="grow"><div class="meal-name">Obiettivo di peso</div><div class="small muted">Scegli quanti chili vuoi perdere o mettere su</div></div><span class="chip-btn accent">Imposta</span></button>`;
   const left = Math.round((t.kg - p.weight) * 10) / 10;
-  const prog = Math.abs(t.kg - t.startKg) > .2 ? clamp((t.startKg - p.weight) / (t.startKg - t.kg), 0, 1) : 1;
+  const prog = validKg(+t.startKg) && Math.abs(t.kg - t.startKg) > .2 ? clamp((t.startKg - p.weight) / (t.startKg - t.kg), 0, 1) : 1;
   return `<button class="card pad goal-card" data-a="goal" style="margin-top:14px"><div class="grow"><div class="row" style="justify-content:space-between"><span class="meal-name">Obiettivo ${fmt1(t.kg)} kg</span><b class="pct num">${Math.round(prog * 100)}%</b></div>
     <div class="track light"><i data-fill="goal" data-p="${prog}"></i></div><div class="small muted num" style="margin-top:6px">${Math.abs(left) <= .2 ? 'Obiettivo raggiunto!' : `Ora ${fmt1(p.weight)} kg · ${left < 0 ? 'mancano ' + fmt1(-left) + ' kg da perdere' : 'mancano ' + fmt1(left) + ' kg da mettere su'}`}</div></div></button>`;
 }
@@ -611,11 +502,9 @@ function renderPlan(){
 }
 
 /* ---- diary ---- */
-function streak(){
-  let k = todayKey(), n = 0;
-  if (!totals(getDay(k)).n) k = addDays(k, -1);
-  while (totals(getDay(k)).n) { n++; k = addDays(k, -1); if (n > 999) break; }
-  return n;
+function journeyCard(){
+  const p = S.profile, minor = ageOf(p) < 18;
+  return `<div class="card pad">${S.weights.length > 1 ? weightChart(!minor && p.target ? p.target.kg : null) : ''}<p class="journey">${esc(journeyText({ weights:S.weights, goal:p.goal, minor }))}</p><button class="btn tinted" data-a="weight" style="margin-top:12px">Aggiorna il peso</button></div>`;
 }
 function renderDiary(){
   const g = T(), today = todayKey();
@@ -642,11 +531,13 @@ function renderDiary(){
   app.innerHTML = `
   ${header('Ultimi 7 giorni', 'Diario')}
   <div class="stats" style="margin-top:14px">
-    <div class="card stat hot"><div class="k">Serie</div><div class="v"><span data-num="streak" data-v="${streak()}">${streak()}</span><small> giorni</small></div></div>
+    <div class="card stat"><div class="k">Registrati</div><div class="v"><span data-num="logged" data-v="${logged.length}">${logged.length}</span><small> su 7 giorni</small></div></div>
     <div class="card stat"><div class="k">Media</div><div class="v"><span data-num="avg" data-v="${Math.round(avg)}">${fmt(avg)}</span><small> kcal</small></div></div>
     <div class="card stat"><div class="k">Frutta e verd.</div><div class="v"><span data-num="avgfv" data-v="${Math.round(avgFv * 10) / 10}" data-f="1">${fmt1(avgFv)}</span><small> /giorno</small></div></div>
   </div>
   <div class="card pad" style="margin-top:12px">${chart}</div>
+  <h2 class="section-title">${ageOf(S.profile) < 18 ? 'Come cresci' : 'Il tuo percorso'}</h2>
+  ${journeyCard()}
   <h2 class="section-title">I miei cibi <small>${S.foods.length}</small></h2>
   ${S.foods.length ? `<div class="food-grid">${S.foods.map(f => `<button class="food-tile" data-a="food" data-id="${esc(f.id)}"><span class="ph${f.thumb ? '' : ' ico'}">${f.thumb ? `<img src="${esc(f.thumb)}" alt="">` : foodIco(f)}</span><span class="n">${esc(f.name)}</span><span class="k num">${fmt(f.kcal)} kcal · ${fmt(f.grams)} g</span></button>`).join('')}</div>`
     : `<div class="card pad muted">Quando scansioni un piatto puoi memorizzarlo qui, per riaggiungerlo con un tocco.</div>`}
@@ -686,10 +577,11 @@ function renderProfile(){
   ${header('Il tuo profilo', p.name || 'Profilo')}
   <div class="group" style="margin-top:14px">
     <div class="field"><label>Nato il</label><span class="grow" style="text-align:right">${p.birth ? esc(parseKey(p.birth).toLocaleDateString('it-IT', { day:'numeric', month:'long', year:'numeric' })) + ' · ' : ''}${ageOf(p)} anni</span></div>
-    <div class="field"><label>Altezza</label><span class="grow num" style="text-align:right">${esc(p.height)} cm</span></div>
-    <div class="field"><label>Peso</label><span class="grow num" style="text-align:right">${esc(p.weight)} kg</span></div>
+    <div class="field"><label>Altezza</label><span class="grow num" style="text-align:right">${g.missing.includes('height') ? 'Da aggiungere' : esc(p.height) + ' cm'}</span></div>
+    <div class="field"><label>Peso</label><span class="grow num" style="text-align:right">${g.missing.includes('weight') ? 'Da aggiungere' : fmt1(p.weight) + ' kg'}</span><button class="link" data-a="weight" aria-label="Aggiorna il peso">Aggiorna</button></div>
+    <div class="field"><label>Sesso</label><span class="grow" style="text-align:right">${{ F:'Femmina', M:'Maschio' }[p.sex] || 'Preferisco non dire'}</span></div>
     <div class="field"><label>Attività</label><span class="grow" style="text-align:right">${act}</span></div>
-    <div class="field"><label>Metabolismo</label><span class="grow num" style="text-align:right">${fmt(g.bmr)} kcal a riposo</span></div>
+    <div class="field"><label>Metabolismo</label><span class="grow num" style="text-align:right">${g.generic ? 'Da calcolare' : fmt(g.bmr) + ' kcal a riposo'}</span></div>
   </div>
   <div class="stack" style="margin-top:12px"><button class="btn tinted" data-a="edit-profile">Modifica profilo</button><button class="btn tinted" data-a="goal">${ageOf(p) < 18 ? 'Come cresci' : 'Obiettivo di peso'}</button></div>
   <h2 class="section-title">Dati</h2>
@@ -708,17 +600,19 @@ function renderProfile(){
 
 /* ---- welcome / onboarding ---- */
 function profileForm(p){
-  p = p || { name:'', birth:'', sex:'F', height:'', weight:'', activity:1, goal:'healthy' };
+  p = p || { name:'', birth:'', sex:'', height:'', weight:'', activity:1, goal:'healthy' };
+  const L = CONFIG.limits, sex = p.sex ? normSex(p.sex) : '';
   return `<form id="pform" novalidate>
   <div class="form-label">Chi sei</div>
   <div class="group">
     <div class="field"><label for="f-name">Nome</label><input id="f-name" name="name" autocomplete="given-name" placeholder="Il tuo nome" value="${esc(p.name)}" maxlength="30"></div>
     <div class="field"><label for="f-birth">Nato il</label><input id="f-birth" name="birth" type="date" min="${maxBirth(110)}" max="${maxBirth(9)}" value="${esc(p.birth || '')}"></div>
-    <div class="field"><label for="f-h">Altezza</label><input id="f-h" name="height" type="number" inputmode="numeric" min="100" max="230" placeholder="150" value="${esc(p.height)}"><span class="unit">cm</span></div>
-    <div class="field"><label for="f-w">Peso</label><input id="f-w" name="weight" type="number" inputmode="decimal" min="20" max="300" step="0.1" placeholder="45" value="${esc(p.weight)}"><span class="unit">kg</span></div>
+    <div class="field"><label for="f-h">Altezza</label><input id="f-h" name="height" type="number" inputmode="numeric" min="${L.height[0]}" max="${L.height[1]}" placeholder="150" value="${esc(p.height || '')}"><span class="unit">cm</span></div>
+    <div class="field"><label for="f-w">Peso</label><input id="f-w" name="weight" type="number" inputmode="decimal" min="${L.weight[0]}" max="${L.weight[1]}" step="0.1" placeholder="45" value="${esc(p.weight || '')}"><span class="unit">kg</span></div>
   </div>
-  <div class="form-label">Sesso biologico</div>
-  <div class="seg"><input type="radio" name="sex" id="sx-F" value="F" ${p.sex !== 'M' ? 'checked' : ''}><label for="sx-F">Femmina</label><input type="radio" name="sex" id="sx-M" value="M" ${p.sex === 'M' ? 'checked' : ''}><label for="sx-M">Maschio</label></div>
+  <div class="form-label" id="sexLabel">Sesso</div>
+  <div class="seg" role="radiogroup" aria-labelledby="sexLabel">${[['F', 'Femmina'], ['M', 'Maschio'], ['X', 'Preferisco non dire']].map(([v, l]) => `<input type="radio" name="sex" id="sx-${v}" value="${v}" ${sex === v ? 'checked' : ''}><label for="sx-${v}">${l}</label>`).join('')}</div>
+  <p class="foot">Serve solo a stimare il fabbisogno di energia. Se preferisci non dirlo, Piattino usa una via di mezzo e resta sui limiti più prudenti.</p>
   <div class="form-label">Quanto ti muovi</div>
   <div class="seg">${['Poco','Un po\'','Abbastanza','Tanto'].map((l, i) => `<input type="radio" name="activity" id="ac-${i}" value="${i}" ${+p.activity === i ? 'checked' : ''}><label for="ac-${i}">${l}</label>`).join('')}</div>
   <div class="form-label">Obiettivo</div>
@@ -810,20 +704,25 @@ function bindProfileForm(root){
     e.preventDefault();
     const fd = new FormData(form); const v = k => String(fd.get(k) || '').trim();
     const bd = v('birth');
-    const p = { name:v('name'), birth:/^\d{4}-\d{2}-\d{2}$/.test(bd) ? bd : '', sex:v('sex') || 'F', height:+v('height'), weight:+String(v('weight')).replace(',', '.'), activity:+v('activity') || 0, goal:v('goal') || 'healthy' };
-    const err = $('#ferr', form);
+    const p = { name:v('name'), birth:/^\d{4}-\d{2}-\d{2}$/.test(bd) ? bd : '', sex:normSex(v('sex')), height:+v('height'), weight:Math.round(+String(v('weight')).replace(',', '.') * 10) / 10, activity:+v('activity') || 0, goal:v('goal') || 'healthy' };
+    const err = $('#ferr', form), L = CONFIG.limits;
     if (!p.birth) return err.textContent = 'Inserisci la tua data di nascita.';
     const age = ageOf(p);
-    if (age < 9) return err.textContent = 'Piattino è pensato per chi ha almeno 9 anni.';
-    if (age > 110) return err.textContent = 'Controlla la data di nascita.';
+    if (age < L.age[0]) return err.textContent = `Piattino è pensato per chi ha almeno ${L.age[0]} anni.`;
+    if (age > L.age[1]) return err.textContent = 'Controlla la data di nascita.';
     p.age = age;
-    if (!(p.height >= 100 && p.height <= 230)) return err.textContent = 'Inserisci un\'altezza tra 100 e 230 cm.';
-    if (!(p.weight >= 20 && p.weight <= 300)) return err.textContent = 'Inserisci un peso tra 20 e 300 kg.';
+    const bad = checkBody(p.weight, p.height);
+    if (bad === 'height') return err.textContent = `Inserisci un'altezza tra ${L.height[0]} e ${L.height[1]} cm.`;
+    if (bad === 'weight') return err.textContent = `Inserisci un peso tra ${L.weight[0]} e ${L.weight[1]} kg.`;
+    if (bad === 'bmi') return err.textContent = 'Peso e altezza insieme non sembrano plausibili: controlla di averli scritti in kg e in cm.';
     if (age < 18 && !['healthy','sport','muscle'].includes(p.goal)) p.goal = 'healthy';
     const first = !S.profile;
     const prev = S.profile || {};
     S.profile = { ...prev, ...p };
     if (age < 18) { delete S.profile.target; delete S.profile.kcalAdj; }
+    // obiettivo cambiato: il peso da raggiungere e le correzioni del coach valevano per quello di prima
+    if (!first && prev.goal !== p.goal) { delete S.profile.target; delete S.profile.kcalAdj; delete S.profile.reviewSeen; }
+    if (first || prev.goal !== p.goal || !S.profile.goalRef) S.profile.goalRef = { kg:p.weight, d:todayKey() };
     if (first || +prev.weight !== p.weight) logWeight(p.weight);
     saveProfile(); S.currentQuote = null;
     closeSheet(); S.view = 'today'; render(); window.scrollTo(0, 0);
@@ -832,27 +731,27 @@ function bindProfileForm(root){
   });
 }
 
-/* ---------- weight: log, trend, goal screen ---------- */
-function logWeight(kg, d = todayKey()){
-  kg = Math.round(kg * 10) / 10;
-  S.weights = [...S.weights.filter(x => x.d !== d), { d, kg }].sort((a, b) => a.d < b.d ? -1 : 1).slice(-400);
-  Store.put();
-}
-function weightTrend(days = 35){
-  const since = addDays(todayKey(), -days);
-  const pts = S.weights.filter(x => x.d >= since).map(x => [(parseKey(x.d) - parseKey(since)) / 864e5, x.kg]);
-  if (pts.length < 2) return null;
-  const span = pts[pts.length - 1][0] - pts[0][0]; if (span < 6) return null;
-  const n = pts.length, mx = pts.reduce((a, q) => a + q[0], 0) / n, my = pts.reduce((a, q) => a + q[1], 0) / n;
-  const slope = pts.reduce((a, q) => a + (q[0] - mx) * (q[1] - my), 0) / pts.reduce((a, q) => a + (q[0] - mx) ** 2, 0);
-  return { perWeek: slope * 7, span, n, first: pts[0][1], last: pts[n - 1][1] };
-}
-const healthyRange = h => [Math.ceil(18.5 * (h / 100) ** 2), Math.floor(24.9 * (h / 100) ** 2)];
+/* ---------- peso: storico, andamento, obiettivo di peso ---------- */
+function logWeight(kg, d = todayKey()){ S.weights = addWeight(S.weights, kg, d); Store.put(); }
+const weightTrend = () => trendOf(S.weights, todayKey());
+const validKg = kg => kg >= CONFIG.limits.weight[0] && kg <= CONFIG.limits.weight[1];
+const dayMonth = k => parseKey(k).toLocaleDateString('it-IT', { day:'numeric', month:'long' });
+const DISCLAIMER = 'I valori sono stime e non sostituiscono il parere di medico o dietista.';
 const G = {};
 function openGoal(){
-  const p = S.profile, t = p.target || {};
-  G.cur = +p.weight; G.kg = t.kg || (p.goal === 'lose' ? Math.round(p.weight - 5) : p.goal === 'maintain' || p.goal === 'healthy' ? +p.weight : Math.round(p.weight + 3));
-  G.rate = t.rate || (G.kg < G.cur ? .5 : .25); G.err = '';
+  const p = S.profile;
+  if (T().generic) return actions['edit-profile']();
+  const t = p.target || {};
+  G.mode = 'goal'; G.wErr = ''; G.jumpOk = null;
+  G.cur = +p.weight; G.kg = t.kg || (p.goal === 'lose' ? Math.max(minHealthyKg(+p.height), Math.round(p.weight - 5)) : p.goal === 'maintain' || p.goal === 'healthy' ? +p.weight : Math.round(p.weight + 3));
+  G.rate = t.rate || 0; G.err = '';
+  openSheet(`<div id="goalRoot" style="display:flex;flex-direction:column;min-height:0;flex:1"></div>`, true);
+  renderGoal();
+}
+// «Il tuo peso»: aggiornare il peso in qualsiasi momento, con lo storico e l'andamento
+function openWeight(){
+  if (T().generic) return actions['edit-profile']();
+  G.mode = 'weight'; G.wErr = ''; G.jumpOk = null; G.cur = +S.profile.weight;
   openSheet(`<div id="goalRoot" style="display:flex;flex-direction:column;min-height:0;flex:1"></div>`, true);
   renderGoal();
 }
@@ -865,73 +764,115 @@ function weightChart(target){
   const x = d => L + (W - L - R) * ((parseKey(d) - t0) / 864e5) / span, y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
   const line = pts.map(q => `${x(q.d).toFixed(1)},${y(q.kg).toFixed(1)}`).join(' ');
   const last = pts[pts.length - 1];
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Andamento del peso">
+  // la stessa cosa a parole, per VoiceOver
+  const say = `Andamento del peso: ${fmt1(pts[0].kg)} kg il ${dayMonth(pts[0].d)}, ${fmt1(last.kg)} kg il ${dayMonth(last.d)}${target ? `. Obiettivo ${fmt1(target)} kg` : ''}`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(say)}">
     ${[lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" style="stroke:var(--separator-opaque)"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${fmt1(v)}</text>`).join('')}
-    ${target ? `<line x1="${L}" x2="${W - R}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" style="stroke:var(--system-green)" stroke-dasharray="5 4"/><text x="${W - R}" y="${(y(target) - 5).toFixed(1)}" text-anchor="end">obiettivo ${fmt1(target)}</text>` : ''}
+    ${target ? `<line x1="${L}" x2="${W - R}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" style="stroke:var(--toggle-on)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="${W - R}" y="${(y(target) - 5).toFixed(1)}" text-anchor="end">obiettivo ${fmt1(target)}</text>` : ''}
     <polyline points="${line}" fill="none" style="stroke:var(--system-blue)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     <circle cx="${x(last.d).toFixed(1)}" cy="${y(last.kg).toFixed(1)}" r="4.5" style="fill:var(--system-blue);stroke:var(--bg-grouped-secondary)" stroke-width="2"/>
     <text x="${L}" y="${H - 6}">${esc(parseKey(pts[0].d).toLocaleDateString('it-IT', { day:'numeric', month:'short' }))}</text>
     <text x="${W - R}" y="${H - 6}" text-anchor="end">${esc(parseKey(last.d).toLocaleDateString('it-IT', { day:'numeric', month:'short' }))}</text></svg>`;
 }
+// il campo del peso di oggi, uguale in «Il tuo peso», «Obiettivo di peso» e «Come cresci»
+function weightCard(){
+  const [lo, hi] = CONFIG.limits.weight;
+  return `<div class="card pad"><div class="stepper" style="justify-content:flex-start;margin:0"><button data-a="gw-step" data-d="-0.1" aria-label="Meno un etto">−</button><input id="gwIn" type="number" inputmode="decimal" step="0.1" min="${lo}" max="${hi}" value="${String(G.cur)}" aria-label="Peso di oggi in kg"><button data-a="gw-step" data-d="0.1" aria-label="Più un etto">+</button><span class="muted">kg</span></div>
+    <p class="err" id="gwErr" role="alert" style="margin:${G.wErr ? '10px 0 0' : '0'};min-height:0">${esc(G.wErr)}</p>
+    <button class="btn tinted" data-a="gw-save" style="margin-top:10px">${G.jumpOk != null ? 'Sì, registra questo peso' : 'Registra il peso di oggi'}</button></div>`;
+}
+function journeyBlock(target){
+  const p = S.profile, minor = ageOf(p) < 18;
+  return `<h2 class="section-title">${minor ? 'Il tuo andamento' : 'Il tuo percorso'}</h2><div class="card pad">${S.weights.length > 1 ? weightChart(target) : ''}<p class="journey">${esc(journeyText({ weights:S.weights, goal:p.goal, minor }))}</p></div>`;
+}
 function goalSummary(){
-  const p = S.profile, diff = Math.round((G.kg - G.cur) * 10) / 10;
-  const [lo, hi] = healthyRange(+p.height);
-  const tmp = { ...p, kcalAdj:0, weight:G.cur, target:{ kg:G.kg, rate:G.rate }, goal: diff < -.2 ? 'lose' : diff > .2 ? (p.goal === 'muscle' ? 'muscle' : 'gain') : 'maintain' };
-  const tg = targets(tmp);
-  const weeks = Math.abs(diff) > .2 ? Math.ceil(Math.abs(diff) / G.rate) : 0;
-  const when = weeks ? addDays(todayKey(), weeks * 7) : null;
-  return { diff, lo, hi, tg, weeks, when, goal: tmp.goal };
+  const p = S.profile, diff = Math.round((G.kg - G.cur) * 10) / 10, lo = minHealthyKg(+p.height);
+  const goal = diff < -.2 ? 'lose' : diff > .2 ? (p.goal === 'muscle' ? 'muscle' : 'gain') : 'maintain';
+  const tg = targets({ ...p, kcalAdj:0, weight:G.cur, target:{ kg:G.kg, rate:G.rate }, goal });
+  // data e durata si calcolano sul ritmo vero, dopo i limiti di sicurezza, non su quello chiesto
+  const pace = Math.abs(tg.pace), weeks = goal !== 'maintain' && pace >= .03 ? Math.ceil(Math.abs(diff) / pace) : 0;
+  return { diff, lo, tg, pace, weeks, when: weeks ? addDays(todayKey(), weeks * 7) : null, goal };
 }
 function renderGoal(){
   const root = $('#goalRoot'); if (!root) return;
   const p = S.profile, age = ageOf(p);
+  if (G.mode === 'weight') {
+    const recent = S.weights.slice(-8).reverse();
+    root.innerHTML = `${sheetHead('Il tuo peso', 'Chiudi')}
+    <div class="sheet-body">
+      <div class="form-label">Oggi pesi</div>
+      ${weightCard()}
+      <p class="foot">Basta una pesata a settimana, al mattino. A ogni cambio di peso Piattino ricalcola calorie, proteine e acqua.</p>
+      ${reviewCard()}
+      ${journeyBlock(age >= 18 && p.target ? p.target.kg : null)}
+      ${recent.length ? `<h2 class="section-title">Ultime pesate</h2><div class="group">${recent.map(x => `<div class="field"><span class="grow">${esc(dayMonth(x.d))}</span><span class="num">${fmt1(x.kg)} kg</span><button class="link" data-a="w-del" data-d="${x.d}" aria-label="Togli la pesata del ${esc(dayMonth(x.d))}" ${S.weights.length < 2 ? 'disabled' : ''}>Togli</button></div>`).join('')}</div>` : ''}
+      ${age >= 18 ? `<div style="margin-top:14px"><button class="btn tinted" data-a="goal">Obiettivo di peso</button></div>` : ''}
+      <p class="foot">${DISCLAIMER}</p>
+    </div>`;
+    bindGoalInputs(); return;
+  }
   if (age < 18) {
     root.innerHTML = `${sheetHead('Come cresci', 'Chiudi')}
     <div class="sheet-body">
       <p class="note" style="margin:6px 0 14px">Mentre cresci il peso aumenta in modo naturale, insieme all'altezza. Per questo Piattino non ti fa scegliere un peso da raggiungere o da perdere: conta mangiare vario, muoversi e dormire bene. Se hai dubbi, parlane con un genitore o con il pediatra.</p>
-      <div class="card pad"><div class="small muted">Oggi pesi</div><div class="stepper" style="justify-content:flex-start;margin:4px 0 0"><button data-a="gw-step" data-d="-0.1" aria-label="Meno">−</button><input id="gwIn" type="number" inputmode="decimal" step="0.1" value="${fmt1(G.cur).replace(',', '.')}" aria-label="Peso in kg"><button data-a="gw-step" data-d="0.1" aria-label="Più">+</button><span class="muted">kg</span></div>
-      <button class="btn tinted" data-a="gw-save" style="margin-top:10px">Registra il peso di oggi</button></div>
-      ${S.weights.length > 1 ? `<h2 class="section-title">Il tuo andamento</h2><div class="card pad">${weightChart(null)}</div>` : ''}
+      <div class="form-label">Oggi pesi</div>
+      ${weightCard()}
+      ${S.weights.length > 1 ? journeyBlock(null) : ''}
     </div>`;
     bindGoalInputs(); return;
   }
-  const sm = goalSummary(), t = p.target;
+  const diff0 = G.kg - G.cur, dir = diff0 < -.2 ? 'lose' : 'gain', bmi = bmiOf(G.cur, +p.height);
+  const rates = rateOptions(dir, G.cur, bmi);
+  if (!rates.some(([r]) => r === G.rate)) G.rate = defaultRate(dir, G.cur, bmi);
+  const sm = goalSummary(), t = p.target, lim = sm.tg.limited;
   const tooLow = G.kg < sm.lo, dirTxt = sm.diff < -.2 ? `Vuoi perdere <b>${fmt1(-sm.diff)} kg</b>` : sm.diff > .2 ? `Vuoi mettere su <b>${fmt1(sm.diff)} kg</b>` : 'Vuoi mantenere il peso';
-  const rates = sm.diff < -.2 ? [[.25,'Tranquillo'],[.5,'Consigliato'],[.75,'Veloce']].filter(([r]) => r <= G.cur * .01 + .001 || r === .25) : [[.1,'Lento'],[.25,'Consigliato'],[.5,'Veloce']];
-  if (!rates.some(([r]) => r === G.rate)) G.rate = rates[Math.min(1, rates.length - 1)][0];
-  const prog = t && t.startKg && Math.abs(t.kg - t.startKg) > .2 ? clamp((t.startKg - G.cur) / (t.startKg - t.kg), 0, 1) : null;
+  const prog = t && validKg(+t.startKg) && Math.abs(t.kg - t.startKg) > .2 ? clamp((t.startKg - G.cur) / (t.startKg - t.kg), 0, 1) : null;
+  const moving = Math.abs(sm.diff) > .2, blocked = sm.goal === 'lose' && bmi < CONFIG.safety.minBmi;
+  const article = d => [8, 11].includes(parseKey(d).getDate()) ? 'l\'' : 'il ';
+  const when = blocked ? `<div class="meal-name">Piano di mantenimento</div><div class="small muted">${esc(sm.tg.note)}</div>`
+    : !moving ? `<div class="meal-name">Mantieni il tuo peso</div>`
+    : !sm.weeks ? `<div class="meal-name">Calorie già al minimo prudente</div><div class="small muted">Con questi limiti il peso scende molto piano: conta di più il movimento.</div>`
+    : sm.weeks > 104 ? `<div class="meal-name">Un percorso lungo</div><div class="small muted">Con un ritmo prudente servono più di due anni: scegli una tappa più vicina, poi la sposti.</div>`
+    : `<div class="meal-name">Arrivi a ${fmt1(G.kg)} kg verso ${article(sm.when)}${esc(dayMonth(sm.when))}</div><div class="small muted">circa ${sm.weeks} ${sm.weeks === 1 ? 'settimana' : 'settimane'}, a ${fmt2(sm.pace)} kg a settimana</div>`;
+  const limNote = blocked || !moving ? '' : sm.goal === 'lose' && (lim.includes('floor') || lim.includes('deficit'))
+      ? `Per restare nei limiti prudenti le calorie non scendono sotto ${fmt(sm.tg.kcal)} kcal (mai sotto il metabolismo a riposo, né oltre il ${Math.round(CONFIG.safety.maxDeficitFrac * 100)}% in meno del fabbisogno): per questo il ritmo reale è ${fmt2(sm.pace)} kg a settimana.`
+    : lim.includes('surplus') ? `Per restare nei limiti prudenti le calorie non salgono oltre ${fmt(sm.tg.kcal)} kcal: il ritmo reale è ${fmt2(sm.pace)} kg a settimana.` : '';
   root.innerHTML = `${sheetHead('Obiettivo di peso', 'Chiudi', `<button class="link" data-a="goal-save" style="font-weight:600" ${tooLow ? 'disabled' : ''}>Salva</button>`)}
   <div class="sheet-body">
     ${prog != null ? `<div class="card pad" style="margin-top:6px"><div class="row" style="justify-content:space-between"><span class="meal-name">Progresso</span><b class="pct num" style="font-size:20px">${Math.round(prog * 100)}%</b></div>
       <div class="track light"><i data-fill="goal-sheet" data-p="${prog}"></i></div><div class="small muted num" style="margin-top:6px">Partenza ${fmt1(t.startKg)} kg · ora ${fmt1(G.cur)} kg · obiettivo ${fmt1(t.kg)} kg</div></div>` : ''}
     <div class="form-label">Oggi pesi</div>
-    <div class="card pad"><div class="stepper" style="justify-content:flex-start;margin:0"><button data-a="gw-step" data-d="-0.1" aria-label="Meno">−</button><input id="gwIn" type="number" inputmode="decimal" step="0.1" value="${String(G.cur)}" aria-label="Peso di oggi in kg"><button data-a="gw-step" data-d="0.1" aria-label="Più">+</button><span class="muted">kg</span></div>
-      <button class="btn tinted" data-a="gw-save" style="margin-top:10px">Registra il peso di oggi</button></div>
+    ${weightCard()}
     <div class="form-label">Dove vuoi arrivare</div>
     <div class="card pad" style="text-align:center">
       <div class="stepper"><button data-a="gk-step" data-d="-0.5" aria-label="Meno mezzo chilo">−</button><input id="gkIn" type="number" inputmode="decimal" step="0.5" value="${String(G.kg)}" aria-label="Peso obiettivo in kg"><button data-a="gk-step" data-d="0.5" aria-label="Più mezzo chilo">+</button></div>
       <div class="muted small">kg</div>
       <p style="margin:10px 0 2px;font-size:17px">${dirTxt}</p>
-      <p class="small muted" style="margin:0">Peso nella norma per ${esc(p.height)} cm: ${sm.lo}–${sm.hi} kg</p>
-      ${tooLow ? `<p class="err" style="margin-top:8px">Questo peso è troppo basso per la tua altezza: il minimo consigliato è ${sm.lo} kg.</p>` : ''}
+      ${tooLow ? `<p class="err" role="alert" style="margin-top:8px;text-align:left">Per la tua altezza Piattino non imposta obiettivi sotto ${sm.lo} kg. Se pensi di averne bisogno, parlane con il medico o con un dietista.</p>` : ''}
     </div>
-    ${Math.abs(sm.diff) > .2 ? `<div class="form-label">Quanto veloce</div>
-    <div class="seg">${rates.map(([r, l]) => `<button class="${G.rate === r ? 'on' : ''}" data-a="g-rate" data-r="${r}">${l}<br><span class="small muted">${r.toLocaleString('it-IT')} kg/sett.</span></button>`).join('')}</div>` : ''}
+    ${moving && !blocked ? `<div class="form-label" id="rateLabel">Quanto veloce</div>
+    <div class="seg" role="group" aria-labelledby="rateLabel">${rates.map(([r, l]) => `<button class="${G.rate === r ? 'on' : ''}" data-a="g-rate" data-r="${r}" aria-pressed="${G.rate === r}">${l}<br><span class="small muted">${r.toLocaleString('it-IT')} kg/sett.</span></button>`).join('')}</div>
+    <p class="foot">Per te il massimo prudente è ${fmt2(maxRate(dir, G.cur, bmi))} kg a settimana: ritmi più veloci non sono disponibili.</p>` : ''}
     <div class="card pad" style="margin-top:14px">
-      ${sm.weeks ? `<div class="meal-name">Arrivi a ${fmt1(G.kg)} kg verso ${[8, 11].includes(parseKey(sm.when).getDate()) ? 'l\'' : 'il '}${esc(parseKey(sm.when).toLocaleDateString('it-IT', { day:'numeric', month:'long' }))}</div><div class="small muted">circa ${sm.weeks} ${sm.weeks === 1 ? 'settimana' : 'settimane'}, se segui il piano</div>` : `<div class="meal-name">Mantieni il tuo peso</div>`}
-      <div class="target-grid num" style="margin-top:12px"><div><b>${fmt(sm.tg.kcal)}</b><span>kcal</span></div><div><b>${sm.tg.protein}</b><span>Prot. g</span></div><div><b>${fmt(sm.tg.kcal - sm.tg.tdee)}</b><span>vs fabbisogno</span></div><div><b>${sm.goal === 'lose' ? '−' : sm.goal === 'maintain' ? '=' : '+'}</b><span>${sm.goal === 'lose' ? 'Dimagrire' : sm.goal === 'maintain' ? 'Mantenere' : sm.goal === 'muscle' ? 'Muscoli' : 'Aumentare'}</span></div></div>
-      ${sm.tg.kcal <= (p.sex === 'M' ? 1500 : 1200) + 5 && sm.goal === 'lose' ? `<p class="small muted" style="margin:10px 0 0">Non scendiamo sotto ${p.sex === 'M' ? '1.500' : '1.200'} kcal: per te il ritmo reale sarà un po' più lento.</p>` : ''}
+      ${when}
+      <div class="target-grid num" style="margin-top:12px"><div><b>${fmt(sm.tg.kcal)}</b><span>kcal</span></div><div><b>${sm.tg.protein}</b><span>Prot. g</span></div><div><b>${sm.tg.kcal - sm.tg.tdee > 0 ? '+' : sm.tg.kcal - sm.tg.tdee < 0 ? '−' : ''}${fmt(Math.abs(sm.tg.kcal - sm.tg.tdee))}</b><span>vs fabbisogno</span></div><div><b>${sm.goal === 'lose' ? '−' : sm.goal === 'maintain' ? '=' : '+'}</b><span>${sm.goal === 'lose' ? 'Dimagrire' : sm.goal === 'maintain' ? 'Mantenere' : sm.goal === 'muscle' ? 'Muscoli' : 'Aumentare'}</span></div></div>
+      ${limNote ? `<p class="small muted" style="margin:10px 0 0">${limNote}</p>` : ''}
     </div>
-    ${S.weights.length > 1 ? `<h2 class="section-title">Il tuo andamento</h2><div class="card pad">${weightChart(t && t.kg)}</div>` : '<p class="foot">Pesati una volta a settimana, al mattino, sempre nello stesso giorno: così vedi se il piano funziona.</p>'}
-    ${G.err ? `<p class="err">${esc(G.err)}</p>` : ''}
+    ${journeyBlock(t && t.kg)}
+    ${G.err ? `<p class="err" role="alert">${esc(G.err)}</p>` : ''}
     <div style="margin-top:14px"><button class="btn primary" data-a="goal-save" ${tooLow ? 'disabled' : ''}>Salva l'obiettivo</button></div>
     ${t ? `<div style="margin-top:10px"><button class="btn danger" data-a="goal-clear">Togli l'obiettivo di peso</button></div>` : ''}
+    <p class="foot">${DISCLAIMER}</p>
   </div>`;
   bindGoalInputs(); fillsFrom(root);
 }
+// Dopo aver scritto un numero si tocca di solito subito un pulsante: ridisegnare all'istante sostituirebbe il pulsante sotto il dito
+// e il tocco andrebbe perso. Il numero si legge subito, la schermata si aggiorna un attimo dopo.
 function bindGoalInputs(){
-  const gw = $('#gwIn'); if (gw) gw.addEventListener('change', () => { G.cur = clamp(Math.round(+gw.value * 10) / 10 || G.cur, 20, 300); renderGoal(); });
-  const gk = $('#gkIn'); if (gk) gk.addEventListener('change', () => { G.kg = clamp(Math.round(+gk.value * 2) / 2 || G.kg, 20, 300); renderGoal(); });
+  const [lo, hi] = CONFIG.limits.weight, later = () => { clearTimeout(G.t); G.t = setTimeout(renderGoal, 350); };
+  const read = el => +String(el.value).replace(',', '.');
+  const gw = $('#gwIn'); if (gw) gw.addEventListener('change', () => { const v = Math.round(read(gw) * 10) / 10; if (v >= lo && v <= hi) { G.cur = v; G.jumpOk = null; if (G.mode === 'goal') later(); } });
+  const gk = $('#gkIn'); if (gk) gk.addEventListener('change', () => { G.kg = clamp(Math.round(read(gk) * 2) / 2 || G.kg, lo, hi); later(); });
 }
 
 /* ---------- coach «Cosa faccio ora?»: consigli calcolati dai tuoi dati, sul telefono ---------- */
@@ -957,7 +898,7 @@ function analyze(){
   return { g, age, minor, goal, logged:logged.length, prev, avgK:avg(x => x.t.kcal), avgP:avg(x => x.t.p), avgFv:avg(x => x.t.fv), avgW:avg(x => x.d.water || 0),
     breakfast: logged.length ? logged.filter(x => (x.d.meals.colazione || []).length).length / logged.length : 1,
     top:Object.values(foods).sort((a, b) => b.kcal - a.kcal).slice(0, 3), sweet, treats,
-    weekendExtra: we.length && wd.length ? mean(we) - mean(wd) : 0, today, tt:totals(today), trend:weightTrend(), streak:streak() };
+    weekendExtra: we.length && wd.length ? mean(we) - mean(wd) : 0, today, tt:totals(today), trend:weightTrend(), data:coachData({ profile:S.profile, days:S.days }), risk:riskNow(true) };
 }
 function nextSlot(){
   const h = new Date().getHours() + new Date().getMinutes() / 60, d = getDay(todayKey()).meals;
@@ -968,31 +909,58 @@ function nextSlot(){
   if (!(d.cena || []).length) return 'Cena';
   return 'Merenda';
 }
-function mealIdea(label){
+// plain: solo i cibi, senza grammi e calorie (quando il coach non ha dati abbastanza solidi per dare numeri)
+function mealIdea(label, plain){
   const plan = buildPlan(todayKey()); const i = plan.findIndex(m => m.label === label); const m = plan[i];
   if (!m) return { t:'', acts:[] };
+  const short = e => e.name.replace(/\s*\(.*?\)/, '').toLowerCase();
+  if (plain) return { t:`**${label}**: ${m.items.map(short).join(', ')}.`, acts:[] };
   const kc = m.items.reduce((a, e) => a + e.kcal, 0), pr = m.items.reduce((a, e) => a + e.p, 0);
-  return { t:`**${label}** da circa ${fmt(kc)} kcal e ${fmt(pr)} g di proteine: ${m.items.map(e => `${e.name.replace(/\s*\(.*?\)/, '').toLowerCase()} ${fmt(e.grams)} g`).join(', ')}.`,
+  return { t:`**${label}** da circa ${fmt(kc)} kcal e ${fmt(pr)} g di proteine: ${m.items.map(e => `${short(e)} ${fmt(e.grams)} g`).join(', ')}.`,
     acts:[{ l:`Aggiungi ${label.toLowerCase()} al diario`, a:'plan:' + i }] };
 }
+// Consigli sull'andamento del peso. Le correzioni delle calorie passano dagli stessi limiti di targets.js: il coach le propone
+// solo se resta margine, e mai per abbassare quando c'è un segnale di rischio.
 function trendAdvice(a){
   const t = S.profile.target, tr = a.trend, out = { tips:[], acts:[] };
   if (a.minor || !t) return out;
-  if (!tr) { out.tips.push(`Non ho abbastanza pesate per capire se il piano funziona. **Pesati una volta a settimana**, al mattino, sempre nello stesso giorno.`); out.acts.push({ l:'Registra il peso', a:'open:goal' }); return out; }
+  if (!tr) { out.tips.push(`Non ho abbastanza pesate per capire se il piano funziona. **Pesati una volta a settimana**, al mattino, sempre nello stesso giorno.`); out.acts.push({ l:'Registra il peso', a:'open:weight' }); return out; }
+  if (!tr.coherent) { out.tips.push(`Tra le ultime pesate c'è un salto insolito, forse un errore di battitura: finché non è corretto non traggo conclusioni dal peso.`); out.acts.push({ l:'Controlla le pesate', a:'open:weight' }); return out; }
+  const step = CONFIG.safety.coachStepKcal, adj = +S.profile.kcalAdj || 0, w = +S.profile.weight;
+  const withAdj = d => targets({ ...S.profile, kcalAdj:adj + d }).kcal;
+  const canLower = !a.risk.includes('lowIntake') && !a.risk.includes('fastLoss') && Math.abs(adj - step) <= CONFIG.safety.coachAdjMaxKcal && withAdj(-step) < a.g.kcal;
+  const canRaise = Math.abs(adj + step) <= CONFIG.safety.coachAdjMaxKcal && withAdj(step) > a.g.kcal;
   const pw = tr.perWeek, fmtR = v => `${v > 0 ? '+' : ''}${fmt1(v)} kg a settimana`;
+  const still = `(${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni)`;
+  const atMin = `Le calorie sono già al minimo prudente per te, quindi non le abbasso. Punta sul movimento, per esempio 30 minuti di camminata al giorno, e sulla precisione del diario. Se il peso resta fermo a lungo, parlane con un dietista.`;
   if (a.goal === 'lose') {
-    if (pw > -.1 && tr.span >= 13) {
-      if (a.logged >= 5 && a.avgK && a.avgK < a.g.kcal * .95) { out.tips.push(`Il peso è fermo (${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni), ma registri in media **${fmt(a.avgK)} kcal**, meno del tuo obiettivo. Probabilmente qualcosa sfugge: olio, bevande, assaggi o porzioni più grandi di quelle segnate. **Per una settimana pesa gli alimenti** con una bilancia da cucina. Se il peso resta fermo, abbassa l'obiettivo di 150 kcal.`); out.acts.push({ l:'Abbassa comunque di 150 kcal', a:'kcal:-150' }); }
-      else if (a.logged >= 5) { out.tips.push(`Il peso è fermo (${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni) anche se registri con costanza. Ti propongo di **abbassare l'obiettivo di 150 kcal** al giorno.`); out.acts.push({ l:'Abbassa di 150 kcal', a:'kcal:-150' }); }
+    if (pw < -w * CONFIG.risk.fastLossFracWeek) { out.tips.push(`Stai perdendo ${fmtR(pw)}: è **più veloce di quanto è prudente** e rischi di perdere muscoli.${canRaise ? ` Ti propongo di aggiungere ${step} kcal al giorno.` : ''}`); if (canRaise) out.acts.push({ l:`Aggiungi ${step} kcal`, a:'kcal:' + step }); }
+    else if (pw > -.1 && tr.span >= 13) {
+      if (a.logged >= 5 && a.avgK && a.avgK < a.g.kcal * .95) { out.tips.push(`Il peso è fermo ${still}, ma registri in media **${fmt(a.avgK)} kcal**, meno del tuo obiettivo. Probabilmente qualcosa sfugge: olio, bevande, assaggi o porzioni più grandi di quelle segnate. **Per una settimana pesa gli alimenti** con una bilancia da cucina.${canLower ? ` Se il peso resta fermo, si può abbassare l'obiettivo di ${step} kcal.` : ''}`); if (canLower) out.acts.push({ l:`Abbassa comunque di ${step} kcal`, a:'kcal:-' + step }); }
+      else if (a.logged >= 5 && canLower) { out.tips.push(`Il peso è fermo ${still} anche se registri con costanza. Ti propongo di **abbassare l'obiettivo di ${step} kcal** al giorno.`); out.acts.push({ l:`Abbassa di ${step} kcal`, a:'kcal:-' + step }); }
+      else if (a.logged >= 5) out.tips.push(`Il peso è fermo ${still} anche se registri con costanza. ${atMin}`);
       else out.tips.push(`Il peso è fermo, ma hai registrato solo ${a.logged} giorni su 7. Prima di cambiare il piano, **segna tutto per una settimana**: spesso le calorie in più si nascondono in olio, bevande e assaggi.`);
-    } else if (pw < -1) { out.tips.push(`Stai perdendo ${fmtR(pw)}: è **troppo veloce** e rischi di perdere muscoli. Aggiungiamo 150 kcal al giorno.`); out.acts.push({ l:'Aggiungi 150 kcal', a:'kcal:150' }); }
+    }
     else if (pw <= -.1) out.tips.push(`Il piano funziona: stai scendendo di ${fmt1(-pw)} kg a settimana. Non cambiare niente!`);
   } else if (a.goal === 'gain' || a.goal === 'muscle') {
-    if (pw < .05 && tr.span >= 13) { out.tips.push(`Il peso non sale (${fmt1(tr.first)} → ${fmt1(tr.last)} kg in ${Math.round(tr.span)} giorni). Ti propongo di **aggiungere 150 kcal** al giorno, per esempio uno yogurt greco con muesli.`); out.acts.push({ l:'Aggiungi 150 kcal', a:'kcal:150' }); }
-    else if (pw > (a.goal === 'muscle' ? .5 : .75)) { out.tips.push(`Stai salendo di ${fmtR(pw)}: più veloce del necessario${a.goal === 'muscle' ? ', e l\'eccesso diventa grasso invece che muscolo' : ''}. Togliamo 150 kcal.`); out.acts.push({ l:'Togli 150 kcal', a:'kcal:-150' }); }
+    if (pw < .05 && tr.span >= 13) { out.tips.push(`Il peso non sale ${still}.${canRaise ? ` Ti propongo di **aggiungere ${step} kcal** al giorno, per esempio uno yogurt greco con muesli.` : ' Le calorie sono già al massimo prudente: prova a distribuirle in più spuntini e a non saltare i pasti.'}`); if (canRaise) out.acts.push({ l:`Aggiungi ${step} kcal`, a:'kcal:' + step }); }
+    else if (pw > .5) { out.tips.push(`Stai salendo di ${fmtR(pw)}: più veloce del necessario${a.goal === 'muscle' ? ', e l\'eccesso diventa grasso invece che muscolo' : ''}. Possiamo togliere ${step} kcal.`); out.acts.push({ l:`Togli ${step} kcal`, a:'kcal:-' + step }); }
     else if (pw >= .05) out.tips.push(`Il piano funziona: stai salendo di ${fmt1(pw)} kg a settimana. Continua così.`);
   }
   return out;
+}
+// Con pochi dati, o con dati che non tornano, il coach non dà numeri: dice cosa manca e resta sulle basi.
+const COACH_NUMERIC = new Set(['plateau', 'gain', 'muscle', 'hungry', 'meal', 'week', 'weight', 'now']);
+function coachPlain(intent, a){
+  const d = a.data, idea = mealIdea(nextSlot(), true);
+  const why = d.why === 'profile' ? { t:`Nel profilo mancano peso o altezza, quindi gli obiettivi che vedi sono valori di riferimento generici. Finché non li aggiungi preferisco non darti numeri.`, acts:[{ l:'Completa il profilo', a:'open:profile' }] }
+    : d.why === 'incoherent' ? { t:`I numeri del diario degli ultimi giorni non tornano: le calorie registrate sono molto lontane da quelle che un corpo usa in un giorno. Di solito manca qualche pasto o c'è una porzione sbagliata. Finché non tornano preferisco non darti numeri.`, acts:[{ l:'Apri il diario', a:'open:diary' }] }
+    : { t:`${d.logged ? `Negli ultimi 7 giorni ${d.logged === 1 ? 'c\'è **1 giorno registrato** per intero' : `ci sono **${d.logged} giorni registrati** per intero`}` : 'Negli ultimi 7 giorni non ci sono ancora giorni registrati per intero'}: troppo poco per darti numeri affidabili, e non voglio tirare a indovinare. Registra i pasti per almeno ${CONFIG.coach.minLoggedDays} giorni e ti dico con precisione cosa cambiare.`, acts:[{ l:'Registra un pasto', a:'open:scan' }] };
+  const basics = intent === 'hungry' ? (a.minor ? 'Intanto, se hai fame, **mangia**: il tuo corpo sta crescendo. Scegli qualcosa che sazia, come frutta, yogurt, pane integrale o un bicchiere di latte.' : 'Intanto, se hai fame, scegli qualcosa che sazia: frutta, yogurt, verdure crude o pane integrale, e un bicchiere d\'acqua.')
+    : intent === 'muscle' ? 'Intanto valgono le basi: allenamento regolare, una fonte di proteine a ogni pasto e un buon sonno.'
+    : intent === 'weight' && a.minor ? 'Mentre cresci non scegliamo un peso da raggiungere: conta come stai e cosa mangi.'
+    : 'Intanto valgono le basi: pasti regolari, una verdura a pranzo e a cena, un frutto a merenda e acqua a portata di mano.';
+  return { t:`${why.t}\n\n${basics}${idea.t ? `\n\n**Un'idea per adesso:** ${idea.t}` : ''}`, acts:why.acts };
 }
 function habitTips(a){
   const g = a.g, tips = [], acts = [];
@@ -1027,10 +995,22 @@ const coachIntents = [
   ['weight', /(peso|obiettivo|chili|kg|bilancia)/],
   ['now', /(cosa faccio|che faccio|aiut|consigli|non so|cosa devo|ciao|salve|buongiorno|ehi)/],
 ];
+// con un segnale di rischio presente la risposta comincia dall'invito gentile, qualunque sia la domanda sui numeri
 function coachReply(text){
+  const r = coachAnswer(text), risk = riskNow(true)[0];
+  if (risk && r.numeric) r.t = `${RISK_TEXT[risk](ageOf(S.profile) < 18)}\n\n${r.t}`;
+  return r;
+}
+function coachAnswer(text){
+  const r = coachCore(text);
+  r.numeric = COACH_NUMERIC.has((coachIntents.find(([, re]) => re.test((text || '').toLowerCase())) || ['fallback'])[0]);
+  return r;
+}
+function coachCore(text){
   const q = (text || '').toLowerCase();
   const intent = (coachIntents.find(([, re]) => re.test(q)) || ['fallback'])[0];
   const a = analyze(), g = a.g, acts = [];
+  if (!a.data.ok && COACH_NUMERIC.has(intent)) return coachPlain(intent, a);
   switch (intent) {
     case 'safety':
       return { t:`Quello che scrivi è importante e merita attenzione. **Parlane con una persona di cui ti fidi**: un genitore, il medico${a.minor ? ', il pediatra' : ''} o un insegnante.\n\nIn Italia puoi chiamare gratis il **Numero Verde SOS Disturbi Alimentari 800 180 969**.\n\nPiattino è un'app: può darti idee per mangiare bene, ma non sostituisce l'aiuto di una persona.` };
@@ -1068,7 +1048,7 @@ function coachReply(text){
       return { t:`${left > 200 ? `Oggi hai ancora circa **${fmt(left)} kcal** a disposizione: mangia pure.\n\n${idea.t}` : `Oggi sei quasi al tuo obiettivo (${fmt(a.tt.kcal)} su ${fmt(g.kcal)} kcal). Scegli cibi che saziano con poche calorie:\n\n1. Verdure crude: carote, finocchi, pomodori, cetrioli.\n2. Un frutto o uno yogurt greco.\n3. Un bicchiere d'acqua o una tisana: a volte la sete sembra fame.`}\n\nPer avere meno fame domani: proteine e verdure a ogni pasto e niente pasti saltati.`, acts:left > 200 ? idea.acts : [] };
     }
     case 'cheat':
-      return { t:`Nessun problema: **un pasto non rovina niente**. Conta la media della settimana${a.logged && !a.minor ? `, che per ora è ${fmt(a.avgK)} kcal al giorno` : ''}.\n\n1. Al prossimo pasto torna alla normalità: niente digiuni per compensare.\n2. Bevi acqua e, se puoi, fai una passeggiata.\n3. Registra comunque quello che hai mangiato: serve per capire, non per giudicarti.`, acts:[{ l:'Registra un pasto', a:'open:scan' }] };
+      return { t:`Nessun problema: **un pasto non rovina niente**. Conta la media della settimana${a.data.ok && !a.minor ? `, che per ora è ${fmt(a.avgK)} kcal al giorno` : ''}.\n\n1. Al prossimo pasto torna alla normalità: niente digiuni per compensare.\n2. Bevi acqua e, se puoi, fai una passeggiata.\n3. Registra comunque quello che hai mangiato: serve per capire, non per giudicarti.`, acts:[{ l:'Registra un pasto', a:'open:scan' }] };
     case 'meal': {
       const map = { colazione:'Colazione', pranzo:'Pranzo', cena:'Cena', spuntino:'Spuntino', merenda:'Merenda' };
       const k = Object.keys(map).find(x => q.includes(x)); const slot = k ? map[k] : nextSlot();
@@ -1079,7 +1059,7 @@ function coachReply(text){
       if (!a.logged) return { t:`Questa settimana non ci sono ancora giorni registrati bene. Comincia da oggi: fotografa i tuoi pasti e tra qualche giorno ti faccio un resoconto completo.`, acts:[{ l:'Fotografa un piatto', a:'open:scan' }] };
       const best = a.prev.filter(x => x.t.n >= 2).sort((x, y) => Math.abs(x.t.kcal - g.kcal) - Math.abs(y.t.kcal - g.kcal))[0];
       const lines = [
-        `Giorni registrati: **${a.logged} su 7**, serie attuale ${a.streak} ${a.streak === 1 ? 'giorno' : 'giorni'}.`,
+        `Giorni registrati: **${a.logged} su 7**.`,
         a.minor ? null : `Calorie medie: **${fmt(a.avgK)}** su ${fmt(g.kcal)} kcal.`,
         `Proteine medie: **${fmt(a.avgP)} g** su ${g.protein} g.`,
         `Frutta e verdura: **${porz(a.avgFv)}** al giorno su 5.`,
@@ -1093,13 +1073,13 @@ function coachReply(text){
     case 'water':
       return { t:`Oggi hai bevuto **${a.today.water || 0} bicchieri su ${g.water}**. ${(a.today.water || 0) >= g.water ? 'Obiettivo raggiunto, ottimo lavoro!' : 'Tieni una borraccia sempre vicino e bevi un bicchiere a ogni pasto.'}`, acts:(a.today.water || 0) < g.water ? [{ l:'Ho bevuto un bicchiere', a:'water' }] : [] };
     case 'motivation':
-      return { t:`${pickQuote()}\n\n${a.streak ? `Hai già una serie di **${a.streak} ${a.streak === 1 ? 'giorno' : 'giorni'}**: non fermarti proprio adesso.` : 'Oggi è un ottimo giorno per ricominciare.'} Non serve fare tutto: scegli **una sola cosa** per oggi, per esempio un bicchiere d'acqua in più o una verdura a cena.` };
+      return { t:`${pickQuote()}\n\n${a.logged ? `Negli ultimi 7 giorni ne hai registrati **${a.logged}**: è già un bel pezzo di strada.` : 'Ogni giorno va bene per ricominciare, anche oggi.'} Non serve fare tutto: scegli **una sola cosa** per oggi, per esempio un bicchiere d'acqua in più o una verdura a cena.` };
     case 'weight': {
       if (a.minor) return { t:`Mentre cresci non scegliamo un peso da raggiungere: conta come stai e cosa mangi. Puoi segnare il tuo peso in «Come cresci» insieme a un genitore.`, acts:[{ l:'Come cresci', a:'open:goal' }] };
       const t = S.profile.target;
       if (!t) return { t:`Non hai ancora un obiettivo di peso. Impostalo: ti dico quando ci arrivi e quante calorie ti servono al giorno.`, acts:[{ l:'Imposta l\'obiettivo', a:'open:goal' }] };
       const left = Math.round((t.kg - S.profile.weight) * 10) / 10, tr = trendAdvice(a);
-      return { t:`Obiettivo: **${fmt1(t.kg)} kg**. Ora pesi ${fmt1(S.profile.weight)} kg: ${Math.abs(left) <= .2 ? 'obiettivo raggiunto, complimenti!' : `mancano **${fmt1(Math.abs(left))} kg**.`}${tr.tips.length ? '\n\n' + tr.tips.join('\n\n') : ''}`, acts:[...tr.acts, { l:'Aggiorna il peso', a:'open:goal' }] };
+      return { t:`Obiettivo: **${fmt1(t.kg)} kg**. Ora pesi ${fmt1(S.profile.weight)} kg: ${Math.abs(left) <= .2 ? 'obiettivo raggiunto, complimenti!' : `mancano **${fmt1(Math.abs(left))} kg**.`}${tr.tips.length ? '\n\n' + tr.tips.join('\n\n') : ''}`, acts:[...tr.acts, { l:'Aggiorna il peso', a:'open:weight' }] };
     }
     case 'now': case 'fallback': default: {
       if (intent === 'fallback' && q.trim()) return { t:`Non sono sicuro di aver capito. Posso aiutarti con queste cose: tocca una delle domande qui sotto.` };
@@ -1145,15 +1125,22 @@ async function coachAsk(q, silent){
 function coachAct(k){
   if (k.startsWith('kcal:')) {
     if (ageOf(S.profile) < 18) return;
-    const before = T().kcal;
-    S.profile.kcalAdj = clamp((+S.profile.kcalAdj || 0) + +k.slice(5), -500, 500); saveProfile();
+    const before = T().kcal, d = +k.slice(5), max = CONFIG.safety.coachAdjMaxKcal;
+    // un segnale di rischio blocca ogni riduzione, anche da un pulsante rimasto in una risposta vecchia
+    const stop = d < 0 && riskNow(true).some(x => x === 'lowIntake' || x === 'fastLoss');
+    if (!stop) { S.profile.kcalAdj = clamp((+S.profile.kcalAdj || 0) + d, -max, max); saveProfile(); }
     const after = T().kcal;
-    S.chat.push({ r:'bot', t:after === before ? `Non posso scendere oltre: ${fmt(after)} kcal è già il minimo sicuro per te. Aumenta invece il movimento: 30 minuti di camminata al giorno.` : `Fatto: il tuo obiettivo passa da ${fmt(before)} a **${fmt(after)} kcal** al giorno. Riparliamone tra due settimane, dopo altre due pesate.`, day:todayKey() });
-    Store.put(); renderChat(); return;
+    S.chat.push({ r:'bot', t:after !== before ? `Fatto: il tuo obiettivo passa da ${fmt(before)} a **${fmt(after)} kcal** al giorno. Riparliamone tra due settimane, dopo altre due pesate.`
+      : d < 0 ? `Non scendo oltre: ${fmt(after)} kcal è già il minimo prudente per te. Meglio puntare sul movimento, per esempio 30 minuti di camminata al giorno; se hai dubbi, parlane con il medico o con un dietista.`
+      : `Non salgo oltre: ${fmt(after)} kcal è già il massimo prudente per te.`, day:todayKey() });
+    Store.put(); renderChat(); render(); return;
   }
   if (k === 'water') { const d = ensureDay(todayKey()); d.water = Math.min(20, (d.water || 0) + 1); saveDay(todayKey()); S.chat.push({ r:'bot', t:`Segnato! Oggi sei a **${d.water} bicchieri**.`, day:todayKey() }); Store.put(); renderChat(); if (S.view === 'today') renderToday(); return; }
   if (k.startsWith('plan:')) { const m = buildPlan(todayKey())[+k.slice(5)]; if (!m) return; const keep = S.date; S.date = todayKey(); addEntries(m.meal, m.items.map(e => ({ ...e, id:rid() })), true); S.date = keep; S.chat.push({ r:'bot', t:`Aggiunto al diario: ${m.label.toLowerCase()} da ${fmt(m.items.reduce((a, e) => a + e.kcal, 0))} kcal.`, day:todayKey() }); Store.put(); renderChat(); render(); return; }
   if (k === 'open:goal') { closeSheet(true); openGoal(); return; }
+  if (k === 'open:weight') { closeSheet(true); openWeight(); return; }
+  if (k === 'open:profile') { closeSheet(true); actions['edit-profile'](); return; }
+  if (k === 'open:diary') { closeSheet(); S.view = 'diary'; render(); window.scrollTo(0, 0); return; }
   if (k === 'open:plan') { closeSheet(); S.view = 'plan'; render(); window.scrollTo(0, 0); return; }
   if (k === 'open:scan') { closeSheet(true); openScanner(); }
 }
@@ -1320,6 +1307,8 @@ function openScanner(meal, rect){
   SC.meal = meal || (S.date === todayKey() ? autoMeal() : 'pranzo');
   SC.state = canCamera() ? 'camera' : 'idle';
   scanOrigin(rect); scanner.classList.add('show'); scanner.setAttribute('aria-hidden', 'false'); document.body.classList.add('locked');
+  // finita l'apertura il bordo diventa esattamente quello dello schermo (raggio 0, gli angoli li ritaglia il display)
+  clearTimeout(SC.flatT); SC.flatT = setTimeout(() => scanner.classList.add('flat'), 650);
   renderScanner(); if (SC.state === 'camera') startCamera();
 }
 // lo scanner cresce dal pulsante che lo apre e, chiudendosi, rientra in «Aggiungi pasto» (se è in vista)
@@ -1330,32 +1319,117 @@ function scanOrigin(rect){
   scanner.style.setProperty('--oy', (r ? r.top + r.height / 2 : innerHeight * .8) + 'px');
 }
 function closeScanner(){
-  SC.run = (SC.run || 0) + 1; SC.state = 'idle'; stopCamera();
-  scanOrigin(); scanner.classList.remove('show'); scanner.setAttribute('aria-hidden', 'true');
+  SC.run = (SC.run || 0) + 1; SC.state = 'idle'; attesaStop(true); stopCamera();
+  clearTimeout(SC.flatT); scanOrigin(); scanner.classList.remove('show', 'flat'); scanner.setAttribute('aria-hidden', 'true');
   if (!sheetEl) document.body.classList.remove('locked');
   if (SC.img) { try { URL.revokeObjectURL(SC.img); } catch (e) {} }
 }
 async function startCamera(){
   if (SC.stream || !canCamera()) { if (SC.stream) attachCamera(); return; }
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:SC.facing || 'environment' }, width:{ ideal:1920 }, height:{ ideal:1920 } }, audio:false });
-    if (!scanner.classList.contains('show') || SC.state !== 'camera') { stream.getTracks().forEach(t => t.stop()); return; }
-    SC.stream = stream; attachCamera();
-  } catch (e) { SC.camOff = true; if (SC.state === 'camera') { SC.state = 'idle'; renderScanner(); } }
+  // ogni avvio ha il suo numero: se nel frattempo ne parte un altro (o la fotocamera si ferma) questo stream si chiude subito
+  const run = SC.camRun = (SC.camRun || 0) + 1;
+  const live = () => run === SC.camRun && scanner.classList.contains('show') && SC.state === 'camera';
+  // 0,5× senza zoom hardware: si apre direttamente la fotocamera ultra grandangolare
+  const uw = (SC.zoom || 1) < 1 && SC.facing !== 'user' && !SC.hw && SC.uwId;
+  const video = { width:{ ideal:1920 }, height:{ ideal:1920 } };
+  if (uw) video.deviceId = { exact:uw }; else video.facingMode = { ideal:SC.facing || 'environment' };
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ video, audio:false }); }
+  catch (e) {
+    if (run !== SC.camRun) return;
+    if (uw) { camUltraFail(); return startCamera(); }   // l'ultra grandangolo non si apre: si torna a 1× senza errori
+    SC.camOff = true; if (SC.state === 'camera') { SC.state = 'idle'; renderScanner(); }
+    return;
+  }
+  const end = () => stream.getTracks().forEach(t => t.stop());
+  if (!live()) return end();
+  const t = stream.getVideoTracks()[0];
+  SC.onUw = !!uw;
+  if (!uw) await camLenses(t);
+  if (!live()) return end();
+  if ((SC.zoom || 1) < 1 && !uw) {
+    if (SC.hw) { try { await t.applyConstraints({ advanced:[{ zoom:SC.hw.ultra }] }); } catch (e) { camUltraFail(); } }
+    else SC.zoom = 1;
+    if (!live()) return end();
+  }
+  SC.stream = stream; attachCamera(); camZoomPaint();
 }
-function stopCamera(){ if (SC.stream) { SC.stream.getTracks().forEach(t => t.stop()); SC.stream = null; } }
+function stopCamera(){ SC.camRun = (SC.camRun || 0) + 1; if (SC.stream) { SC.stream.getTracks().forEach(t => t.stop()); SC.stream = null; } }
 function attachCamera(){
   const v = $('#camVideo'); if (!v || !SC.stream) return;
   v.srcObject = SC.stream; v.play().catch(() => {});
-  v.classList.toggle('mirror', SC.facing === 'user');
+  v.classList.toggle('mirror', SC.facing === 'user'); v.classList.remove('busy');
   const w = $('#camWait'); if (w) w.hidden = true;
 }
+/* obiettivi: SC.zoom è lo zoom scelto nella pillola (0,5 · 1 · 2). Sotto 1 serve l'ultra grandangolo vero, mai un ritaglio:
+   - zoom hardware: sugli iPhone con Dual Wide o Triple Camera Safari apre il dispositivo virtuale e WebKit espone
+     zoom.min 0,5 (1 = grandangolo normale), quindi basta applyConstraints({ zoom:0.5 }) sullo stesso stream;
+   - altrimenti la fotocamera posteriore «ultra grandangolare» separata (riconosciuta dal nome, che c'è solo dopo il permesso).
+   Il 2× resta lo zoom digitale (video ingrandito + ritaglio nello scatto). Lo zoom si azzera a ogni apertura dello scanner. */
+const ULTRA_RE = /ultra|超广角|超廣角|超広角|초광각/i, FRONT_RE = /front|anterior|frontal|avant|vorder|前|전면/i;
+const camDigital = () => Math.max(1, SC.zoom || 1);   // con l'ultra grandangolo lo zoom digitale è 1
+const camZoomTxt = z => String(+z.toFixed(1)).replace('.', ',') + '×';
+async function camLenses(t){
+  SC.hw = null;
+  if (!t || SC.facing === 'user') return;
+  const caps = t.getCapabilities ? t.getCapabilities() : {}, set = t.getSettings ? t.getSettings() : {};
+  const base = set.zoom || 1;
+  if (caps.zoom && caps.zoom.min < base - .05) { SC.hw = { base, ultra:Math.max(caps.zoom.min, base / 2) }; return; }
+  if (SC.uwId !== undefined) return;   // la ricerca per nome si fa una volta sola per sessione
+  try {
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const d = devs.find(x => x.kind === 'videoinput' && x.deviceId && x.deviceId !== set.deviceId && ULTRA_RE.test(x.label) && !FRONT_RE.test(x.label));
+    SC.uwId = d ? d.deviceId : null;
+  } catch (e) { SC.uwId = null; }
+}
+function camZooms(){
+  const u = SC.facing === 'user' ? 0 : SC.hw ? SC.hw.ultra / SC.hw.base : SC.uwId ? .5 : 0;
+  return u ? [u, 1, 2] : [1, 2];
+}
+function camZoomPill(){
+  return camZooms().map(z => {
+    const on = Math.abs(z - (SC.zoom || 1)) < .01, t = camZoomTxt(z);
+    return `<button class="${on ? 'on' : ''}" data-a="cam-zoom" data-z="${z}" aria-pressed="${on}" aria-label="${z < 1 ? 'Grandangolo' : 'Zoom'} ${t}">${t}</button>`;
+  }).join('');
+}
+function camZoomPaint(){
+  const p = $('#camZoom'), v = $('#camVideo');
+  if (v) v.style.setProperty('--z', camDigital());
+  if (!p) return;
+  const k = camZooms().join();
+  if (p.dataset.k !== k) { p.dataset.k = k; p.innerHTML = camZoomPill(); return; }
+  p.querySelectorAll('button').forEach(b => { const on = Math.abs(+b.dataset.z - (SC.zoom || 1)) < .01; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+function camWaitShow(txt){
+  const w = $('#camWait'), v = $('#camVideo');
+  if (w) { w.textContent = txt; w.hidden = false; }
+  if (v) v.classList.add('busy');
+}
+function camUltraFail(){
+  SC.hw = null; SC.uwId = null; SC.onUw = false; SC.zoom = 1; camZoomPaint();
+  toast('Grandangolo non disponibile: torno a 1×', true);
+}
+async function camSetZoom(z){
+  const was = SC.zoom || 1; if (!z || Math.abs(z - was) < .01) return;
+  SC.zoom = z; camZoomPaint();
+  if (SC.facing === 'user' || (was < 1) === (z < 1)) return;   // 1× ↔ 2× è solo digitale
+  const t = SC.stream && SC.stream.getVideoTracks()[0];
+  if (SC.hw && !SC.onUw) {
+    if (!t) return;   // lo stream sta partendo: lo zoom scelto lo applica startCamera
+    try { await t.applyConstraints({ advanced:[{ zoom:z < 1 ? SC.hw.ultra : SC.hw.base }] }); }
+    catch (e) { if (z < 1) camUltraFail(); }
+    return;
+  }
+  // obiettivo separato: si chiude lo stream di prima e si apre l'altro (mai due fotocamere accese insieme)
+  camWaitShow('Cambio obiettivo…'); stopCamera(); startCamera();
+}
 async function snapCamera(){
-  const v = $('#camVideo'); if (!v || !v.videoWidth) return;
+  // durante «Cambio obiettivo…» (o senza stream) niente scatto: si catturerebbe un fotogramma vecchio o nero
+  const v = $('#camVideo'); if (!v || !v.videoWidth || !SC.stream || v.classList.contains('busy')) return;
   const f = $('#camFlash'); if (f) { f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
-  // ritaglia esattamente ciò che vedi nel mirino (object-fit: cover + zoom)
+  // ritaglia esattamente ciò che vedi nel mirino (object-fit: cover + zoom digitale; l'ultra grandangolo è già nel video)
   const vw = v.videoWidth, vh = v.videoHeight, ew = v.clientWidth, eh = v.clientHeight;
-  const sc = Math.max(ew / vw, eh / vh), z = SC.zoom || 1;
+  const sc = Math.max(ew / vw, eh / vh), z = camDigital();
   const cw = ew / sc / z, ch = eh / sc / z;
   const c = document.createElement('canvas'); c.width = Math.round(cw); c.height = Math.round(ch);
   c.getContext('2d').drawImage(v, (vw - cw) / 2, (vh - ch) / 2, cw, ch, 0, 0, c.width, c.height);
@@ -1369,11 +1443,11 @@ function renderCamera(){
   scanner.innerHTML = `<div class="cam">
     <div class="cam-top"><button class="close-btn" data-a="scan-close" aria-label="Chiudi">${I.x}</button><span class="pill">${esc(mealByK(SC.meal).l)}</span><span></span></div>
     <div class="cam-view">
-      <video id="camVideo" playsinline muted autoplay style="--z:${SC.zoom || 1}"></video>
+      <video id="camVideo" playsinline muted autoplay style="--z:${camDigital()}"></video>
       <div class="cam-wait" id="camWait" ${SC.stream ? 'hidden' : ''}>Avvio la fotocamera…</div>
       <div class="cam-guide"><i></i><i></i><i></i><i></i></div>
       <div class="cam-hint ios-glass">Inquadra tutto il piatto dall'alto</div>
-      <div class="cam-zoom ios-glass">${[1, 2].map(z => `<button class="${(SC.zoom || 1) === z ? 'on' : ''}" data-a="cam-zoom" data-z="${z}" aria-label="Zoom ${z}x">${z}×</button>`).join('')}</div>
+      <div class="cam-zoom ios-glass" id="camZoom" role="group" aria-label="Zoom" data-k="${camZooms().join()}">${camZoomPill()}</div>
       <div class="cam-flash" id="camFlash"></div>
     </div>
     <div class="cam-bottom">
@@ -1404,16 +1478,17 @@ function renderScanner(){
     </div></div>
     <div class="status" id="scanStatus">${status}</div>
     <div class="status-sub" id="scanSub">${sub}</div>
-    ${st === 'scanning' ? `<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="scanProg"><div class="prog-pct" id="scanPct">${Math.round(SC.pctShown || 0)}%</div><div class="prog-bar"><i id="scanBar" style="width:${SC.pctShown || 0}%"></i></div></div>` : ''}
+    ${st === 'scanning' ? `<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="scanProg"><div class="prog-pct" id="scanPct">${Math.round(SC.pctShown || 0)}%</div><div class="prog-bar"><i id="scanBar" style="width:${SC.pctShown || 0}%"></i></div></div><p class="scan-wait ${attesaClass()}" id="scanWait" role="status" aria-live="polite">${attesaText()}</p>` : ''}
     <div class="scan-actions">
       ${st === 'idle' ? `<button class="btn primary" data-a="pick-photo">${I.camera} Scatta o scegli una foto</button><button class="btn tinted" data-a="scan-describe">Descrivi a parole</button>` : ''}
       ${st === 'describe' ? `<textarea id="scanDesc" class="scan-desc" rows="3" maxlength="400" placeholder="Es. un piatto di pasta al pomodoro, una mela e un bicchiere di latte">${esc(SC.desc || '')}</textarea><button class="btn primary" data-a="scan-desc-go">${I.spark} Analizza</button>${canCamera() ? `<button class="btn tinted" data-a="scan-again">Torna alla fotocamera</button>` : ''}` : ''}
-      ${st === 'scanning' ? `<button class="btn tinted" data-a="scan-stop">Annulla</button>` : ''}
+      ${st === 'scanning' ? `<button class="btn primary scan-wait-btn" id="scanWaitBtn" data-a="scan-wait-describe" ${SC.waitLvl >= 2 ? '' : 'hidden'}>Descrivi a parole</button><button class="btn tinted" data-a="scan-stop">Annulla</button>` : ''}
       ${st === 'error' ? `<button class="btn primary" data-a="scan-again">${I.camera} Riprova</button><button class="btn tinted" data-a="scan-describe">Descrivi a parole</button><button class="btn tinted" data-a="scan-manual">Cerca nell'elenco</button>` : ''}
     </div>
   </div>
   <div class="result" id="scanResult"></div>`;
   if (st === 'describe') setTimeout(() => $('#scanDesc')?.focus(), 350);
+  if (st !== 'scanning') attesaStop();
 }
 const STATUS_STEPS = ['Analizzo forme e colori', 'Riconosco gli ingredienti', 'Stimo le porzioni', 'Calcolo i nutrienti'];
 async function prepImage(file){
@@ -1556,76 +1631,7 @@ const IT = {
 const GENERIC = { rice:new Set(['risotto','white rice','pilaf','coconut rice','rice and gravy']), pasta:new Set(['spaghetti','pasta salad','macaroni salad']) };
 const VARIANTS = { rice:['risozaff','risotto','risobianco','risopom'], pasta:['pastapom','pastabianco','pastapesto','carbonara'] };
 
-/* PiattinoScan: il riconoscimento addestrato per Piattino (EfficientNet-B0 su Food-101 e sui cibi di Piattino).
-   Se non si carica, l'app usa i due modelli di Google qui sopra. */
-const SCAN_URL = 'model-scan/';
-const SCAN = {
-  // pesi in 8 bit con una scala per canale → tensori float32
-  fromBuffers(spec, buf){
-    const W = {};
-    for (const [name, t] of Object.entries(spec.tensors)) {
-      const n = t.shape.reduce((a, b) => a * b, 1);
-      let data;
-      if (t.dtype === 'f32') data = new Float32Array(buf, t.o, n);
-      else {
-        const q = new Int8Array(buf, t.o, n), sc = new Float32Array(buf, t.so, t.ch);
-        data = new Float32Array(n);
-        for (let i = 0; i < n; i++) data[i] = q[i] * sc[i % t.ch];
-      }
-      W[name] = tf.tensor(data, t.shape);
-    }
-    return { spec, W, id: spec.classes.length + '-' + spec.bytes };
-  },
-  async load(base, onFrac){
-    const spec = await fetch(base + 'model.json').then(r => { if (!r.ok) throw new Error('model.json ' + r.status); return r.json(); });
-    const res = await fetch(base + 'weights.bin'); if (!res.ok) throw new Error('weights.bin ' + res.status);
-    const reader = res.body && res.body.getReader ? res.body.getReader() : null;
-    let buf;
-    if (reader) {
-      const all = new Uint8Array(spec.bytes); let got = 0;
-      for (;;) { const { done, value } = await reader.read(); if (done) break; all.set(value, got); got += value.length; onFrac(got / spec.bytes); }
-      buf = all.buffer;
-    } else { buf = await res.arrayBuffer(); onFrac(1); }
-    return SCAN.fromBuffers(spec, buf);
-  },
-  // due inquadrature, tutta la foto e la zona centrale; il browser rimpicciolisce con qualità alta, come in addestramento
-  inputs(m, src){
-    const { size, mean, std } = m.spec, W = src.width, H = src.height;
-    const view = (sx, sy, sw, sh) => { const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, sx, sy, sw, sh, 0, 0, size, size); return c; };
-    const views = [view(0, 0, W, H), view(W * .12, H * .12, W * .76, H * .76)];
-    return tf.tidy(() => tf.stack(views.map(c => tf.browser.fromPixels(c))).toFloat().div(255).sub(mean).div(std));
-  },
-  // x: [n, size, size, 3] → { logits [n, classi], emb [n, embed] }
-  forward(m, x){
-    const W = m.W; let emb;
-    const seq = (ops, h) => {
-      for (const op of ops) {
-        if (op.t === 'conv') {
-          const a = { x: h, filter: W[op.w], strides: op.s, pad: op.p, bias: W[op.b] };
-          h = op.dw ? tf.fused.depthwiseConv2d(a) : tf.fused.conv2d(a);
-          if (op.act === 'silu') h = tf.mul(h, tf.sigmoid(h));
-        } else if (op.t === 'se') {
-          let s = tf.mean(h, [1, 2]);
-          s = tf.add(tf.matMul(s, W[op.rw]), W[op.rb]); s = tf.mul(s, tf.sigmoid(s));
-          s = tf.sigmoid(tf.add(tf.matMul(s, W[op.ew]), W[op.eb]));
-          h = tf.mul(h, tf.reshape(s, [s.shape[0], 1, 1, s.shape[1]]));
-        } else if (op.t === 'block') { const y = seq(op.ops, h); h = op.skip ? tf.add(h, y) : y; }
-        else if (op.t === 'pool') { h = tf.mean(h, [1, 2]); emb = h; }
-        else if (op.t === 'dense') h = tf.add(tf.matMul(h, W[op.w]), W[op.b]);
-      }
-      return h;
-    };
-    const logits = seq(m.spec.ops, x);
-    return { logits, emb };
-  },
-  // impronta della foto per la memoria delle correzioni: centrata sulla media dei cibi e di lunghezza 1
-  embed(m, e){
-    const mu = m.spec.emb_mean, v = new Float32Array(e.length); let n = 0;
-    for (let i = 0; i < e.length; i++) { v[i] = e[i] - (mu ? mu[i] : 0); n += v[i] * v[i]; }
-    n = Math.sqrt(n) || 1; for (let i = 0; i < v.length; i++) v[i] /= n;
-    return v;
-  },
-};
+/* PiattinoScan: la rete e il caricamento dei pesi stanno in scan.js */
 // classi di PiattinoScan → voci dell'app: id di un cibo dell'elenco, [categoria, nome] o [nome, icona, kcal, P, C, G (per 100 g), porzione, frutta/verdura].
 // I cibi extra hanno già l'id del cibo dell'elenco.
 const SCAN_MAP = {
@@ -1871,41 +1877,18 @@ async function recognizePhoto(canvas, onFrac){
 /* porzione automatica: quanta parte del piatto è coperta dal cibo.
    Il piatto (chiaro, poco saturo) fa da riferimento, quindi la stima non dipende da quanto sei vicino. */
 const NO_SCALE = new Set(['caffe','latte','latteint','soia','succo','bibita','ghiacciolo','yogurt','greco','cioccolata', ...DRINKS]);
+// cibi chiari: su un piatto chiaro non si distinguono dal piatto, quindi la copertura misurata sarebbe troppo bassa
+const PALE = new Set(['risobianco','riso','pastabianco','mozzarella','burrata','ricotta','stracchino','fiocchilatte','pure','cavolfiore','gnocchi','tofu','feta','finocchi']);
 function estimatePortion(canvas){
   try {
-    const N = 72, c = document.createElement('canvas'); c.width = c.height = N;
+    const N = CONFIG.portion.grid, c = document.createElement('canvas'); c.width = c.height = N;
     const g = c.getContext('2d', { willReadFrequently:true }); g.drawImage(canvas, 0, 0, N, N);
-    const d = g.getImageData(0, 0, N, N).data;
-    const plate = new Uint8Array(N * N);
-    let minX = N, minY = N, maxX = -1, maxY = -1, pc = 0;
-    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-      const i = (y * N + x) * 4, r = d[i], gg = d[i + 1], b = d[i + 2];
-      const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), l = (mx + mn) / 510, sat = mx ? (mx - mn) / mx : 0;
-      if (sat < .16 && l > .66) { plate[y * N + x] = 1; pc++; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
-    }
-    const w = maxX - minX + 1, h = maxY - minY + 1;
-    // serve un piatto chiaro abbastanza grande e abbastanza rotondo
-    if (pc < N * N * .08 || w < N * .4 || h < N * .4 || w / h > 1.8 || h / w > 1.8) return { method:'standard', scale:1 };
-    const cx = minX + w / 2, cy = minY + h / 2, rx = w / 2, ry = h / 2;
-    let inside = 0, food = 0, rim = 0, rimPlate = 0;
-    for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) {
-      const dx = (x + .5 - cx) / rx, dy = (y + .5 - cy) / ry, e = dx * dx + dy * dy;
-      if (e > 1) continue;
-      const isPlate = plate[y * N + x];
-      if (e > .62) { rim++; if (isPlate) rimPlate++; continue; }   // bordo del piatto (oltre il 79% del raggio)
-      inside++; if (!isPlate) food++;
-    }
-    // il bordo deve essere davvero piatto: nei primi piani il "bianco" è besciamella o sfondo
-    if (inside < 50 || rim < 30 || rimPlate / rim < .45) return { method:'standard', scale:1 };
-    const cover = food / inside;
-    if (cover < .04) return { method:'standard', scale:1 };
-    // una porzione "media" copre circa metà della parte interna del piatto
-    return { method:'plate', cover, scale: clamp(cover / .55, .5, 1.6) };
+    return estimateFromPixels(g.getImageData(0, 0, N, N).data, N);
   } catch (e) { return { method:'standard', scale:1 }; }
 }
 function applyEstimate(items, est){
   items.forEach(x => {
-    if (est.method !== 'plate' || (x.key && (PIECE[x.key] || NO_SCALE.has(x.key)))) return;
+    if (est.method !== 'plate' || (x.key && (PIECE[x.key] || NO_SCALE.has(x.key) || PALE.has(x.key)))) return;
     x.auto = Math.max(10, Math.round(x.base * est.scale / 10) * 10);
     x.grams = x.auto;
   });
@@ -1971,6 +1954,7 @@ const TIPS = {
 };
 /* progress: the number follows the real work and never goes backwards */
 function setPct(target, sub){
+  if (target > (SC.realPct || 0)) { SC.realPct = target; SC.waitAt = Date.now(); }   // avanzamento vero (non la corsa lenta di SC.creep): serve a capire se l'analisi è ferma
   SC.pctTarget = Math.max(SC.pctTarget || 0, Math.min(100, target));
   if (sub && sub !== SC.sub) { SC.sub = sub; swapText($('#scanSub'), sub); }
   if (!SC.pctRaf) SC.pctRaf = setTimeout(tickPct, 30);
@@ -1986,6 +1970,59 @@ function tickPct(){
   $('#scanProg')?.setAttribute('aria-valuenow', n);
   if (SC.state === 'scanning' && (SC.pctShown < tgt || SC.creep)) SC.pctRaf = setTimeout(tickPct, 30);
 }
+/* «Non chiudere questa schermata»: compare con calma dopo qualche secondo; se l'avanzamento vero si ferma diventa un avviso più chiaro,
+   poi dice cosa fare. Non chiude mai nulla da solo. Tiene lo schermo acceso (Wake Lock) finché l'analisi dura. */
+const ATTESA = [
+  'Non chiudere questa schermata.',
+  'Ci vuole un po’ più del solito. Non chiudere questa schermata: sto ancora lavorando.',
+  'Sembra ferma. Aspetta ancora un momento; se non riparte, tocca Annulla e riprova, oppure descrivi il piatto a parole.'
+];
+const attesaText = () => SC.waitLvl >= 0 ? ATTESA[SC.waitLvl] : '';
+const attesaClass = () => SC.waitLvl >= 0 ? 'in' + (SC.waitLvl ? ' warn' : '') + (SC.waitLvl > 1 ? ' hard' : '') : '';
+function attesaLevel(){
+  const now = Date.now(), tot = now - SC.waitT0, stall = now - SC.waitAt;
+  if (stall >= 25000) return 2;
+  if (stall >= 6000 || tot >= 40000) return 1;
+  return tot >= 2500 ? 0 : -1;
+}
+function attesaTick(){
+  if (!SC.waitTimer) return;
+  if (SC.state !== 'scanning' || SC.run !== SC.waitRun) return attesaStop();   // analisi finita, annullata o scanner chiuso
+  const lvl = attesaLevel(); if (lvl === SC.waitLvl) return;
+  const had = SC.waitLvl >= 0; SC.waitLvl = lvl;
+  const el = $('#scanWait'); if (!el) return;
+  el.className = 'scan-wait ' + attesaClass();
+  const wb = $('#scanWaitBtn'); if (wb) wb.hidden = lvl < 2;
+  if (had && lvl >= 0) swapText(el, attesaText()); else el.textContent = attesaText();
+}
+function attesaStart(run){
+  attesaStop();
+  SC.waitT0 = SC.waitAt = Date.now(); SC.waitRun = run; SC.waitLvl = -1; SC.realPct = 0;
+  SC.waitTimer = setInterval(attesaTick, 500);
+  attesaLock();
+}
+function attesaStop(abort){
+  // analisi lasciata dopo un lungo stallo con il modello non pronto: la promessa appesa non deve ripresentarsi al tentativo dopo, che riparte dal processore
+  // (a ogni uscita con il modello non pronto si azzera modelP, così il tentativo dopo riparte da capo; il ripiego sul processore solo dopo uno stallo lungo)
+  if (abort && SC.waitTimer && !SCANM) {
+    modelP = null;
+    if (Date.now() - SC.waitAt >= 25000) { try { localStorage.setItem('piattino-gl-' + APP_VERSION, 'cpu'); } catch (e) {} }
+  }
+  if (SC.waitTimer) { clearInterval(SC.waitTimer); SC.waitTimer = 0; }
+  SC.waitLvl = -1; attesaUnlock();
+}
+async function attesaLock(){
+  if (!navigator.wakeLock || SC.wakeBusy || SC.wake) return;
+  SC.wakeBusy = true;
+  try {
+    const w = await navigator.wakeLock.request('screen');
+    if (!SC.waitTimer) { w.release().catch(() => {}); } else { SC.wake = w; w.addEventListener('release', () => { if (SC.wake === w) SC.wake = null; }); }
+  } catch (e) {}
+  SC.wakeBusy = false;
+}
+function attesaUnlock(){ const w = SC.wake; SC.wake = null; if (w) w.release().catch(() => {}); }
+// il blocco schermo o il cambio di app rilasciano il Wake Lock da soli: al ritorno lo richiedo di nuovo se l'analisi è ancora in corso
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && SC.waitTimer && SC.state === 'scanning') attesaLock(); });
 const waitPct = v => new Promise(res => { const t0 = Date.now(); (function chk(){ if ((SC.pctShown || 0) >= v - .5 || Date.now() - t0 > 1500 || SC.state !== 'scanning') res(); else setTimeout(chk, 40); })(); });
 
 async function handlePhoto(file){
@@ -2002,7 +2039,7 @@ async function runScan(){
   const run = SC.run = (SC.run || 0) + 1;
   const fromText = !!SC.desc;
   Object.assign(SC, { items:[], tip:'', sub:'', pctShown:0, pctTarget:0, creep:0, est:null, emb:null, scanTop:null });
-  SC.state = 'scanning'; renderScanner();
+  SC.state = 'scanning'; attesaStart(run); renderScanner();
   const t0 = Date.now();
   let items = [], dish = 0, failed = false;
   try {
@@ -2021,6 +2058,7 @@ async function runScan(){
   } catch (e) { failed = true; console.error(e); }
   SC.creep = 0;
   if (run !== SC.run || SC.state !== 'scanning') return;
+  attesaStop();
   setPct(100, failed ? '' : 'Fatto');
   await waitPct(100);
   const min = fromText ? 1200 : 1600; if (Date.now() - t0 < min) await sleep(min - (Date.now() - t0));
@@ -2147,15 +2185,15 @@ const actions = {
   'reset-ask': () => { $('#resetBox').innerHTML = `<p class="note" style="margin:0 0 10px">Vuoi cancellare profilo, diario e cibi memorizzati? L'operazione non si può annullare.</p><div class="stack"><button class="btn danger fill" data-a="reset-yes">Sì, cancella tutto</button><button class="btn tinted" data-a="tab" data-v="profile">Annulla</button></div>`; },
   'reset-yes': () => {
     Store.del('profile'); Object.keys(S.days).forEach(k => Store.del('day-' + k)); S.foods.forEach(f => Store.del('food-' + f.id)); SCANMEM.clear();
-    S.profile = null; S.days = {}; S.foods = []; S.weights = []; S.chat = []; S.view = 'today'; S.date = todayKey();
+    S.profile = null; S.days = {}; S.foods = []; S.weights = []; S.chat = []; S.meta = { riskSeen:{}, askedBody:false }; S.view = 'today'; S.date = todayKey();
     try { localStorage.removeItem(LKEY); } catch (e) {}
     render(); window.scrollTo(0, 0);
   },
   scan: () => { S.date = S.date || todayKey(); openScanner(); },
   'scan-close': () => closeScanner(),
   'cam-shot': () => snapCamera(),
-  'cam-zoom': el => { SC.zoom = +el.dataset.z; const v = $('#camVideo'); if (v) v.style.setProperty('--z', SC.zoom); document.querySelectorAll('.cam-zoom button').forEach(b => b.classList.toggle('on', +b.dataset.z === SC.zoom)); },
-  'cam-flip': () => { SC.facing = SC.facing === 'user' ? 'environment' : 'user'; stopCamera(); const w = $('#camWait'); if (w) w.hidden = false; startCamera(); },
+  'cam-zoom': el => camSetZoom(+el.dataset.z),
+  'cam-flip': () => { SC.facing = SC.facing === 'user' ? 'environment' : 'user'; if ((SC.zoom || 1) < 1) SC.zoom = 1; SC.hw = null; SC.onUw = false; stopCamera(); camWaitShow('Avvio la fotocamera…'); camZoomPaint(); startCamera(); },
   'scan-again': () => { SC.run = (SC.run || 0) + 1; Object.assign(SC, { img:null, desc:'', items:[] }); SC.state = canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); else actions['pick-photo'](); },
   'res-portion': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.grams = el.dataset.g ? +el.dataset.g : Math.max(5, Math.round(x.base * +el.dataset.f / 5) * 5); renderResult(); },
   export: () => exportData(),
@@ -2166,25 +2204,64 @@ const actions = {
   coach: () => openCoach(),
   'coach-ask': el => coachAsk(el.dataset.q),
   'coach-act': el => coachAct(el.dataset.k),
-  'gw-step': el => { G.cur = clamp(Math.round((G.cur + +el.dataset.d) * 10) / 10, 20, 300); const i = $('#gwIn'); if (i) i.value = G.cur; },
-  'gk-step': el => { G.kg = clamp(Math.round((G.kg + +el.dataset.d) * 2) / 2, 20, 300); renderGoal(); },
+  'gw-step': el => { const [lo, hi] = CONFIG.limits.weight; G.cur = clamp(Math.round((G.cur + +el.dataset.d) * 10) / 10, lo, hi); G.jumpOk = null; const i = $('#gwIn'); if (i) i.value = G.cur; if (G.mode === 'goal') { clearTimeout(G.t); G.t = setTimeout(renderGoal, 600); } },
+  'gk-step': el => { const [lo, hi] = CONFIG.limits.weight; G.kg = clamp(Math.round((G.kg + +el.dataset.d) * 2) / 2, lo, hi); renderGoal(); },
   'g-rate': el => { G.rate = +el.dataset.r; renderGoal(); },
-  'gw-save': () => { const i = $('#gwIn'); if (i) G.cur = clamp(Math.round(+i.value * 10) / 10 || G.cur, 20, 300); logWeight(G.cur); S.profile.weight = G.cur; saveProfile(); renderGoal(); toast(`Peso registrato: ${fmt1(G.cur)} kg`); },
+  'gw-save': () => {
+    clearTimeout(G.t);
+    const i = $('#gwIn'), v = i ? Math.round(+String(i.value).replace(',', '.') * 10) / 10 : G.cur, [lo, hi] = CONFIG.limits.weight;
+    const fail = msg => { G.wErr = msg; G.jumpOk = null; renderGoal(); };
+    if (!(v >= lo && v <= hi)) return fail(`Inserisci un peso tra ${lo} e ${hi} kg.`);
+    if (checkBody(v, S.profile.height) === 'bmi') return fail('Con la tua altezza questo peso non sembra plausibile: controlla di averlo scritto in kg.');
+    G.cur = v;
+    // un salto grande rispetto all'ultima pesata è spesso un errore di battitura: si chiede conferma una volta
+    const j = weightJump(S.weights, v);
+    if (j && G.jumpOk !== v) { G.jumpOk = v; G.wErr = `Hai scritto ${fmt1(v)} kg, ma l'ultima pesata era ${fmt1(j.kg)} kg. Se è giusto, conferma.`; return renderGoal(); }
+    G.wErr = ''; G.jumpOk = null;
+    const before = T().kcal;
+    logWeight(v); S.profile.weight = v; saveProfile();
+    const after = T().kcal;
+    render(); renderGoal();
+    toast(after !== before ? `${fmt1(v)} kg registrati · ora ${fmt(after)} kcal al giorno` : `Peso registrato: ${fmt1(v)} kg`);
+  },
+  'w-del': el => {
+    if (S.weights.length < 2) return;
+    S.weights = S.weights.filter(x => x.d !== el.dataset.d);
+    // il peso del profilo è sempre l'ultima pesata rimasta
+    S.profile.weight = S.weights[S.weights.length - 1].kg; G.cur = +S.profile.weight; G.wErr = ''; G.jumpOk = null;
+    saveProfile(); render(); renderGoal(); toast('Pesata tolta');
+  },
+  weight: () => openWeight(),
+  'review-open': () => { closeSheet(true); if (S.profile.goal === 'lose' || S.profile.goal === 'gain' || S.profile.goal === 'muscle' || S.profile.target) openGoal(); else actions['edit-profile'](); },
+  'review-keep': el => {
+    // «Va bene così»: l'obiettivo resta, e il peso di oggi diventa il nuovo riferimento
+    if (el.dataset.k === 'changed') S.profile.goalRef = { kg:+S.profile.weight, d:todayKey() };
+    else S.profile.reviewSeen = { kind:el.dataset.k, d:todayKey() };
+    saveProfile(); render(); renderGoal();
+  },
+  'review-maintain': () => {
+    const p = S.profile; p.goal = 'maintain'; delete p.target; delete p.kcalAdj; delete p.reviewSeen; p.goalRef = { kg:+p.weight, d:todayKey() };
+    saveProfile(); closeSheet(); render(); toast('Obiettivo: mantenere il peso');
+  },
+  'risk-ok': el => { S.meta.riskSeen[el.dataset.k] = todayKey(); Store.put(); render(); },
   'goal-save': () => {
+    clearTimeout(G.t);
     const sm = goalSummary(); if (G.kg < sm.lo) return;
-    const prev = S.profile.target;
-    S.profile.target = { kg:G.kg, rate:G.rate, startKg: prev && prev.kg === G.kg ? prev.startKg : G.cur, startDate: prev && prev.kg === G.kg ? prev.startDate : todayKey() };
-    S.profile.goal = sm.goal; S.profile.weight = G.cur; delete S.profile.kcalAdj;
+    const prev = S.profile.target, same = prev && prev.kg === G.kg && validKg(+prev.startKg);
+    S.profile.target = { kg:G.kg, rate:G.rate, startKg: same ? prev.startKg : G.cur, startDate: same ? prev.startDate : todayKey() };
+    S.profile.goal = sm.goal; S.profile.weight = G.cur; delete S.profile.kcalAdj; delete S.profile.reviewSeen;
+    S.profile.goalRef = { kg:G.cur, d:todayKey() };
     if (!S.weights.some(x => x.d === todayKey())) logWeight(G.cur);
     saveProfile(); closeSheet(); render(); toast(sm.goal === 'maintain' ? 'Obiettivo: mantenere il peso' : `Obiettivo salvato: ${fmt1(G.kg)} kg`);
   },
-  'goal-clear': () => { delete S.profile.target; delete S.profile.kcalAdj; saveProfile(); closeSheet(); render(); toast('Obiettivo di peso tolto'); },
+  'goal-clear': () => { delete S.profile.target; delete S.profile.kcalAdj; delete S.profile.reviewSeen; S.profile.goalRef = { kg:+S.profile.weight, d:todayKey() }; saveProfile(); closeSheet(); render(); toast('Obiettivo di peso tolto'); },
   preload: () => preloadModel(),
   import: () => { const inp = $('#backupInput'); inp.value = ''; inp.click(); },
-  'import-yes': () => { const d = S.pendingImport; if (!d) return; S.profile = d.profile; S.days = d.days || {}; S.foods = d.foods || []; S.weights = d.weights || []; S.pendingImport = null; Store.saveNow(); S.view = 'today'; S.date = todayKey(); render(); window.scrollTo(0, 0); toast('Backup importato'); },
+  'import-yes': () => { const d = S.pendingImport; if (!d) return; S.profile = d.profile; S.days = d.days; S.foods = d.foods; S.weights = d.weights; S.meta = d.meta; S.pendingImport = null; Store.saveNow(); S.view = 'today'; S.date = todayKey(); render(); window.scrollTo(0, 0); toast('Backup importato'); },
   'scan-describe': () => { stopCamera(); SC.state = 'describe'; renderScanner(); },
   'scan-desc-go': () => { const t = ($('#scanDesc')?.value || '').trim(); if (!t) { $('#scanDesc')?.focus(); return; } SC.desc = t.slice(0, 400); runScan(); },
-  'scan-stop': () => { SC.run = (SC.run || 0) + 1; SC.img = null; SC.state = SC.desc ? 'describe' : canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); },
+  'scan-wait-describe': () => { SC.run = (SC.run || 0) + 1; attesaStop(true); SC.img = null; SC.state = 'describe'; renderScanner(); },
+  'scan-stop': () => { SC.run = (SC.run || 0) + 1; attesaStop(true); SC.img = null; SC.state = SC.desc ? 'describe' : canCamera() ? 'camera' : 'idle'; renderScanner(); if (SC.state === 'camera') startCamera(); },
   'pick-photo': () => { stopCamera(); const inp = $('#photoInput'); inp.value = ''; inp.click(); },
   'scan-manual': () => { const thumb = SC.thumb, emb = SC.emb; closeScanner(); openAdd(SC.meal); A.pendingThumb = thumb; A.pendingEmb = emb; },
   'res-toggle': el => { const x = SC.items.find(i => i.id === el.dataset.id); if (!x) return; x.on = !x.on; if (x.on && x.grp) SC.items.forEach(i => { if (i !== x && i.grp) i.on = false; }); SC.touched = true; renderResult(); },
@@ -2226,40 +2303,19 @@ $('#photoInput').addEventListener('change', e => { const f = e.target.files && e
 window.addEventListener('focus', () => setTimeout(() => { if (scanner.classList.contains('show') && SC.state === 'camera' && !SC.stream) startCamera(); }, 400));
 $('#backupInput').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
-  let d = null; try { d = JSON.parse(await f.text()); } catch (err) {}
-  if (!d || d.app !== 'piattino' || typeof d.days !== 'object' || !d.profile) { toast('Questo file non è un backup di Piattino.', true); return; }
-  // Sanitize imported data to prevent XSS via crafted backup files
-  const cleanStr = (s, max) => (typeof s === 'string' ? s : '').slice(0, max);
-  const isDataImage = s => typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(s) && s.length < 300000;
-  const cleanEntry = entry => ({
-    id: cleanStr(entry.id, 32),
-    name: cleanStr(entry.name, 80),
-    emoji: cleanStr(entry.emoji, 8),
-    icon: typeof entry.icon === 'string' && /^[a-z-]{1,24}$/.test(entry.icon) && (!self.PIATTINO_ICONS || own(self.PIATTINO_ICONS, entry.icon)) ? entry.icon : '',
-    thumb: isDataImage(entry.thumb) ? entry.thumb : null,
-    grams: Math.max(0, Math.min(5000, +entry.grams || 0)),
-    kcal: Math.max(0, Math.min(10000, +entry.kcal || 0)),
-    p: Math.max(0, +entry.p || 0), c: Math.max(0, +entry.c || 0),
-    f: Math.max(0, +entry.f || 0), fv: Math.max(0, +entry.fv || 0),
-  });
-  if (Array.isArray(d.foods)) d.foods = d.foods.slice(0, 500).map(cleanEntry);
-  if (d.days && typeof d.days === 'object') {
-    for (const k of Object.keys(d.days)) {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) { delete d.days[k]; continue; }
-      const day = d.days[k];
-      for (const meal of ['colazione','pranzo','cena','spuntini']) {
-        if (Array.isArray(day[meal])) day[meal] = day[meal].slice(0, 50).map(cleanEntry);
-      }
-    }
-  }
+  let raw = null; try { raw = JSON.parse(await f.text()); } catch (err) {}
+  // readBackup (migrate.js) accetta i backup di tutte le versioni, li ripulisce e li porta al formato di oggi
+  const r = readBackup(raw, { iconOk: k => !self.PIATTINO_ICONS || own(self.PIATTINO_ICONS, k) });
+  if (!r.ok) { toast(r.why === 'newer' ? 'Questo backup viene da una versione più recente di Piattino: aggiorna l\'app e riprova.' : 'Questo file non è un backup di Piattino.', true); return; }
+  const d = r.data;
   S.pendingImport = d;
-  const when = d.exported ? new Date(d.exported).toLocaleDateString('it-IT', { day:'numeric', month:'long', year:'numeric' }) : '';
+  const when = r.exported ? new Date(r.exported).toLocaleDateString('it-IT', { day:'numeric', month:'long', year:'numeric' }) : '';
   const box = $('#backupBox'); if (!box) return;
-  box.innerHTML = `<p class="note" style="margin:0">Vuoi sostituire i dati di questo dispositivo con il backup${when ? ' del ' + esc(when) : ''}? Contiene ${Object.keys(d.days).length} giorni e ${(d.foods || []).length} cibi memorizzati.</p><button class="btn primary" data-a="import-yes">Importa e sostituisci</button><button class="btn tinted" data-a="tab" data-v="profile">Annulla</button>`;
+  box.innerHTML = `<p class="note" style="margin:0">Vuoi sostituire i dati di questo dispositivo con il backup${when && when !== 'Invalid Date' ? ' del ' + esc(when) : ''}? Contiene ${Object.keys(d.days).length} giorni, ${d.weights.length} pesate e ${d.foods.length} cibi memorizzati.</p><button class="btn primary" data-a="import-yes">Importa e sostituisci</button><button class="btn tinted" data-a="tab" data-v="profile">Annulla</button>`;
 });
 async function exportData(){
   Store.saveNow();
-  const data = JSON.stringify({ app:'piattino', v:1, exported:new Date().toISOString(), profile:S.profile, days:S.days, foods:S.foods, weights:S.weights });
+  const data = JSON.stringify(toBackup({ profile:S.profile, days:S.days, foods:S.foods, weights:S.weights, meta:S.meta }));
   const name = `piattino-backup-${todayKey()}.json`;
   const file = new File([data], name, { type:'application/json' });
   try { if (navigator.canShare && navigator.canShare({ files:[file] })) { await navigator.share({ files:[file], title:'Backup Piattino' }); return; } }
@@ -2289,8 +2345,40 @@ function checkWhatsNew(force = false) {
       openSheet(`${sheetHead('Novità in Piattino', 'Chiudi')}<div class="sheet-body">
         <p class="note" style="margin-bottom:16px">Versione ${APP_VERSION}</p>
         <div class="card pad">
+          <div class="meal-name">Obiettivi che seguono il tuo peso</div>
+          <div class="small muted" style="margin-top:4px">Aggiorna il peso quando vuoi, da Profilo o dal Diario: Piattino ricalcola calorie, proteine e acqua e conserva lo storico con un grafico. Se il peso cambia molto ti propone di rivedere l'obiettivo, senza cambiarlo da solo.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Limiti più prudenti</div>
+          <div class="small muted" style="margin-top:4px">Per dimagrire il ritmo massimo è 0,5 kg a settimana (e mai oltre lo 0,75% del peso), per aumentare 0,25 kg. Le calorie non scendono mai sotto il minimo sicuro. Se avevi scelto un ritmo più veloce, ora il piano usa il massimo prudente: la data di arrivo in «Obiettivo di peso» è aggiornata.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Un coach più attento</div>
+          <div class="small muted" style="margin-top:4px">«Cosa faccio ora?» usa gli stessi obiettivi e gli stessi limiti del resto dell'app. Se i giorni registrati sono pochi o i numeri non tornano, te lo dice invece di dare cifre a caso.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Sesso: «Preferisco non dire»</div>
+          <div class="small muted" style="margin-top:4px">Nel profilo puoi non indicare il sesso: Piattino usa una via di mezzo e resta sui limiti più prudenti.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Fotocamera con il grandangolo</div>
+          <div class="small muted" style="margin-top:4px">Nuovo zoom 0,5× con il grandangolo, quando l'iPhone ce l'ha: per inquadrare tutto il piatto anche da vicino.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">«Non chiudere questa schermata»</div>
+          <div class="small muted" style="margin-top:4px">Mentre Piattino analizza la foto ti ricorda di non chiudere la schermata. Se l'analisi sembra ferma, ti dice cosa fare e compare il pulsante «Descrivi a parole»; lo schermo resta acceso così l'iPhone non si blocca a metà.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Nuova animazione di ricaricamento</div>
+          <div class="small muted" style="margin-top:4px">Quando ricarichi l'app, il piattino si riempie con i tre bocconi per meno di un secondo, poi lascia il posto ai tuoi dati. Se torni dopo più di 10 minuti ritrovi la firma completa.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
+          <div class="meal-name">Barra in basso e scanner più precisi</div>
+          <div class="small muted" style="margin-top:4px">L'indicatore della sezione non esce più dal bordo, e lo scanner aperto copre tutto lo schermo senza angoli che lasciano vedere sotto.</div>
+        </div>
+        <div class="card pad" style="margin-top:12px">
           <div class="meal-name">Su misura per lo schermo del tuo iPhone</div>
-          <div class="small muted" style="margin-top:4px">Nell'app installata, la barra delle schede, il pulsante «Cosa faccio ora?» e la barra «Aggiungi» dello scanner seguono la curva degli angoli dello schermo, con lo stesso margine sui lati e in basso. Lo scanner si apre e si chiude con gli angoli arrotondati come il display.</div>
+          <div class="small muted" style="margin-top:4px">Nell'app installata, la barra delle schede, il pulsante «Cosa faccio ora?» e la barra «Aggiungi» dello scanner seguono la curva degli angoli dello schermo, con lo stesso margine sui lati e in basso.</div>
         </div>
         <div class="card pad" style="margin-top:12px">
           <div class="meal-name">Scansione della foto più affidabile</div>
@@ -2315,16 +2403,18 @@ function checkWhatsNew(force = false) {
 
 /* ---------- boot ---------- */
 const st = Store.load();
-S.profile = st.profile; S.days = st.days; S.foods = st.foods; S.weights = st.weights; S.chat = st.chat;
+S.profile = st.profile; S.days = st.days; S.foods = st.foods; S.weights = st.weights; S.chat = st.chat; S.meta = st.meta;
+if (st.migrated && st.profile) Store.put();
 render();
 // Avvio. Prima apertura della sessione: la firma (icona con molla, nome, piattino che si riempie) resta circa un secondo,
-// poi si allarga e svanisce mentre i contenuti entrano a cascata. Ricaricamento (launch.js ha già tolto la firma):
-// lo scheletro di index.html lascia il posto ai contenuti con la stessa cascata, senza schermata intera.
-const bootIn = first => {
+// poi si allarga e svanisce mentre i contenuti entrano a cascata. Ricaricamento (launch.js ha messo .launch-quick su <html>):
+// resta solo il piattino che si riempie (~0,6 s), poi si dissolve mentre i contenuti entrano con una cascata più corta.
+// veiled: i contenuti entrano da sotto la firma (completa o breve), che con Riduci movimento fa già da dissolvenza.
+const bootIn = (first, veiled = first) => {
   const bar = $('#tabbar'), fab = $('#coachFab');
   if (reduceMotion()) {
     // solo una dissolvenza (le animazioni sono spente: si usa una transizione)
-    if (!first) { app.style.opacity = '0'; void app.offsetWidth; app.style.transition = 'opacity .25s ease'; app.style.opacity = ''; setTimeout(() => { app.style.transition = ''; }, 300); }
+    if (!veiled) { app.style.opacity = '0'; void app.offsetWidth; app.style.transition = 'opacity .25s ease'; app.style.opacity = ''; setTimeout(() => { app.style.transition = ''; }, 300); }
     return;
   }
   if (!S.profile) {
@@ -2343,6 +2433,19 @@ const bootIn = first => {
   const el = $('#launch');
   if (!el) { bootIn(false); return; }
   try { sessionStorage.setItem('piattino-launch', '1'); } catch (e) {}
+  const root = document.documentElement;
+  if (root.classList.contains('launch-quick')) {
+    // firma breve: resta finché il terzo boccone è atterrato (~0,6 s dall'apertura, ~0,4 s con Riduci movimento), contando
+    // il tempo già passato a caricare; se app.js arriva più tardi si dissolve subito. Poi velo e cascata partono insieme.
+    const wait = Math.max(0, (reduceMotion() ? 400 : 620) - performance.now());
+    setTimeout(() => {
+      // se si è aspettato, gli anelli ripartono da vuoti sotto gli occhi (sotto il velo sarebbero già pieni)
+      if (wait && S.profile) { S.ringPrev = {}; for (const k in numPrev) delete numPrev[k]; for (const k in fillPrev) delete fillPrev[k]; render(); }
+      void el.offsetWidth; el.classList.add('out'); setTimeout(() => { el.remove(); root.classList.remove('launch-quick'); }, 440);
+      bootIn(false, true);
+    }, wait);
+    return;
+  }
   let done = false;
   const close = () => {
     if (done) return; done = true; el.classList.add('out'); setTimeout(() => el.remove(), 440);
@@ -2354,6 +2457,11 @@ const bootIn = first => {
   const at = reduceMotion() ? 750 : 1100;
   setTimeout(close, Math.max(150, at - performance.now())); el.addEventListener('click', close);
 })();
+// quando l'app esce di vista (background, ricaricamento, chiusura) se ne annota l'ora: launch.js la usa per scegliere
+// tra firma completa (assente da più di 10 minuti) e firma breve
+const markSeen = () => { try { localStorage.setItem('piattino-seen-at', String(Date.now())); } catch (e) {} };
+window.addEventListener('pagehide', markSeen);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') markSeen(); });
 // Prima di ricaricare per un aggiornamento: un velo con «Aggiornamento…» per un attimo, invece di un ricaricamento secco.
 // Se l'app non è in primo piano nessuno lo vedrebbe: si ricarica subito.
 function showUpdating(then){
@@ -2365,6 +2473,11 @@ function showUpdating(then){
   setTimeout(then, reduceMotion() ? 350 : 700);
 }
 checkWhatsNew();
+// dati vecchi o backup senza peso o altezza: si chiedono una volta al primo avvio, senza bloccare l'uso
+// (se la finestra viene chiusa resta l'avviso «Completa il profilo» in Oggi)
+if (S.profile && T().generic && !S.meta.askedBody) {
+  setTimeout(() => { if (sheetEl || scanner.classList.contains('show')) return; S.meta.askedBody = true; Store.put(); actions['edit-profile'](); }, 2200);
+}
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   // Su iOS la app resta in memoria per giorni: controlla gli aggiornamenti anche al ritorno in primo piano
   // e ricarica quando un nuovo service worker prende il controllo (solo se ce n'era già uno).

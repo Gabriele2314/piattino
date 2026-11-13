@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Benchmark di PiattinoScan</title>
+<style>
+body{font:15px/1.4 system-ui,sans-serif;margin:20px;max-width:1100px}
+table{border-collapse:collapse;margin:12px 0}
+td,th{border:1px solid #ccc;padding:4px 8px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+figure{margin:0;font-size:12px}
+figure img{width:100%;aspect-ratio:1;object-fit:cover;border:3px solid #c33;border-radius:6px}
+figure.ok img{border-color:#2a2}
+figure.top3 img{border-color:#e90}
+</style>
+</head>
+<body>
+<h1>Benchmark di PiattinoScan</h1>
+<p>Fa girare PiattinoScan, con lo stesso codice dell'app (<code>scan.js</code>: due inquadrature, media delle probabilità), sulle foto di <code>tools/benchmark-set/</code>.
+Le foto si scaricano con <code>node tools/benchmark-fetch.mjs</code>. Verde: prima scelta giusta. Arancione: giusta fra le prime tre. Rosso: sbagliata.</p>
+<p id="status">Carico il modello…</p>
+<div id="tables"></div>
+<div class="grid" id="grid"></div>
+<script src="../vendor/tf.min.js"></script>
+<script type="module" src="benchmark.js"></script>
+</body>
+</html>
